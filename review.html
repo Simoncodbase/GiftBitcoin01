@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Review Your Card</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        /* Card container setup */
+        #card-container {
+            width: 30vw;
+            height: 40vw;
+            position: relative;
+            border: 1px solid #000;
+            background-color: white;
+        }
+
+        /* Background image styling */
+        #background {
+            width: 30vw;
+            height: 30vw;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+        }
+
+        /* Text area styling */
+        #text-area {
+            position: absolute;
+            top: 30vw;
+            left: 0;
+            width: 100%;
+            height: 10vw;
+            background-color: transparent;
+        }
+
+        /* Style for text fields */
+        .text-field {
+            position: absolute;
+        }
+
+        /* Layout styles */
+        .main-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .controls-container {
+            margin-left: 20px;
+        }
+
+        /* Payment form styling */
+        #payment-form {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #payment-element {
+            margin-bottom: 24px;
+        }
+
+        #payment-message {
+            color: rgb(105, 115, 134);
+            font-size: 16px;
+            line-height: 20px;
+            padding-top: 12px;
+            text-align: center;
+        }
+
+        button {
+            background: #5469d4;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            border-radius: 4px;
+            border: 0;
+            padding: 12px 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
+            width: auto;
+            margin-top: 20px;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Card Container -->
+        <div id="card-container">
+            <!-- The saved card content will be inserted here -->
+        </div>
+
+        <!-- Controls Container -->
+        <div class="controls-container">
+            <!-- Buttons for editing and proceeding to payment -->
+            <button onclick="editCard()">Edit Card</button>
+            <button onclick="showPaymentForm()">Pay</button>
+
+            <!-- Payment form -->
+            <form id="payment-form">
+                <div id="payment-element"></div>
+                <button id="submit-button" type="submit">
+                    <span id="button-text">Pay now</span>
+                </button>
+                <div id="payment-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Stripe with your publishable key
+        const stripe = Stripe('pk_test_YOUR_PUBLISHABLE_KEY');
+        let elements;
+        let paymentElement;
+
+        // Function to display the saved card
+        function displaySavedCard() {
+            const cardContainer = document.getElementById('card-container');
+            const savedCardHTML = localStorage.getItem('cardHTML');
+
+            if (savedCardHTML) {
+                cardContainer.innerHTML = savedCardHTML;
+            } else {
+                cardContainer.innerHTML = '<p>No card data found. Please create your card first.</p>';
+            }
+        }
+
+        // Function to redirect back to the home page for editing
+        function editCard() {
+            window.location.href = 'home.html';
+        }
+
+        // Function to show the payment form
+        async function showPaymentForm() {
+            const paymentForm = document.getElementById('payment-form');
+            paymentForm.style.display = 'block';
+            
+            try {
+                // Create payment intent
+                const response = await fetch('/.netlify/functions/create-payment-intent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: 1000 }) // Amount in cents
+                });
+                
+                const { clientSecret } = await response.json();
+
+                // Set up Stripe Elements
+                elements = stripe.elements({ clientSecret });
+                paymentElement = elements.create('payment');
+                paymentElement.mount('#payment-element');
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('payment-message').textContent = 
+                    'Failed to initialize payment. Please try again.';
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('payment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitButton = document.getElementById('submit-button');
+            const messageDiv = document.getElementById('payment-message');
+
+            submitButton.disabled = true;
+            messageDiv.textContent = 'Processing payment...';
+
+            try {
+                const { error } = await stripe.confirmPayment({
+                    elements,
+                    confirmParams: {
+                        return_url: window.location.origin + '/success',
+                    }
+                });
+
+                if (error) {
+                    messageDiv.textContent = error.message;
+                    submitButton.disabled = false;
+                } else {
+                    // Payment successful
+                    const cardData = localStorage.getItem('cardHTML');
+                    
+                    const response = await fetch('/.netlify/functions/payment-success', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            paymentIntentId: clientSecret.split('_secret')[0],
+                            cardData: cardData
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        window.location.href = result.redirectUrl;
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                messageDiv.textContent = 'An unexpected error occurred.';
+                submitButton.disabled = false;
+            }
+        });
+
+        // Display the card when the page loads
+        window.onload = displaySavedCard;
+    </script>
+</body>
+</html>
