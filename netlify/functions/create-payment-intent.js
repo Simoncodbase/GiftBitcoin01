@@ -1,3 +1,4 @@
+require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 exports.handler = async (event, context) => {
@@ -26,11 +27,15 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    console.log('Creating payment intent...');
-    
+    // Add logging to debug environment variables
+    console.log('Environment check:', {
+      hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
+      keyPrefix: process.env.STRIPE_SECRET_KEY ? process.env.STRIPE_SECRET_KEY.substring(0, 7) : 'missing'
+    });
+
     const { amount } = JSON.parse(event.body);
     
-    if (!amount || amount < 50) { // Stripe minimum is 50 cents
+    if (!amount || amount < 50) {
       throw new Error('Invalid amount');
     }
 
@@ -55,7 +60,10 @@ exports.handler = async (event, context) => {
       })
     };
   } catch (error) {
-    console.error('Error creating payment intent:', error);
+    console.log('Error details:', {
+      message: error.message,
+      stack: error.stack
+    });
     
     return {
       statusCode: 500,
