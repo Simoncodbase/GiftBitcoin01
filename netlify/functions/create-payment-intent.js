@@ -1,8 +1,15 @@
 require('dotenv').config();
+
+// Add debug logging
+console.log('Environment variables check:', {
+  availableEnvVars: Object.keys(process.env).filter(key => key.includes('STRIPE')),
+  secretKeyExists: !!process.env.STRIPE_SECRET_KEY,
+  secretKeyPrefix: process.env.STRIPE_SECRET_KEY ? process.env.STRIPE_SECRET_KEY.substring(0, 7) : 'missing'
+});
+
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 exports.handler = async (event, context) => {
-  // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -27,12 +34,6 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    // Add logging to debug environment variables
-    console.log('Environment check:', {
-      hasStripeKey: !!process.env.STRIPE_SECRET_KEY,
-      keyPrefix: process.env.STRIPE_SECRET_KEY ? process.env.STRIPE_SECRET_KEY.substring(0, 7) : 'missing'
-    });
-
     const { amount } = JSON.parse(event.body);
     
     if (!amount || amount < 50) {
@@ -60,9 +61,10 @@ exports.handler = async (event, context) => {
       })
     };
   } catch (error) {
-    console.log('Error details:', {
+    console.error('Error creating payment intent:', {
       message: error.message,
-      stack: error.stack
+      stack: error.stack,
+      type: error.type
     });
     
     return {
@@ -72,7 +74,8 @@ exports.handler = async (event, context) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ 
-        error: error.message 
+        error: error.message,
+        type: error.type
       })
     };
   }
