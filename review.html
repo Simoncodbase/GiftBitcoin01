@@ -18,10 +18,12 @@
         #payment-form {
             width: 100%;
             max-width: 500px;
+            margin: 0 auto;
         }
         
         #payment-element {
             margin-bottom: 24px;
+            min-height: 200px;
         }
         
         #payment-message {
@@ -46,9 +48,29 @@
             width: 100%;
         }
 
+        #button-text:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .error {
             color: #dc3545;
             margin-top: 10px;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -59,12 +81,14 @@
         </div>
 
         <div class="controls-container">
-            <h2>Edit Card</h2>
+            <h2>Payment Details</h2>
             <form id="payment-form">
                 <div id="payment-element">
                     <!-- Stripe Elements will be inserted here -->
                 </div>
-                <button id="button-text">Pay now</button>
+                <button id="button-text" type="submit" disabled>
+                    Pay now
+                </button>
                 <div id="payment-message"></div>
             </form>
         </div>
@@ -73,38 +97,64 @@
     <script src="https://js.stripe.com/v3/"></script>
     <script>
         // Initialize Stripe with your publishable key
-        const stripe = Stripe('your_publishable_key'); // Make sure this is your actual publishable key
+        const stripe = Stripe('pk_test_51OpNXyFgDfQF9Q2D8Yy1YM6lA6FkECr2S3YKqPi9RdVj1LO07PmV5e0VQTFvkNZXc4HGHpIh8jNMzLcGfJXdBhlz00PRjYnCBv');
         let elements;
+        let paymentElement;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initialize();
+        });
 
         async function initialize() {
             try {
+                // Disable the button until initialization is complete
+                const submitButton = document.querySelector("#button-text");
+                submitButton.disabled = true;
+                
                 console.log('Initializing payment...');
+                
                 const response = await fetch("/.netlify/functions/create-payment-intent", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ amount: 1000 }) // Amount in cents
+                    headers: { 
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ 
+                        amount: 1000 // Amount in cents
+                    })
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorText = await response.text();
+                    console.error('Response error:', errorText);
+                    throw new Error(`Payment initialization failed: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                console.log('Payment intent created:', data);
+                console.log('Payment intent created successfully');
 
                 if (!data.clientSecret) {
-                    throw new Error('No client secret received');
+                    throw new Error('No client secret received from server');
                 }
 
-                elements = stripe.elements({ clientSecret: data.clientSecret });
-                const paymentElement = elements.create("payment");
-                paymentElement.mount("#payment-element");
+                // Create and mount the Elements instance
+                elements = stripe.elements({
+                    clientSecret: data.clientSecret,
+                    appearance: {
+                        theme: 'stripe'
+                    }
+                });
                 
+                paymentElement = elements.create("payment");
+                await paymentElement.mount("#payment-element");
                 console.log('Payment element mounted successfully');
+
+                // Enable the submit button
+                submitButton.disabled = false;
+                
             } catch (error) {
                 console.error('Initialization error:', error);
                 const messageContainer = document.querySelector("#payment-message");
-                messageContainer.textContent = `Error initializing payment: ${error.message}`;
+                messageContainer.textContent = error.message;
                 messageContainer.classList.add('error');
             }
         }
@@ -112,12 +162,15 @@
         async function handleSubmit(e) {
             e.preventDefault();
             
+            const submitButton = document.querySelector("#button-text");
+            const messageContainer = document.querySelector("#payment-message");
+            
             try {
                 setLoading(true);
                 console.log('Processing payment...');
 
-                if (!elements) {
-                    throw new Error('Payment elements not initialized');
+                if (!elements || !paymentElement) {
+                    throw new Error('Payment form not properly initialized. Please refresh the page and try again.');
                 }
 
                 const { error } = await stripe.confirmPayment({
@@ -133,7 +186,6 @@
                 }
             } catch (error) {
                 console.error('Submit error:', error);
-                const messageContainer = document.querySelector("#payment-message");
                 messageContainer.textContent = error.message || 'An unexpected error occurred';
                 messageContainer.classList.add('error');
             } finally {
@@ -142,16 +194,22 @@
         }
 
         function setLoading(isLoading) {
-            const button = document.querySelector("#button-text");
-            button.disabled = isLoading;
-            button.textContent = isLoading ? "Processing..." : "Pay now";
+            const submitButton = document.querySelector("#button-text");
+            const loadingSpinner = document.createElement('span');
+            loadingSpinner.className = 'loading';
+            
+            submitButton.disabled = isLoading;
+            
+            if (isLoading) {
+                submitButton.textContent = 'Processing';
+                submitButton.appendChild(loadingSpinner);
+            } else {
+                submitButton.textContent = 'Pay now';
+            }
         }
 
-        // Add event listeners
+        // Add event listener
         document.querySelector("#payment-form").addEventListener("submit", handleSubmit);
-
-        // Initialize the payment element
-        initialize();
     </script>
 </body>
 </html>
