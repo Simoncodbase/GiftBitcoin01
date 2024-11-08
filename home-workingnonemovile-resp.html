@@ -29,8 +29,8 @@
 
         /* Card container setup */
         #card-container {
-            width: 30vw;
-            height: 40vw;
+            width: 300px;
+            height: 400px;
             position: relative;
             border: 1px solid #000;
             background-color: white;
@@ -75,7 +75,7 @@
         #category-select {
             padding: 8px;
             margin: 10px 0;
-            width: 100%;
+            width: 200px;
         }
 
         /* Background images grid */
@@ -182,8 +182,9 @@
             }
 
             #card-container {
-                width: 80vw;
-                height: 100vw;
+                width: 100%;
+                max-width: 300px;
+                height: 400px;
                 margin-bottom: 20px;
             }
 
@@ -199,11 +200,6 @@
         @media (max-width: 480px) {
             body {
                 padding: 10px;
-            }
-
-            #card-container {
-                width: 90vw;
-                height: 120vw;
             }
 
             #background-images {
@@ -396,14 +392,7 @@
         function reviewOrder() {
             // Save the card's HTML content to local storage
             const cardContainer = document.getElementById('card-container');
-            const clonedCard = cardContainer.cloneNode(true);
-            clonedCard.querySelectorAll('[contenteditable]').forEach(el => {
-                el.removeAttribute('contenteditable');
-                el.style.border = 'none'; // Remove borders for a clean look
-            });
-
-            // Store the cleaned-up card HTML in localStorage
-            localStorage.setItem('cardHTML', clonedCard.innerHTML);
+            localStorage.setItem('cardHTML', cardContainer.innerHTML);
 
             // Redirect to the review page
             window.location.href = 'review.html';
@@ -428,10 +417,6 @@
             element.onmousedown = dragMouseDown;
 
             function dragMouseDown(e) {
-                if (e.target.getAttribute('contenteditable') === 'true') {
-                    // Allow text selection and editing
-                    return;
-                }
                 e.preventDefault();
                 mouseX = e.clientX;
                 mouseY = e.clientY;
@@ -522,7 +507,7 @@
         // Utility function to convert RGB to Hex
         function rgbToHex(color) {
             const rgb = color.match(/\d+/g);
-            if (rgb && rgb.length === 3) {
+            if (rgb.length === 3) {
                 return '#' + rgb.map(x => {
                     const hex = parseInt(x).toString(16);
                     return hex.length === 1 ? '0' + hex : hex;
