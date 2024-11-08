@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customized Card Creator</title>
     <style>
+        /* Base styling */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -108,6 +109,7 @@
             min-width: 50px;
             min-height: 20px;
             background-color: rgba(255, 255, 255, 0.7);
+            word-wrap: break-word;
         }
 
         .text-field.selected {
@@ -121,9 +123,7 @@
             padding: 15px;
             border-radius: 8px;
             margin: 20px 0;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
+            display: none;
         }
 
         #font-options select,
@@ -190,10 +190,6 @@
             #background-images {
                 grid-template-columns: repeat(2, 1fr);
             }
-
-            #font-options {
-                grid-template-columns: 1fr;
-            }
         }
 
         @media (max-width: 480px) {
@@ -242,6 +238,28 @@
 
             <button onclick="addTextField()">Add Text Field</button>
             <button onclick="removeSelectedTextField()">Remove Selected Text Field</button>
+
+            <div id="font-options">
+                <h3>Text Options</h3>
+                <label for="font-family-select">Font Family:</label>
+                <select id="font-family-select" onchange="updateTextFieldStyle()">
+                    <option value="">--Select Font--</option>
+                    <option value="Arial">Arial</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Garamond">Garamond</option>
+                    <option value="Courier New">Courier New</option>
+                    <option value="Brush Script MT">Brush Script MT</option>
+                    <option value="Lucida Handwriting">Lucida Handwriting</option>
+                    <option value="Comic Sans MS">Comic Sans MS</option>
+                    <option value="Verdana">Verdana</option>
+                    <option value="Trebuchet MS">Trebuchet MS</option>
+                </select>
+
+                <label for="font-size-input">Font Size (px):</label>
+                <input type="number" id="font-size-input" min="10" max="100" value="16" onchange="updateTextFieldStyle()">
+            </div>
+
             <button onclick="reviewOrder()">Review Order</button>
         </div>
     </div>
@@ -349,6 +367,7 @@
             if (selectedTextField) {
                 selectedTextField.parentNode.removeChild(selectedTextField);
                 selectedTextField = null;
+                document.getElementById('font-options').style.display = 'none';
             }
         }
 
@@ -372,6 +391,7 @@
             }
             selectedTextField = textField;
             selectedTextField.classList.add('selected');
+            showFontOptions();
         }
 
         function makeDraggable(element) {
@@ -408,6 +428,55 @@
                 }, 100);
             }
         }
+
+        // Function to show font options
+        function showFontOptions() {
+            if (selectedTextField) {
+                const fontOptions = document.getElementById('font-options');
+                fontOptions.style.display = 'block';
+
+                // Set current font family and size
+                const currentFontFamily = window.getComputedStyle(selectedTextField).fontFamily.replace(/['"]/g, '');
+                const currentFontSize = parseInt(window.getComputedStyle(selectedTextField).fontSize);
+
+                document.getElementById('font-family-select').value = currentFontFamily;
+                document.getElementById('font-size-input').value = currentFontSize;
+            }
+        }
+
+        // Function to update text field style
+        function updateTextFieldStyle() {
+            if (selectedTextField) {
+                const fontFamily = document.getElementById('font-family-select').value;
+                const fontSize = document.getElementById('font-size-input').value;
+
+                if (fontFamily) {
+                    selectedTextField.style.fontFamily = fontFamily;
+                }
+
+                if (fontSize) {
+                    selectedTextField.style.fontSize = fontSize + 'px';
+                }
+            }
+        }
+
+        // Allow editing inside text fields
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('text-field')) {
+                selectTextField(event.target);
+            } else {
+                if (selectedTextField) {
+                    selectedTextField.classList.remove('selected');
+                    selectedTextField = null;
+                    document.getElementById('font-options').style.display = 'none';
+                }
+            }
+        });
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateBackgrounds();
+        });
     </script>
 </body>
 </html>
