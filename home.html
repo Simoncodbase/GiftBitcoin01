@@ -29,8 +29,8 @@
 
         /* Card container setup */
         #card-container {
-            width: 30vw;
-            height: 40vw;
+            width: 30vw; /*30% of viewport width */
+            height: 40vw; /* Height is 40% of viewport width */
             position: relative;
             border: 1px solid #000;
             background-color: white;
@@ -39,64 +39,22 @@
 
         /* Background image styling */
         #background {
-            width: 100%;
-            height: 75%;
+            width: 30vw;
+            height: 30vw;
             position: absolute;
             top: 0;
             left: 0;
             display: none;
-            object-fit: cover;
         }
 
-        /* Text area styling */
+        /* Text area without background */
         #text-area {
             position: absolute;
-            top: 75%;
+            top: 30vw; /* Start below the background image */
             left: 0;
             width: 100%;
-            height: 25%;
+            height: 10vw;
             background-color: transparent;
-        }
-
-        /* Controls container */
-        .controls-container {
-            flex-grow: 1;
-            max-width: 600px;
-        }
-
-        /* Background selector styling */
-        #background-selector {
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        #category-select {
-            padding: 8px;
-            margin: 10px 0;
-            width: 100%;
-        }
-
-        /* Background images grid */
-        #background-images {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .background-image {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: transform 0.2s;
-        }
-
-        .background-image:hover {
-            transform: scale(1.05);
         }
 
         /* Text field styling */
@@ -112,17 +70,59 @@
             user-select: text;
         }
 
+        /* Selected text field */
         .text-field.selected {
-            border: 2px solid #5469d4;
-            box-shadow: 0 0 5px rgba(84, 105, 212, 0.5);
+            border: 2px solid red;
+        }
+
+        /* Controls container */
+        .controls-container {
+            margin-left: 20px;
+            flex-grow: 1;
+            max-width: 600px;
+        }
+
+        /* Background selector styling */
+        #background-selector {
+            margin-left: 10px;
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        #category-select {
+            padding: 8px;
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        /* Background images grid */
+        #background-images {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .background-image {
+            cursor: pointer;
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            transition: transform 0.2s;
+        }
+
+        .background-image:hover {
+            transform: scale(1.05);
         }
 
         /* Font options styling */
         #font-options {
+            margin-top: 10px;
             background: #f5f5f5;
             padding: 15px;
             border-radius: 8px;
-            margin: 20px 0;
             display: none;
         }
 
@@ -194,6 +194,11 @@
             #background-images {
                 grid-template-columns: repeat(2, 1fr);
             }
+
+            /* Adjust the width of the background images in the controls */
+            .controls-container .background-image {
+                width: 100%;
+            }
         }
 
         @media (max-width: 480px) {
@@ -223,15 +228,19 @@
 <body>
     <div class="main-container">
         <div id="card-container">
-            <img id="background" src="" alt="Card Background">
+            <!-- Background Image (Initially hidden) -->
+            <img id="background" src="">
+            <!-- Text area without background -->
             <div id="text-area"></div>
         </div>
 
         <div class="controls-container">
+            <!-- Category Selector -->
             <div id="background-selector">
                 <h3>Select a Background</h3>
-                <div>
-                    <select id="category-select" onchange="updateBackgrounds()">
+                <div style="display: flex; align-items: center;">
+                    <label for="category-select">Category:</label>
+                    <select id="category-select" onchange="updateBackgrounds()" style="margin-right: 10px;">
                         <option value="">--Select Category--</option>
                         <option value="crypto-king">Crypto-King</option>
                         <option value="crypto-queen">Crypto-Queen</option>
@@ -239,41 +248,50 @@
                         <option value="christmas">Christmas</option>
                         <option value="upload-own-picture">Upload Own Picture</option>
                     </select>
+                    <!-- Upload Own Picture Button -->
                     <button id="upload-button" onclick="triggerFileInput()" style="display: none;">Upload Own Picture</button>
+                    <!-- Hidden File Input -->
                     <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="handleFileUpload(event)">
                 </div>
-                <div id="background-images"></div>
+
+                <!-- Background Images will be displayed here -->
+                <div id="background-images">
+                    <!-- Images will be inserted here based on the selected category -->
+                </div>
             </div>
 
-            <button onclick="addTextField()">Add Text Field</button>
+            <!-- Add/Remove Text Buttons -->
+            <button onclick="addTextField()" style="margin-top: 20px;">Add Text Field</button>
             <button onclick="toggleFontOptions()">Format Text</button>
-            <button onclick="removeSelectedTextField()">Remove Selected Text Field</button>
+            <button onclick="removeSelectedTextField()" style="margin-top: 20px;">Remove Selected Text Field</button>
 
+            <!-- Font, Size, and Color Selectors -->
             <div id="font-options">
                 <h3>Text Options</h3>
-                <label for="font-family-select">Font Family:</label>
-                <select id="font-family-select" onchange="updateTextFieldStyle()">
+                <label for="font-select">Font:</label>
+                <select id="font-select" onchange="updateSelectedTextStyle()">
                     <option value="">--Select Font--</option>
-                    <option value="Arial">Arial</option>
-                    <option value="Times New Roman">Times New Roman</option>
-                    <option value="Georgia">Georgia</option>
-                    <option value="Garamond">Garamond</option>
-                    <option value="Courier New">Courier New</option>
-                    <option value="Brush Script MT">Brush Script MT</option>
-                    <option value="Lucida Handwriting">Lucida Handwriting</option>
-                    <option value="Comic Sans MS">Comic Sans MS</option>
-                    <option value="Verdana">Verdana</option>
-                    <option value="Trebuchet MS">Trebuchet MS</option>
+                    <option style="font-family: Arial;" value="Arial">Arial</option>
+                    <option style="font-family: 'Times New Roman';" value="Times New Roman">Times New Roman</option>
+                    <option style="font-family: 'Courier New';" value="Courier New">Courier New</option>
+                    <option style="font-family: Georgia;" value="Georgia">Georgia</option>
+                    <option style="font-family: Verdana;" value="Verdana">Verdana</option>
+                    <option style="font-family: Tahoma;" value="Tahoma">Tahoma</option>
+                    <option style="font-family: 'Trebuchet MS';" value="Trebuchet MS">Trebuchet MS</option>
+                    <option style="font-family: 'Comic Sans MS';" value="Comic Sans MS">Comic Sans MS</option>
+                    <option style="font-family: Impact;" value="Impact">Impact</option>
+                    <option style="font-family: Papyrus;" value="Papyrus">Papyrus</option>
                 </select>
 
-                <label for="font-size-input">Font Size (px):</label>
-                <input type="number" id="font-size-input" min="10" max="100" value="16" onchange="updateTextFieldStyle()">
+                <label for="font-size">Size:</label>
+                <input type="number" id="font-size" value="14" min="10" onchange="updateSelectedTextStyle()">
 
-                <label for="font-color-input">Font Color:</label>
-                <input type="color" id="font-color-input" value="#000000" onchange="updateTextFieldStyle()">
+                <label for="font-color">Color:</label>
+                <input type="color" id="font-color" value="#000000" onchange="updateSelectedTextStyle()">
             </div>
 
-            <button onclick="reviewOrder()">Review Order</button>
+            <!-- Review Order Button -->
+            <button onclick="reviewOrder()" style="margin-top: 20px;">Review Order</button>
         </div>
     </div>
 
@@ -309,97 +327,65 @@
             const uploadButton = document.getElementById('upload-button');
 
             backgroundImagesDiv.innerHTML = ''; // Clear previous images
+            uploadButton.style.display = 'none'; // Hide the upload button by default
 
             if (category === 'upload-own-picture') {
                 // Show the upload button
                 uploadButton.style.display = 'block';
-            } else {
-                uploadButton.style.display = 'none';
-                if (category && categoryBackgrounds[category]) {
-                    categoryBackgrounds[category].forEach(imageUrl => {
-                        const img = document.createElement('img');
-                        img.src = imageUrl;
-                        img.classList.add('background-image');
-                        img.onclick = function() {
-                            changeBackground(imageUrl);
-                        };
-                        backgroundImagesDiv.appendChild(img);
-                    });
-                }
+            } else if (category && categoryBackgrounds[category]) {
+                categoryBackgrounds[category].forEach(imageUrl => {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.classList.add('background-image');
+                    img.onclick = function() {
+                        changeBackground(imageUrl);
+                    };
+                    backgroundImagesDiv.appendChild(img);
+                });
             }
         }
 
-        // Function to change the background image
-        function changeBackground(imageUrl) {
-            const backgroundImg = document.getElementById('background');
-            backgroundImg.src = imageUrl;
-            backgroundImg.style.display = 'block';
-
-            // Reset category select
-            document.getElementById('category-select').value = '';
-            // Hide background images
-            document.getElementById('background-images').innerHTML = '';
-            // Hide upload button
-            document.getElementById('upload-button').style.display = 'none';
-        }
-
-        // Function to trigger file input
+        // Function to trigger file input when upload button is clicked
         function triggerFileInput() {
             document.getElementById('file-input').click();
         }
 
-        // Function to handle file upload
+        // Function to handle the file upload
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    changeBackground(e.target.result);
-                };
+                    const imageUrl = e.target.result;
+                    // Display the uploaded image in the background-images div
+                    const backgroundImagesDiv = document.getElementById('background-images');
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.classList.add('background-image');
+                    img.onclick = function() {
+                        changeBackground(imageUrl);
+                    };
+                    backgroundImagesDiv.appendChild(img);
+                }
                 reader.readAsDataURL(file);
             }
         }
 
-        // Function to add a new text field
-        let textFieldCount = 0;
-        function addTextField() {
-            textFieldCount++;
-            const textArea = document.getElementById('text-area');
-            const newTextField = document.createElement('div');
-
-            newTextField.classList.add('text-field');
-            newTextField.setAttribute('contenteditable', 'true');
-            newTextField.style.top = (textFieldCount * 20) + 'px';
-            newTextField.style.left = '10px';
-            newTextField.innerText = 'Editable Text';
-
-            newTextField.onclick = function(event) {
-                if (!isDragging) {
-                    selectTextField(newTextField);
-                }
-            };
-
-            textArea.appendChild(newTextField);
-            makeDraggable(newTextField);
+        // Function to change the background
+        function changeBackground(imageUrl) {
+            var backgroundImage = document.getElementById('background');
+            backgroundImage.src = imageUrl;
+            backgroundImage.style.display = 'block'; // Show the background when clicked
         }
 
-        // Function to remove selected text field
-        function removeSelectedTextField() {
-            if (selectedTextField) {
-                selectedTextField.parentNode.removeChild(selectedTextField);
-                selectedTextField = null;
-                document.getElementById('font-options').style.display = 'none';
-            }
-        }
-
-        // Function to review order
+        // Function to handle the review order and save the card content to localStorage
         function reviewOrder() {
-            // Save the card's HTML content to local storage
+            // Clone the card-container to remove edit options like contenteditable and dashed borders
             const cardContainer = document.getElementById('card-container');
             const clonedCard = cardContainer.cloneNode(true);
             clonedCard.querySelectorAll('[contenteditable]').forEach(el => {
                 el.removeAttribute('contenteditable');
-                el.style.border = 'none'; // Remove borders for a clean look
+                el.style.border = 'none'; // Remove dashed borders for a clean look
             });
 
             // Store the cleaned-up card HTML in localStorage
@@ -409,89 +395,88 @@
             window.location.href = 'review.html';
         }
 
-        // Draggable functionality
+        let textFieldCount = 0;
         let selectedTextField = null;
-        let isDragging = false;
+        let isDragging = false; // Flag to track if dragging
 
-        function selectTextField(textField) {
+        // Function to add a new text field
+        function addTextField() {
+            textFieldCount++;
+            const textArea = document.getElementById('text-area');
+            const newTextField = document.createElement('div');
+
+            newTextField.classList.add('text-field');
+            newTextField.setAttribute('contenteditable', 'true');
+            // Position the new text field within the text area
+            newTextField.style.top = (textFieldCount * 20) + 'px';
+            newTextField.style.left = '10px'; // Start from left margin
+            newTextField.innerText = 'Editable Text';
+            newTextField.onclick = function(event) {
+                if (!isDragging) {
+                    selectTextField(newTextField);
+                }
+            };
+
+            // Append the text field to the text-area
+            textArea.appendChild(newTextField);
+            makeDraggable(newTextField);
+        }
+
+        // Function to select a text field
+        function selectTextField(field) {
             if (selectedTextField) {
-                selectedTextField.classList.remove('selected');
+                selectedTextField.classList.remove('selected'); // Unselect current field
             }
-            selectedTextField = textField;
-            selectedTextField.classList.add('selected');
+            selectedTextField = field;
+            selectedTextField.classList.add('selected'); // Highlight selected field
             selectedTextField.focus(); // Focus on the text field for editing
         }
 
-        // Modified makeDraggable function to support both desktop and mobile devices
+        // Function to remove the selected text field
+        function removeSelectedTextField() {
+            if (selectedTextField) {
+                selectedTextField.remove();
+                selectedTextField = null;
+                document.getElementById('font-options').style.display = 'none';
+            }
+        }
+
+        // Update font, size, and color of the selected text field
+        function updateSelectedTextStyle() {
+            if (!selectedTextField) return;
+
+            const font = document.getElementById('font-select').value;
+            const size = document.getElementById('font-size').value;
+            const color = document.getElementById('font-color').value;
+
+            selectedTextField.style.fontFamily = font;
+            selectedTextField.style.fontSize = size + 'px';
+            selectedTextField.style.color = color;
+        }
+
+        // Make text field draggable
         function makeDraggable(element) {
-            let offsetX = 0, offsetY = 0, startX = 0, startY = 0;
+            let offsetX = 0, offsetY = 0, mouseX = 0, mouseY = 0;
 
             element.onmousedown = dragMouseDown;
-            element.addEventListener('touchstart', dragTouchStart, false);
 
             function dragMouseDown(e) {
-                if (e.target.getAttribute('contenteditable') === 'true') {
-                    // Allow text selection and editing
-                    return;
-                }
                 e.preventDefault();
-                startX = e.clientX;
-                startY = e.clientY;
+                mouseX = e.clientX;
+                mouseY = e.clientY;
                 document.onmouseup = closeDragElement;
-                document.onmousemove = elementDragMouse;
+                document.onmousemove = elementDrag;
             }
 
-            function elementDragMouse(e) {
+            function elementDrag(e) {
                 e.preventDefault();
                 isDragging = true; // Set the dragging flag when moving the element
-                offsetX = e.clientX - startX;
-                offsetY = e.clientY - startY;
-                startX = e.clientX;
-                startY = e.clientY;
-                moveElement(element, offsetX, offsetY);
-            }
-
-            function closeDragElement() {
-                document.onmouseup = null;
-                document.onmousemove = null;
-                setTimeout(() => { isDragging = false; }, 100); // Delay resetting the dragging flag
-            }
-
-            function dragTouchStart(e) {
-                if (e.target.getAttribute('contenteditable') === 'true') {
-                    // Allow text selection and editing
-                    return;
-                }
-                if (e.touches.length === 1) {
-                    e.preventDefault();
-                    startX = e.touches[0].clientX;
-                    startY = e.touches[0].clientY;
-                    document.addEventListener('touchmove', elementDragTouch, false);
-                    document.addEventListener('touchend', closeDragElementTouch, false);
-                }
-            }
-
-            function elementDragTouch(e) {
-                if (e.touches.length === 1) {
-                    e.preventDefault();
-                    isDragging = true;
-                    offsetX = e.touches[0].clientX - startX;
-                    offsetY = e.touches[0].clientY - startY;
-                    startX = e.touches[0].clientX;
-                    startY = e.touches[0].clientY;
-                    moveElement(element, offsetX, offsetY);
-                }
-            }
-
-            function closeDragElementTouch() {
-                document.removeEventListener('touchmove', elementDragTouch, false);
-                document.removeEventListener('touchend', closeDragElementTouch, false);
-                setTimeout(() => { isDragging = false; }, 100);
-            }
-
-            function moveElement(element, offsetX, offsetY) {
-                let newTop = element.offsetTop + offsetY;
-                let newLeft = element.offsetLeft + offsetX;
+                offsetX = mouseX - e.clientX;
+                offsetY = mouseY - e.clientY;
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                let newTop = element.offsetTop - offsetY;
+                let newLeft = element.offsetLeft - offsetX;
                 // Ensure the element stays within the parent boundaries
                 const container = element.parentElement;
                 const containerRect = container.getBoundingClientRect();
@@ -504,6 +489,12 @@
                 element.style.top = newTop + "px";
                 element.style.left = newLeft + "px";
             }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+                setTimeout(() => { isDragging = false; }, 100); // Delay resetting the dragging flag
+            }
         }
 
         // Function to toggle font options
@@ -512,61 +503,12 @@
             if (fontOptions.style.display === 'none' || fontOptions.style.display === '') {
                 if (selectedTextField) {
                     fontOptions.style.display = 'block';
-                    showFontOptions();
                 } else {
                     alert('Please select a text field first.');
                 }
             } else {
                 fontOptions.style.display = 'none';
             }
-        }
-
-        // Function to show font options
-        function showFontOptions() {
-            if (selectedTextField) {
-                // Set current font family, size, and color
-                const computedStyle = window.getComputedStyle(selectedTextField);
-                const currentFontFamily = computedStyle.fontFamily.replace(/['"]/g, '');
-                const currentFontSize = parseInt(computedStyle.fontSize);
-                const currentFontColor = rgbToHex(computedStyle.color);
-
-                document.getElementById('font-family-select').value = currentFontFamily;
-                document.getElementById('font-size-input').value = currentFontSize;
-                document.getElementById('font-color-input').value = currentFontColor;
-            }
-        }
-
-        // Function to update text field style
-        function updateTextFieldStyle() {
-            if (selectedTextField) {
-                const fontFamily = document.getElementById('font-family-select').value;
-                const fontSize = document.getElementById('font-size-input').value;
-                const fontColor = document.getElementById('font-color-input').value;
-
-                if (fontFamily) {
-                    selectedTextField.style.fontFamily = fontFamily;
-                }
-
-                if (fontSize) {
-                    selectedTextField.style.fontSize = fontSize + 'px';
-                }
-
-                if (fontColor) {
-                    selectedTextField.style.color = fontColor;
-                }
-            }
-        }
-
-        // Utility function to convert RGB to Hex
-        function rgbToHex(color) {
-            const rgb = color.match(/\d+/g);
-            if (rgb && rgb.length === 3) {
-                return '#' + rgb.map(x => {
-                    const hex = parseInt(x).toString(16);
-                    return hex.length === 1 ? '0' + hex : hex;
-                }).join('');
-            }
-            return '#000000';
         }
 
         // Initialize the page
