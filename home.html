@@ -110,6 +110,7 @@
             min-height: 20px;
             background-color: rgba(255, 255, 255, 0.7);
             word-wrap: break-word;
+            user-select: text;
         }
 
         .text-field.selected {
@@ -124,6 +125,11 @@
             border-radius: 8px;
             margin: 20px 0;
             display: none;
+        }
+
+        #font-options label {
+            display: block;
+            margin-top: 10px;
         }
 
         #font-options select,
@@ -237,6 +243,7 @@
             </div>
 
             <button onclick="addTextField()">Add Text Field</button>
+            <button onclick="toggleFontOptions()">Format Text</button>
             <button onclick="removeSelectedTextField()">Remove Selected Text Field</button>
 
             <div id="font-options">
@@ -258,6 +265,9 @@
 
                 <label for="font-size-input">Font Size (px):</label>
                 <input type="number" id="font-size-input" min="10" max="100" value="16" onchange="updateTextFieldStyle()">
+
+                <label for="font-color-input">Font Color:</label>
+                <input type="color" id="font-color-input" value="#000000" onchange="updateTextFieldStyle()">
             </div>
 
             <button onclick="reviewOrder()">Review Order</button>
@@ -321,6 +331,13 @@
             const backgroundImg = document.getElementById('background');
             backgroundImg.src = imageUrl;
             backgroundImg.style.display = 'block';
+
+            // Reset category select
+            document.getElementById('category-select').value = '';
+            // Hide background images
+            document.getElementById('background-images').innerHTML = '';
+            // Hide upload button
+            document.getElementById('upload-button').style.display = 'none';
         }
 
         // Function to trigger file input
@@ -352,11 +369,21 @@
             newTextField.style.top = (textFieldCount * 20) + 'px';
             newTextField.style.left = '10px';
             newTextField.innerText = 'Editable Text';
-            newTextField.onclick = function(event) {
+
+            newTextField.addEventListener('click', function(event) {
                 if (!isDragging) {
                     selectTextField(newTextField);
+                    event.stopPropagation();
                 }
-            };
+            });
+
+            newTextField.addEventListener('focus', function() {
+                isEditing = true;
+            });
+
+            newTextField.addEventListener('blur', function() {
+                isEditing = false;
+            });
 
             textArea.appendChild(newTextField);
             makeDraggable(newTextField);
@@ -384,6 +411,7 @@
         // Draggable functionality
         let selectedTextField = null;
         let isDragging = false;
+        let isEditing = false;
 
         function selectTextField(textField) {
             if (selectedTextField) {
@@ -391,7 +419,6 @@
             }
             selectedTextField = textField;
             selectedTextField.classList.add('selected');
-            showFontOptions();
         }
 
         function makeDraggable(element) {
@@ -400,6 +427,7 @@
             element.onmousedown = dragMouseDown;
 
             function dragMouseDown(e) {
+                if (isEditing) return; // Do not drag if editing text
                 e = e || window.event;
                 e.preventDefault();
                 mouseX = e.clientX;
@@ -429,18 +457,33 @@
             }
         }
 
+        // Function to toggle font options
+        function toggleFontOptions() {
+            const fontOptions = document.getElementById('font-options');
+            if (fontOptions.style.display === 'none' || fontOptions.style.display === '') {
+                if (selectedTextField) {
+                    fontOptions.style.display = 'block';
+                    showFontOptions();
+                } else {
+                    alert('Please select a text field first.');
+                }
+            } else {
+                fontOptions.style.display = 'none';
+            }
+        }
+
         // Function to show font options
         function showFontOptions() {
             if (selectedTextField) {
-                const fontOptions = document.getElementById('font-options');
-                fontOptions.style.display = 'block';
-
-                // Set current font family and size
-                const currentFontFamily = window.getComputedStyle(selectedTextField).fontFamily.replace(/['"]/g, '');
-                const currentFontSize = parseInt(window.getComputedStyle(selectedTextField).fontSize);
+                // Set current font family, size, and color
+                const computedStyle = window.getComputedStyle(selectedTextField);
+                const currentFontFamily = computedStyle.fontFamily.replace(/['"]/g, '');
+                const currentFontSize = parseInt(computedStyle.fontSize);
+                const currentFontColor = rgbToHex(computedStyle.color);
 
                 document.getElementById('font-family-select').value = currentFontFamily;
                 document.getElementById('font-size-input').value = currentFontSize;
+                document.getElementById('font-color-input').value = currentFontColor;
             }
         }
 
@@ -449,6 +492,7 @@
             if (selectedTextField) {
                 const fontFamily = document.getElementById('font-family-select').value;
                 const fontSize = document.getElementById('font-size-input').value;
+                const fontColor = document.getElementById('font-color-input').value;
 
                 if (fontFamily) {
                     selectedTextField.style.fontFamily = fontFamily;
@@ -457,7 +501,23 @@
                 if (fontSize) {
                     selectedTextField.style.fontSize = fontSize + 'px';
                 }
+
+                if (fontColor) {
+                    selectedTextField.style.color = fontColor;
+                }
             }
+        }
+
+        // Utility function to convert RGB to Hex
+        function rgbToHex(color) {
+            const rgb = color.match(/\d+/g);
+            if (rgb.length === 3) {
+                return '#' + rgb.map(x => {
+                    const hex = parseInt(x).toString(16);
+                    return hex.length === 1 ? '0' + hex : hex;
+                }).join('');
+            }
+            return '#000000';
         }
 
         // Allow editing inside text fields
