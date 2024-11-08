@@ -3,72 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Review Your Card & Payment</title>
+    <title>Payment Review</title>
     <script src="https://js.stripe.com/v3/"></script>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-        }
-
-        /* Main container styling */
         .main-container {
-            max-width: 1200px;
+            max-width: 600px;
             margin: 0 auto;
             padding: 20px;
-            display: flex;
-            flex-direction: row;
-            gap: 20px;
         }
 
-        /* Card container setup */
-        #card-container {
-            width: 300px;
-            height: 400px;
-            position: relative;
-            border: 1px solid #000;
-            background-color: white;
-            flex-shrink: 0;
-        }
-
-        /* Background image styling */
-        #background {
-            width: 100%;
-            height: 75%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            display: block;
-        }
-
-        /* Text area styling */
-        #text-area {
-            position: absolute;
-            top: 75%;
-            left: 0;
-            width: 100%;
-            height: 25%;
-            background-color: transparent;
-        }
-
-        /* Controls container */
         .controls-container {
-            flex-grow: 1;
-            max-width: 600px;
-        }
-
-        /* Payment form styling */
-        #payment-form {
             margin-top: 20px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
         }
 
         #payment-element {
@@ -83,8 +28,7 @@
             text-align: center;
         }
 
-        /* Button styling */
-        button {
+        #payment-form button {
             background: #5469d4;
             color: #ffffff;
             font-family: Arial, sans-serif;
@@ -98,62 +42,34 @@
             transition: all 0.2s ease;
             box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
             width: 100%;
-            margin-bottom: 10px;
         }
 
-        button:hover {
+        #payment-form button:hover {
             filter: contrast(115%);
         }
 
-        button:disabled {
+        #payment-form button:disabled {
             opacity: 0.5;
             cursor: default;
-        }
-
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .main-container {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            #card-container {
-                width: 100%;
-                max-width: 300px;
-                height: 400px;
-            }
-
-            .controls-container {
-                width: 100%;
-            }
         }
     </style>
 </head>
 <body>
     <div class="main-container">
-        <!-- Card Container -->
-        <div id="card-container">
-            <!-- The saved card content will be inserted here -->
-        </div>
-
-        <!-- Controls Container -->
-        <div class="controls-container">
-            <button onclick="editCard()">Edit Card</button>
-            
-            <form id="payment-form">
+        <form id="payment-form">
+            <div class="controls-container">
                 <h2>Payment Details</h2>
                 <div id="payment-element"></div>
-                <button id="submit" type="submit">
-                    <span id="button-text">Pay now</span>
-                </button>
+                <button id="submit">Pay now</button>
                 <div id="payment-message"></div>
-            </form>
-        </div>
+            </div>
+        </form>
     </div>
 
     <script>
         // Initialize Stripe
         const stripe = Stripe('pk_test_51Q9TrZEAbBnxrSl5cASxdzrObnYUOgytR7iS55Fn1EtwGIguhqmqRlObWaj5n9MCVrRzKRcN1MwOQrpm49S9d5PY00Fp8qHAFt');
+
         let elements;
         let paymentElement;
 
@@ -161,24 +77,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const amount = parseInt(urlParams.get('amount') || '1000'); // Default to $10.00
 
-        // Function to display the saved card
-        function displaySavedCard() {
-            const cardContainer = document.getElementById('card-container');
-            const savedCardHTML = localStorage.getItem('cardHTML');
-
-            if (savedCardHTML) {
-                cardContainer.innerHTML = savedCardHTML;
-            } else {
-                cardContainer.innerHTML = '<p>No card data found. Please create your card first.</p>';
-            }
-        }
-
-        // Function to redirect back to the home page for editing
-        function editCard() {
-            window.location.href = 'home.html';
-        }
-
-        // Initialize payment form
         async function initialize() {
             try {
                 console.log('Initializing payment...');
@@ -191,6 +89,7 @@
                 });
 
                 if (!response.ok) {
+                    const errorData = await response.json();
                     throw new Error(`Payment initialization failed: ${response.status}`);
                 }
 
@@ -216,7 +115,6 @@
             }
         }
 
-        // Handle form submission
         async function handleSubmit(e) {
             e.preventDefault();
             
@@ -224,7 +122,7 @@
             const messageElement = document.querySelector('#payment-message');
 
             submitButton.disabled = true;
-            messageElement.textContent = 'Processing payment...';
+            messageElement.textContent = '';
 
             try {
                 const { error } = await stripe.confirmPayment({
@@ -250,11 +148,8 @@
         // Add event listener for form submission
         document.querySelector('#payment-form').addEventListener('submit', handleSubmit);
 
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', () => {
-            displaySavedCard();
-            initialize();
-        });
+        // Initialize the payment when the page loads
+        document.addEventListener('DOMContentLoaded', initialize);
     </script>
 </body>
 </html>
