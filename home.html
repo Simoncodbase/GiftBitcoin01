@@ -422,10 +422,12 @@
             selectedTextField.focus(); // Focus on the text field for editing
         }
 
+        // Modified makeDraggable function to support both desktop and mobile devices
         function makeDraggable(element) {
-            let offsetX = 0, offsetY = 0, mouseX = 0, mouseY = 0;
+            let offsetX = 0, offsetY = 0, startX = 0, startY = 0;
 
             element.onmousedown = dragMouseDown;
+            element.addEventListener('touchstart', dragTouchStart, false);
 
             function dragMouseDown(e) {
                 if (e.target.getAttribute('contenteditable') === 'true') {
@@ -433,21 +435,63 @@
                     return;
                 }
                 e.preventDefault();
-                mouseX = e.clientX;
-                mouseY = e.clientY;
+                startX = e.clientX;
+                startY = e.clientY;
                 document.onmouseup = closeDragElement;
-                document.onmousemove = elementDrag;
+                document.onmousemove = elementDragMouse;
             }
 
-            function elementDrag(e) {
+            function elementDragMouse(e) {
                 e.preventDefault();
                 isDragging = true; // Set the dragging flag when moving the element
-                offsetX = mouseX - e.clientX;
-                offsetY = mouseY - e.clientY;
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-                let newTop = element.offsetTop - offsetY;
-                let newLeft = element.offsetLeft - offsetX;
+                offsetX = e.clientX - startX;
+                offsetY = e.clientY - startY;
+                startX = e.clientX;
+                startY = e.clientY;
+                moveElement(element, offsetX, offsetY);
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+                setTimeout(() => { isDragging = false; }, 100); // Delay resetting the dragging flag
+            }
+
+            function dragTouchStart(e) {
+                if (e.target.getAttribute('contenteditable') === 'true') {
+                    // Allow text selection and editing
+                    return;
+                }
+                if (e.touches.length === 1) {
+                    e.preventDefault();
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    document.addEventListener('touchmove', elementDragTouch, false);
+                    document.addEventListener('touchend', closeDragElementTouch, false);
+                }
+            }
+
+            function elementDragTouch(e) {
+                if (e.touches.length === 1) {
+                    e.preventDefault();
+                    isDragging = true;
+                    offsetX = e.touches[0].clientX - startX;
+                    offsetY = e.touches[0].clientY - startY;
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    moveElement(element, offsetX, offsetY);
+                }
+            }
+
+            function closeDragElementTouch() {
+                document.removeEventListener('touchmove', elementDragTouch, false);
+                document.removeEventListener('touchend', closeDragElementTouch, false);
+                setTimeout(() => { isDragging = false; }, 100);
+            }
+
+            function moveElement(element, offsetX, offsetY) {
+                let newTop = element.offsetTop + offsetY;
+                let newLeft = element.offsetLeft + offsetX;
                 // Ensure the element stays within the parent boundaries
                 const container = element.parentElement;
                 const containerRect = container.getBoundingClientRect();
@@ -459,12 +503,6 @@
                 if (newTop + elemHeight > container.clientHeight) newTop = container.clientHeight - elemHeight;
                 element.style.top = newTop + "px";
                 element.style.left = newLeft + "px";
-            }
-
-            function closeDragElement() {
-                document.onmouseup = null;
-                document.onmousemove = null;
-                setTimeout(() => { isDragging = false; }, 100); // Delay resetting the dragging flag
             }
         }
 
