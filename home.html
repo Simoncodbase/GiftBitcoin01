@@ -366,6 +366,7 @@
 
             newTextField.classList.add('text-field');
             newTextField.setAttribute('contenteditable', 'true');
+            newTextField.setAttribute('tabindex', '0');
             newTextField.style.top = (textFieldCount * 20) + 'px';
             newTextField.style.left = '10px';
             newTextField.innerText = 'Editable Text';
@@ -520,15 +521,18 @@
             return '#000000';
         }
 
-        // Allow editing inside text fields
+        // Allow editing inside text fields and prevent hiding font options when interacting with them
         document.addEventListener('click', function(event) {
+            const fontOptions = document.getElementById('font-options');
             if (event.target.classList.contains('text-field')) {
                 selectTextField(event.target);
+            } else if (fontOptions.contains(event.target)) {
+                // Clicked inside font options, do nothing
             } else {
                 if (selectedTextField) {
                     selectedTextField.classList.remove('selected');
                     selectedTextField = null;
-                    document.getElementById('font-options').style.display = 'none';
+                    fontOptions.style.display = 'none';
                 }
             }
         });
