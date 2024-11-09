@@ -2,55 +2,244 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Successful</title>
+    <title>Final Card with Bitcoin Addresses</title>
+    <!-- Include necessary libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        .success-container {
-            max-width: 800px;
-            margin: 50px auto;
-            text-align: center;
-            padding: 20px;
+        /* Card container setup */
+        #card-container {
+            width: 30vw;
+            height: 40vw;
+            position: relative;
+            border: 1px solid #000;
+            background-color: white;
         }
-        .success-message {
-            color: #32cd32;
-            font-size: 24px;
-            margin-bottom: 20px;
+
+        /* Background image styling */
+        #background {
+            width: 30vw;
+            height: 30vw;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block; /* Ensure background is visible */
         }
-        .back-link {
-            color: #5469d4;
-            text-decoration: none;
+
+        /* Text area styling */
+        #text-area {
+            position: absolute;
+            top: 30vw;
+            left: 0;
+            width: 100%;
+            height: 10vw;
+            background-color: transparent;
+        }
+
+        /* Style for text fields */
+        .text-field {
+            position: absolute;
+            /* Other styles will be preserved from saved card */
+        }
+
+        /* Additional styles */
+        /* Center the container */
+        #main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        /* Style for the Bitcoin addresses and QR codes */
+        #bitcoin-addresses-container {
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="success-container">
-        <div class="success-message">Payment Successful!</div>
-        <p>Thank you for your payment. Your transaction has been completed successfully.</p>
-        <a href="/" class="back-link">Return to Home</a>
+    <div id="main-container">
+        <!-- Card Container -->
+        <div id="card-container">
+            <!-- The saved card content will be inserted here -->
+        </div>
+
+        <!-- Container to display the generated addresses and QR codes -->
+        <div id="bitcoin-addresses-container">
+            <!-- The generated addresses and QR codes will be displayed here -->
+        </div>
     </div>
 
     <script>
-        // Check the payment status
-        const clientSecret = new URLSearchParams(window.location.search).get(
-            'payment_intent_client_secret'
-        );
+        // Function to load the card content from localStorage and display it
+        function loadCard() {
+            const cardHTML = localStorage.getItem('cardHTML');
+            if (cardHTML) {
+                const cardContainer = document.getElementById('card-container');
+                cardContainer.innerHTML = cardHTML;
+            } else {
+                console.error('No card data found in localStorage');
+            }
+        }
 
-        if (clientSecret) {
-            stripe.retrievePaymentIntent(clientSecret).then(({paymentIntent}) => {
-                const message = document.querySelector('.success-message');
-                switch (paymentIntent.status) {
-                    case 'succeeded':
-                        message.textContent = 'Payment Successful!';
-                        break;
-                    case 'processing':
-                        message.textContent = 'Payment Processing...';
-                        break;
-                    default:
-                        message.textContent = 'Something went wrong.';
-                        break;
+        // Base58 encoding function
+        function encodeBase58(buffer) {
+            const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+            let carry, digits = [0];
+            for (let i = 0; i < buffer.length; i++) {
+                carry = buffer[i];
+                for (let j = 0; j < digits.length; ++j) {
+                    carry += digits[j] << 8;
+                    digits[j] = carry % 58;
+                    carry = (carry / 58) | 0;
                 }
+                while (carry) {
+                    digits.push(carry % 58);
+                    carry = (carry / 58) | 0;
+                }
+            }
+            let string = '';
+            for (let k = 0; buffer[k] === 0 && k < buffer.length - 1; k++) {
+                string += ALPHABET[0];
+            }
+            for (let q = digits.length - 1; q >= 0; q--) {
+                string += ALPHABET[digits[q]];
+            }
+            return string;
+        }
+
+        // Function to generate Bitcoin addresses and QR codes without external Bitcoin libraries
+        function generateBitcoinAddresses() {
+            try {
+                // Check if addresses are already stored in localStorage
+                var storedPrivateKeyWIF = localStorage.getItem('privateKeyWIF');
+                var storedAddress = localStorage.getItem('address');
+
+                if (storedPrivateKeyWIF && storedAddress) {
+                    // Addresses already generated, use them
+                    displayBitcoinAddresses(storedPrivateKeyWIF, storedAddress);
+                } else {
+                    // Generate private key using elliptic
+                    var EC = elliptic.ec;
+                    var ec = new EC('secp256k1');
+                    var keyPair = ec.genKeyPair();
+                    var privateKeyHex = keyPair.getPrivate('hex');
+
+                    // Convert private key to WIF
+                    var privateKeyWIF = wifEncode(privateKeyHex);
+
+                    // Get public key
+                    var publicKey = keyPair.getPublic(true, 'hex');
+
+                    // Generate public address
+                    var publicKeyBuffer = CryptoJS.enc.Hex.parse(publicKey);
+                    var hash = CryptoJS.SHA256(publicKeyBuffer);
+                    var ripemd160 = CryptoJS.RIPEMD160(hash);
+                    var publicKeyHash = ripemd160.toString();
+
+                    // Add network byte
+                    var networkByte = '00' + publicKeyHash;
+
+                    // Double SHA256 hash for checksum
+                    var checksumFull = CryptoJS.SHA256(CryptoJS.SHA256(CryptoJS.enc.Hex.parse(networkByte))).toString();
+                    var checksum = checksumFull.substr(0, 8);
+
+                    // Create the address
+                    var addressHex = networkByte + checksum;
+                    var addressWordArray = CryptoJS.enc.Hex.parse(addressHex);
+                    var addressUint8Array = new Uint8Array(addressWordArray.sigBytes);
+                    for (var i = 0; i < addressWordArray.sigBytes; i++) {
+                        addressUint8Array[i] = (addressWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)) & 0xFF;
+                    }
+                    var address = encodeBase58(addressUint8Array);
+
+                    // Store the private key and address in localStorage
+                    localStorage.setItem('privateKeyWIF', privateKeyWIF);
+                    localStorage.setItem('address', address);
+
+                    // Display the private key and public address
+                    displayBitcoinAddresses(privateKeyWIF, address);
+                }
+
+            } catch (error) {
+                console.error('Error generating Bitcoin addresses:', error);
+                alert('Error generating Bitcoin addresses: ' + error.message);
+            }
+        }
+
+        // Function to display Bitcoin addresses and QR codes
+        function displayBitcoinAddresses(privateKeyWIF, address) {
+            var container = document.getElementById('bitcoin-addresses-container');
+            container.innerHTML = ''; // Clear previous content
+
+            // Display public address
+            var publicKeyLabel = document.createElement('h3');
+            publicKeyLabel.textContent = 'Public Address:';
+            container.appendChild(publicKeyLabel);
+
+            var publicKeyText = document.createElement('p');
+            publicKeyText.textContent = address;
+            container.appendChild(publicKeyText);
+
+            // Generate QR code for public address directly below the public address
+            var publicKeyQRContainer = document.createElement('div');
+            container.appendChild(publicKeyQRContainer);
+            new QRCode(publicKeyQRContainer, {
+                text: address,
+                width: 128,
+                height: 128,
+            });
+
+            // Display private key
+            var privateKeyLabel = document.createElement('h3');
+            privateKeyLabel.textContent = 'Private Key (WIF):';
+            container.appendChild(privateKeyLabel);
+
+            var privateKeyText = document.createElement('p');
+            privateKeyText.textContent = privateKeyWIF;
+            container.appendChild(privateKeyText);
+
+            // Generate QR code for private key directly below the private key
+            var privateKeyQRContainer = document.createElement('div');
+            container.appendChild(privateKeyQRContainer);
+            new QRCode(privateKeyQRContainer, {
+                text: privateKeyWIF,
+                width: 128,
+                height: 128,
             });
         }
+
+        // Helper function to encode private key to WIF
+        function wifEncode(privateKeyHex) {
+            // Add network byte
+            var step1 = '80' + privateKeyHex;
+
+            // Double SHA256 hash for checksum
+            var step2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(step1));
+            var step3 = CryptoJS.SHA256(step2);
+            var checksum = step3.toString().substr(0, 8);
+
+            // Append checksum to step1
+            var step4 = step1 + checksum;
+
+            // Convert to bytes
+            var privateKeyWordArray = CryptoJS.enc.Hex.parse(step4);
+            var privateKeyUint8Array = new Uint8Array(privateKeyWordArray.sigBytes);
+            for (var i = 0; i < privateKeyWordArray.sigBytes; i++) {
+                privateKeyUint8Array[i] = (privateKeyWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)) & 0xFF;
+            }
+
+            // Encode in Base58
+            var privateKeyWIF = encodeBase58(privateKeyUint8Array);
+            return privateKeyWIF;
+        }
+
+        // Call the loadCard function and generate addresses on page load
+        window.onload = function() {
+            loadCard();
+            generateBitcoinAddresses();
+        };
     </script>
 </body>
 </html>
