@@ -8,6 +8,57 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
+        /* Main container styling */
+        #main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        /* Payment Successful and Green Tick */
+        #payment-successful {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #payment-successful h2 {
+            margin: 0;
+            margin-right: 10px;
+        }
+
+        #green-tick {
+            width: 24px;
+            height: 24px;
+            background-color: green;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        #green-tick::after {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 2px;
+            width: 6px;
+            height: 12px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        /* Important Message */
+        #important-message {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Print Button */
+        #print-button {
+            margin-bottom: 20px;
+        }
+
         /* Card container setup */
         #card-container {
             width: 30vw;
@@ -15,6 +66,7 @@
             position: relative;
             border: 1px solid #000;
             background-color: white;
+            margin-bottom: 20px;
         }
 
         /* Background image styling */
@@ -43,31 +95,59 @@
             /* Other styles will be preserved from saved card */
         }
 
-        /* Additional styles */
-        /* Center the container */
-        #main-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 20px;
-        }
-
         /* Style for the Bitcoin addresses and QR codes */
         #bitcoin-addresses-container {
-            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        /* Ensure content is centered when printed */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printable-content, #printable-content * {
+                visibility: visible;
+            }
+            #printable-content {
+                position: relative;
+                margin: 0 auto;
+                width: 100%;
+            }
+            #print-button {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
     <div id="main-container">
-        <!-- Card Container -->
-        <div id="card-container">
-            <!-- The saved card content will be inserted here -->
+        <!-- Payment Successful and Green Tick Box -->
+        <div id="payment-successful">
+            <h2>Payment Successful</h2>
+            <div id="green-tick"></div>
         </div>
 
-        <!-- Container to display the generated addresses and QR codes -->
-        <div id="bitcoin-addresses-container">
-            <!-- The generated addresses and QR codes will be displayed here -->
+        <!-- Important Message -->
+        <div id="important-message">
+            <p>Important: Save or print your card now in a secure way! You will later not be able to retrieve your keys!</p>
+        </div>
+
+        <!-- Print Button -->
+        <button id="print-button">Print</button>
+
+        <!-- Content to be printed -->
+        <div id="printable-content">
+            <!-- Card Container -->
+            <div id="card-container">
+                <!-- The saved card content will be inserted here -->
+            </div>
+
+            <!-- Container to display the generated addresses and QR codes -->
+            <div id="bitcoin-addresses-container">
+                <!-- The generated addresses and QR codes will be displayed here -->
+            </div>
         </div>
     </div>
 
@@ -266,6 +346,11 @@
                 })
                 .join('&');
         }
+
+        // Print functionality
+        document.getElementById('print-button').addEventListener('click', function() {
+            window.print();
+        });
 
         // Call the loadCard function and generate addresses on page load
         window.onload = function() {
