@@ -28,24 +28,24 @@
             margin-right: 10px;
         }
 
+        /* Adjusted green tick */
         #green-tick {
             width: 24px;
             height: 24px;
             background-color: green;
             border-radius: 50%;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        #green-tick::after {
-            content: '';
-            position: absolute;
-            left: 6px;
-            top: 2px;
-            width: 6px;
-            height: 12px;
+        #tick-mark {
+            width: 10px;
+            height: 5px;
             border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: rotate(45deg);
+            border-width: 0 0 2px 2px;
+            transform: rotate(-45deg);
         }
 
         /* Important Message */
@@ -114,9 +114,21 @@
                 position: relative;
                 margin: 0 auto;
                 width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
             }
             #print-button {
                 display: none;
+            }
+            #card-container, #bitcoin-addresses-container {
+                width: 66%; /* 2/3 of the screen */
+            }
+            /* Center the content inside bitcoin-addresses-container */
+            #bitcoin-addresses-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
             }
         }
     </style>
@@ -126,7 +138,9 @@
         <!-- Payment Successful and Green Tick Box -->
         <div id="payment-successful">
             <h2>Payment Successful</h2>
-            <div id="green-tick"></div>
+            <div id="green-tick">
+                <div id="tick-mark"></div>
+            </div>
         </div>
 
         <!-- Important Message -->
