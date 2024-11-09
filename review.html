@@ -118,6 +118,17 @@
             cursor: default;
         }
 
+        /* Image container styling */
+        #image-container {
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        #image-container img {
+            width: 30vw;
+            max-width: 100%;
+        }
+
         /* Responsive design */
         @media (max-width: 768px) {
             .main-container {
@@ -134,12 +145,20 @@
             .controls-container {
                 width: 100%;
             }
+
+            #image-container img {
+                width: 80vw;
+            }
         }
 
         @media (max-width: 480px) {
             #card-container {
                 width: 90vw;
                 height: 120vw;
+            }
+
+            #image-container img {
+                width: 90vw;
             }
         }
     </style>
@@ -164,6 +183,11 @@
                 <div id="payment-message"></div>
             </form>
         </div>
+    </div>
+
+    <!-- Image Container -->
+    <div id="image-container">
+        <img src="pictures/example-key/example-key-final.png" alt="Example Key">
     </div>
 
     <script>
