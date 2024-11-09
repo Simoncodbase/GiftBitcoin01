@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Review Your Card & Payment</title>
     <script src="https://js.stripe.com/v3/"></script>
     <style>
@@ -29,8 +28,8 @@
 
         /* Card container setup */
         #card-container {
-            width: 300px;
-            height: 400px;
+            width: 30vw;
+            height: 40vw;
             position: relative;
             border: 1px solid #000;
             background-color: white;
@@ -39,8 +38,8 @@
 
         /* Background image styling */
         #background {
-            width: 100%;
-            height: 75%;
+            width: 30vw;
+            height: 30vw;
             position: absolute;
             top: 0;
             left: 0;
@@ -50,11 +49,20 @@
         /* Text area styling */
         #text-area {
             position: absolute;
-            top: 75%;
+            top: 30vw;
             left: 0;
             width: 100%;
-            height: 25%;
+            height: 10vw;
             background-color: transparent;
+        }
+
+        /* Text field styling */
+        .text-field {
+            position: absolute;
+            padding: 5px;
+            background-color: rgba(255, 255, 255, 0.7);
+            word-wrap: break-word;
+            user-select: text;
         }
 
         /* Controls container */
@@ -118,13 +126,20 @@
             }
 
             #card-container {
-                width: 100%;
-                max-width: 300px;
-                height: 400px;
+                width: 80vw;
+                height: 100vw;
+                margin-bottom: 20px;
             }
 
             .controls-container {
                 width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #card-container {
+                width: 90vw;
+                height: 120vw;
             }
         }
     </style>
@@ -167,7 +182,17 @@
             const savedCardHTML = localStorage.getItem('cardHTML');
 
             if (savedCardHTML) {
-                cardContainer.innerHTML = savedCardHTML;
+                // Create a temporary container to manipulate the HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = savedCardHTML;
+
+                // Remove contenteditable attributes and borders
+                tempDiv.querySelectorAll('[contenteditable]').forEach(el => {
+                    el.removeAttribute('contenteditable');
+                    el.style.border = 'none';
+                });
+
+                cardContainer.innerHTML = tempDiv.innerHTML;
             } else {
                 cardContainer.innerHTML = '<p>No card data found. Please create your card first.</p>';
             }

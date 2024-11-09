@@ -380,17 +380,9 @@
 
         // Function to handle the review order and save the card content to localStorage
         function reviewOrder() {
-            // Clone the card-container to remove edit options like contenteditable and dashed borders
             const cardContainer = document.getElementById('card-container');
-            const clonedCard = cardContainer.cloneNode(true);
-            clonedCard.querySelectorAll('[contenteditable]').forEach(el => {
-                el.removeAttribute('contenteditable');
-                el.style.border = 'none'; // Remove dashed borders for a clean look
-            });
-
-            // Store the cleaned-up card HTML in localStorage
-            localStorage.setItem('cardHTML', clonedCard.innerHTML);
-
+            // Store the card HTML in localStorage
+            localStorage.setItem('cardHTML', cardContainer.innerHTML);
             // Redirect to the review page
             window.location.href = 'review.html';
         }
@@ -511,9 +503,29 @@
             }
         }
 
+        // Function to load saved card from localStorage
+        function loadSavedCard() {
+            const savedCardHTML = localStorage.getItem('cardHTML');
+            if (savedCardHTML) {
+                const cardContainer = document.getElementById('card-container');
+                cardContainer.innerHTML = savedCardHTML;
+
+                // Re-attach event listeners to the text fields
+                cardContainer.querySelectorAll('.text-field').forEach(function(textField) {
+                    textField.onclick = function(event) {
+                        if (!isDragging) {
+                            selectTextField(textField);
+                        }
+                    };
+                    makeDraggable(textField);
+                });
+            }
+        }
+
         // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
             updateBackgrounds();
+            loadSavedCard();
         });
     </script>
 </body>
