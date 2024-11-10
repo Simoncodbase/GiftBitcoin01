@@ -28,23 +28,24 @@
             margin-right: 10px;
         }
 
-        /* Adjusted green tick */
         #green-tick {
             width: 24px;
             height: 24px;
             background-color: green;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            position: relative;
         }
 
-        #tick-mark {
-            width: 10px;
-            height: 5px;
+        #green-tick::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 6px;
+            height: 12px;
             border: solid white;
-            border-width: 0 0 2px 2px;
-            transform: rotate(-45deg);
+            border-width: 0 2px 2px 0;
+            transform: translate(-50%, -50%) rotate(45deg);
         }
 
         /* Important Message */
@@ -101,7 +102,15 @@
             align-items: flex-start;
         }
 
-        /* Ensure content is centered when printed and fills 2/3 of the screen */
+        .key-container {
+            margin-bottom: 20px;
+        }
+
+        .qr-code {
+            text-align: left;
+        }
+
+        /* Ensure content is centered when printed */
         @media print {
             body * {
                 visibility: hidden;
@@ -113,43 +122,9 @@
                 position: relative;
                 margin: 0 auto;
                 width: 100%;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
             }
             #print-button {
                 display: none;
-            }
-
-            /* Adjust the size of the card-container */
-            #card-container {
-                width: 66%; /* 2/3 of the screen */
-                height: auto;
-            }
-            /* Adjust the background image inside the card-container */
-            #card-container #background {
-                width: 100%;
-                height: auto;
-            }
-            /* Adjust text inside card-container */
-            #card-container .text-field {
-                font-size: 2em; /* Adjust font size as needed */
-            }
-            /* Adjust Bitcoin addresses and QR codes */
-            #bitcoin-addresses-container {
-                width: 66%; /* 2/3 of the screen */
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-            #bitcoin-addresses-container h3 {
-                font-size: 1.5em; /* Adjust font size */
-            }
-            #bitcoin-addresses-container p {
-                font-size: 1.2em; /* Adjust font size */
-            }
-            #bitcoin-addresses-container div {
-                margin-bottom: 20px;
             }
         }
     </style>
@@ -159,9 +134,7 @@
         <!-- Payment Successful and Green Tick Box -->
         <div id="payment-successful">
             <h2>Payment Successful</h2>
-            <div id="green-tick">
-                <div id="tick-mark"></div>
-            </div>
+            <div id="green-tick"></div>
         </div>
 
         <!-- Important Message -->
@@ -311,41 +284,57 @@
             var container = document.getElementById('bitcoin-addresses-container');
             container.innerHTML = ''; // Clear previous content
 
+            // Create a container for public address and QR code
+            var publicContainer = document.createElement('div');
+            publicContainer.classList.add('key-container');
+
             // Display public address
             var publicKeyLabel = document.createElement('h3');
             publicKeyLabel.textContent = 'Public Address:';
-            container.appendChild(publicKeyLabel);
+            publicContainer.appendChild(publicKeyLabel);
 
             var publicKeyText = document.createElement('p');
             publicKeyText.textContent = address;
-            container.appendChild(publicKeyText);
+            publicContainer.appendChild(publicKeyText);
 
             // Generate QR code for public address directly below the public address
             var publicKeyQRContainer = document.createElement('div');
-            container.appendChild(publicKeyQRContainer);
+            publicKeyQRContainer.classList.add('qr-code');
+            publicContainer.appendChild(publicKeyQRContainer);
             new QRCode(publicKeyQRContainer, {
                 text: address,
                 width: 128,
                 height: 128,
             });
 
+            // Add publicContainer to main container
+            container.appendChild(publicContainer);
+
+            // Create a container for private key and QR code
+            var privateContainer = document.createElement('div');
+            privateContainer.classList.add('key-container');
+
             // Display private key
             var privateKeyLabel = document.createElement('h3');
             privateKeyLabel.textContent = 'Private Key (WIF):';
-            container.appendChild(privateKeyLabel);
+            privateContainer.appendChild(privateKeyLabel);
 
             var privateKeyText = document.createElement('p');
             privateKeyText.textContent = privateKeyWIF;
-            container.appendChild(privateKeyText);
+            privateContainer.appendChild(privateKeyText);
 
             // Generate QR code for private key directly below the private key
             var privateKeyQRContainer = document.createElement('div');
-            container.appendChild(privateKeyQRContainer);
+            privateKeyQRContainer.classList.add('qr-code');
+            privateContainer.appendChild(privateKeyQRContainer);
             new QRCode(privateKeyQRContainer, {
                 text: privateKeyWIF,
                 width: 128,
                 height: 128,
             });
+
+            // Add privateContainer to main container
+            container.appendChild(privateContainer);
         }
 
         // Helper function to encode private key to WIF
