@@ -34,7 +34,6 @@
             height: 24px;
             background-color: green;
             border-radius: 50%;
-            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -102,7 +101,7 @@
             align-items: flex-start;
         }
 
-        /* Ensure content is centered when printed */
+        /* Ensure content is centered when printed and fills 2/3 of the screen */
         @media print {
             body * {
                 visibility: hidden;
@@ -121,14 +120,36 @@
             #print-button {
                 display: none;
             }
-            #card-container, #bitcoin-addresses-container {
+
+            /* Adjust the size of the card-container */
+            #card-container {
                 width: 66%; /* 2/3 of the screen */
+                height: auto;
             }
-            /* Center the content inside bitcoin-addresses-container */
+            /* Adjust the background image inside the card-container */
+            #card-container #background {
+                width: 100%;
+                height: auto;
+            }
+            /* Adjust text inside card-container */
+            #card-container .text-field {
+                font-size: 2em; /* Adjust font size as needed */
+            }
+            /* Adjust Bitcoin addresses and QR codes */
             #bitcoin-addresses-container {
+                width: 66%; /* 2/3 of the screen */
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+            }
+            #bitcoin-addresses-container h3 {
+                font-size: 1.5em; /* Adjust font size */
+            }
+            #bitcoin-addresses-container p {
+                font-size: 1.2em; /* Adjust font size */
+            }
+            #bitcoin-addresses-container div {
+                margin-bottom: 20px;
             }
         }
     </style>
