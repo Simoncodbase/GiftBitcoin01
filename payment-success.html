@@ -8,6 +8,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
+        /* Define CSS variables for sizes */
+        :root {
+            --card-width: 30vw;
+            --card-height: 40vw;
+            --background-width: 30vw;
+            --background-height: 30vw;
+            --text-area-top: 30vw;
+            --text-area-height: 10vw;
+        }
+
         /* Main container styling */
         #main-container {
             display: flex;
@@ -61,8 +71,8 @@
 
         /* Card container setup */
         #card-container {
-            width: 30vw;
-            height: 40vw;
+            width: var(--card-width);
+            height: var(--card-height);
             position: relative;
             border: 1px solid #000;
             background-color: white;
@@ -71,8 +81,8 @@
 
         /* Background image styling */
         #background {
-            width: 30vw;
-            height: 30vw;
+            width: var(--background-width);
+            height: var(--background-height);
             position: absolute;
             top: 0;
             left: 0;
@@ -82,10 +92,10 @@
         /* Text area styling */
         #text-area {
             position: absolute;
-            top: 30vw;
+            top: var(--text-area-top);
             left: 0;
             width: 100%;
-            height: 10vw;
+            height: var(--text-area-height);
             background-color: transparent;
         }
 
@@ -110,18 +120,29 @@
             text-align: left;
         }
 
-        /* Ensure content is centered when printed */
+        /* Adjust styles for print media */
         @media print {
+            :root {
+                --card-width: 300px;
+                --card-height: 400px;
+                --background-width: 300px;
+                --background-height: 300px;
+                --text-area-top: 300px;
+                --text-area-height: 100px;
+            }
+
+            /* Center the printable content */
+            #main-container, #printable-content {
+                width: var(--card-width);
+                margin: 0 auto;
+            }
+
+            /* Ensure only the printable content is visible */
             body * {
                 visibility: hidden;
             }
             #printable-content, #printable-content * {
                 visibility: visible;
-            }
-            #printable-content {
-                position: relative;
-                margin: 0 auto;
-                width: 100%;
             }
             #print-button {
                 display: none;
