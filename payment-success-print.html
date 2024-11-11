@@ -7,9 +7,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Include jsPDF and html2canvas libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* Define CSS variables for sizes */
         :root {
@@ -67,8 +64,8 @@
             margin-bottom: 20px;
         }
 
-        /* PDF Button */
-        #pdf-button {
+        /* Print Button */
+        #print-button {
             margin-bottom: 20px;
         }
 
@@ -159,7 +156,7 @@
                 visibility: visible;
             }
 
-            #pdf-button, #payment-successful, #important-message {
+            #print-button, #payment-successful, #important-message {
                 display: none;
             }
         }
@@ -178,8 +175,8 @@
             <p>Important: Save or print your card now in a secure way! You will later not be able to retrieve your keys!</p>
         </div>
 
-        <!-- PDF Button -->
-        <button id="pdf-button">Click for PDF</button>
+        <!-- Print Button -->
+        <button id="print-button">Print</button>
 
         <!-- Content to be printed -->
         <div id="printable-content">
@@ -402,39 +399,20 @@
             return privateKeyWIF;
         }
 
-        // PDF generation functionality
-        document.getElementById('pdf-button').addEventListener('click', function() {
-            // Create a new jsPDF instance
-            const { jsPDF } = window.jspdf;
-            var doc = new jsPDF('p', 'mm', 'a4');
+        // Helper function to URL-encode form data (commented out)
+        /*
+        function encodeFormData(data) {
+            return Object.keys(data)
+                .map(function(key) {
+                    return encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
+                })
+                .join('&');
+        }
+        */
 
-            // Get the elements to render
-            var cardContainer = document.getElementById('card-container');
-            var keysContainer = document.getElementById('bitcoin-addresses-container');
-
-            // Use html2canvas to capture the card container
-            html2canvas(cardContainer).then(function(canvas) {
-                var imgData = canvas.toDataURL('image/png');
-                var imgWidth = 210; // A4 width in mm
-                var imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-                doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-
-                // Add a new page
-                doc.addPage();
-
-                // Use html2canvas to capture the keys container
-                html2canvas(keysContainer).then(function(canvas2) {
-                    var imgData2 = canvas2.toDataURL('image/png');
-                    var imgWidth2 = 210; // A4 width in mm
-                    var imgHeight2 = (canvas2.height * imgWidth2) / canvas2.width;
-
-                    doc.addImage(imgData2, 'PNG', 0, 0, imgWidth2, imgHeight2);
-
-                    // Save the PDF
-                    doc.save('card_and_keys.pdf');
-                });
-            });
+        // Print functionality
+        document.getElementById('print-button').addEventListener('click', function() {
+            window.print();
         });
 
         // Call the loadCard function and generate addresses on page load
