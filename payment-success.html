@@ -293,24 +293,6 @@
 
                     // Display the private key and public address
                     displayBitcoinAddresses(privateKeyWIF, address);
-
-                    // **Netlify Forms Submission (disabled)**
-                    /*
-                    // Prepare data to send to Netlify Forms
-                    var data = {
-                        'form-name': 'publicKeyForm',
-                        'publicKey': publicKey
-                    };
-
-                    // Submit the form via fetch()
-                    fetch('/', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: encodeFormData(data)
-                    })
-                    .then(() => console.log('Public key successfully submitted to Netlify Forms'))
-                    .catch(error => console.error('Error submitting public key to Netlify Forms:', error));
-                    */
                 }
 
             } catch (error) {
@@ -404,32 +386,53 @@
 
         // PDF generation functionality
         document.getElementById('pdf-button').addEventListener('click', function() {
-            // Create a new jsPDF instance
+            // Create a new jsPDF instance in landscape orientation
             const { jsPDF } = window.jspdf;
-            var doc = new jsPDF('p', 'mm', 'a4');
+            var doc = new jsPDF('l', 'mm', 'a4');
+
+            var margin = 10; // standard margin of 10mm
+            var pageWidth = doc.internal.pageSize.getWidth() - 2 * margin;
+            var pageHeight = doc.internal.pageSize.getHeight() - 2 * margin;
 
             // Get the elements to render
             var cardContainer = document.getElementById('card-container');
             var keysContainer = document.getElementById('bitcoin-addresses-container');
 
             // Use html2canvas to capture the card container
-            html2canvas(cardContainer).then(function(canvas) {
-                var imgData = canvas.toDataURL('image/png');
-                var imgWidth = 210; // A4 width in mm
-                var imgHeight = (canvas.height * imgWidth) / canvas.width;
+            html2canvas(cardContainer).then(function(canvasCard) {
+                var imgDataCard = canvasCard.toDataURL('image/png');
+                // Adjust image width and height to fit within half the page width
+                var imgWidthCard = pageWidth / 2;
+                var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
 
-                doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                // Now capture the keys container
+                html2canvas(keysContainer).then(function(canvasKeys) {
+                    var imgDataKeys = canvasKeys.toDataURL('image/png');
+                    // Adjust image width and height to fit within half the page width
+                    var imgWidthKeys = pageWidth / 2;
+                    var imgHeightKeys = (canvasKeys.height * imgWidthKeys) / canvasKeys.width;
 
-                // Add a new page
-                doc.addPage();
+                    // Determine the maximum height of the images
+                    var maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
 
-                // Use html2canvas to capture the keys container
-                html2canvas(keysContainer).then(function(canvas2) {
-                    var imgData2 = canvas2.toDataURL('image/png');
-                    var imgWidth2 = 210; // A4 width in mm
-                    var imgHeight2 = (canvas2.height * imgWidth2) / canvas2.width;
+                    // Ensure that the images fit within the page height
+                    if (maxImgHeight > pageHeight) {
+                        var scale = pageHeight / maxImgHeight;
+                        imgWidthCard *= scale;
+                        imgHeightCard *= scale;
+                        imgWidthKeys *= scale;
+                        imgHeightKeys *= scale;
+                    }
 
-                    doc.addImage(imgData2, 'PNG', 0, 0, imgWidth2, imgHeight2);
+                    // Update maxImgHeight after scaling
+                    maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
+
+                    // Calculate Y position to center vertically
+                    var yPosition = margin + (pageHeight - maxImgHeight) / 2;
+
+                    // Add the images side by side
+                    doc.addImage(imgDataCard, 'PNG', margin, yPosition, imgWidthCard, imgHeightCard);
+                    doc.addImage(imgDataKeys, 'PNG', margin + imgWidthCard, yPosition, imgWidthKeys, imgHeightKeys);
 
                     // Save the PDF
                     doc.save('card_and_keys.pdf');
