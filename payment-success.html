@@ -391,6 +391,7 @@
             var doc = new jsPDF('l', 'mm', 'a4');
 
             var margin = 10; // standard margin of 10mm
+            var interImageMargin = 10; // margin between the two images
             var pageWidth = doc.internal.pageSize.getWidth() - 2 * margin;
             var pageHeight = doc.internal.pageSize.getHeight() - 2 * margin;
 
@@ -401,15 +402,17 @@
             // Use html2canvas to capture the card container
             html2canvas(cardContainer).then(function(canvasCard) {
                 var imgDataCard = canvasCard.toDataURL('image/png');
-                // Adjust image width and height to fit within half the page width
-                var imgWidthCard = pageWidth / 2;
+
+                // Adjust image width and height to fit within half the page width minus half of interImageMargin
+                var imgWidthCard = (pageWidth - interImageMargin) / 2;
                 var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
 
                 // Now capture the keys container
                 html2canvas(keysContainer).then(function(canvasKeys) {
                     var imgDataKeys = canvasKeys.toDataURL('image/png');
-                    // Adjust image width and height to fit within half the page width
-                    var imgWidthKeys = pageWidth / 2;
+
+                    // Adjust image width and height to fit within half the page width minus half of interImageMargin
+                    var imgWidthKeys = (pageWidth - interImageMargin) / 2;
                     var imgHeightKeys = (canvasKeys.height * imgWidthKeys) / canvasKeys.width;
 
                     // Determine the maximum height of the images
@@ -430,9 +433,13 @@
                     // Calculate Y position to center vertically
                     var yPosition = margin + (pageHeight - maxImgHeight) / 2;
 
-                    // Add the images side by side
-                    doc.addImage(imgDataCard, 'PNG', margin, yPosition, imgWidthCard, imgHeightCard);
-                    doc.addImage(imgDataKeys, 'PNG', margin + imgWidthCard, yPosition, imgWidthKeys, imgHeightKeys);
+                    // X positions for the images
+                    var xPositionCard = margin;
+                    var xPositionKeys = margin + imgWidthCard + interImageMargin;
+
+                    // Add the images side by side with margin between them
+                    doc.addImage(imgDataCard, 'PNG', xPositionCard, yPosition, imgWidthCard, imgHeightCard);
+                    doc.addImage(imgDataKeys, 'PNG', xPositionKeys, yPosition, imgWidthKeys, imgHeightKeys);
 
                     // Save the PDF
                     doc.save('card_and_keys.pdf');
