@@ -47,7 +47,7 @@
             display: none;
         }
 
-        /* Text area without background */
+        /* Text area */
         #text-area {
             position: absolute;
             top: 30vw; /* Start below the background image */
@@ -55,6 +55,14 @@
             width: 100%;
             height: 10vw;
             background-color: transparent;
+            overflow: hidden;
+        }
+
+        /* Text area content (for relative positioning) */
+        #text-area-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
         }
 
         /* Text field styling */
@@ -231,8 +239,10 @@
         <div id="card-container">
             <!-- Background Image (Initially hidden) -->
             <img id="background" src="">
-            <!-- Text area without background -->
-            <div id="text-area"></div>
+            <!-- Text area -->
+            <div id="text-area">
+                <div id="text-area-content"></div>
+            </div>
         </div>
 
         <div class="controls-container">
@@ -395,7 +405,7 @@
         // Function to add a new text field
         function addTextField() {
             textFieldCount++;
-            const textArea = document.getElementById('text-area');
+            const textAreaContent = document.getElementById('text-area-content');
             const newTextField = document.createElement('div');
 
             newTextField.classList.add('text-field');
@@ -410,8 +420,8 @@
                 }
             };
 
-            // Append the text field to the text-area
-            textArea.appendChild(newTextField);
+            // Append the text field to the text-area-content
+            textAreaContent.appendChild(newTextField);
             makeDraggable(newTextField);
         }
 
@@ -470,9 +480,8 @@
                 mouseY = e.clientY;
                 let newTop = element.offsetTop - offsetY;
                 let newLeft = element.offsetLeft - offsetX;
-                // Ensure the element stays within the parent boundaries
-                const container = element.parentElement;
-                const containerRect = container.getBoundingClientRect();
+                // Ensure the element stays within the text-area boundaries
+                const container = document.getElementById('text-area-content');
                 const elemWidth = element.offsetWidth;
                 const elemHeight = element.offsetHeight;
                 if (newLeft < 0) newLeft = 0;
