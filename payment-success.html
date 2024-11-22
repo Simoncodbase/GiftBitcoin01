@@ -87,7 +87,8 @@
             border: 1px solid #000;
             background-color: white;
             flex-shrink: 0;
-            margin: 20px; /* Increased from 10px to 20px */
+            margin: 10px; /* Original margin */
+            margin-right: 20px; /* Increased right margin from 1 cm to 2 cm */
         }
 
         /* Background image styling */
@@ -118,7 +119,8 @@
         /* Style for the Bitcoin addresses and QR codes */
         #bitcoin-addresses-container {
             width: var(--card-width);
-            margin: 20px; /* Increased from 10px to 20px */
+            margin: 10px; /* Original margin */
+            margin-left: 20px; /* Increased left margin from 1 cm to 2 cm */
         }
 
         .key-container {
@@ -422,8 +424,8 @@
             const { jsPDF } = window.jspdf;
             var doc = new jsPDF('l', 'mm', 'a4');
 
-            var margin = 20; // Increased from 10mm to 20mm
-            var interImageMargin = 20; // Increased from 10mm to 20mm
+            var margin = 10; // standard margin of 10mm
+            var interImageMargin = 20; // doubled from 10mm to 20mm
             var pageWidth = doc.internal.pageSize.getWidth() - 2 * margin;
             var pageHeight = doc.internal.pageSize.getHeight() - 2 * margin;
 
