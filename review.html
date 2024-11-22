@@ -258,7 +258,7 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(Payment initialization failed: ${response.status});
+                    throw new Error(`Payment initialization failed: ${response.status}`);
                 }
 
                 const { clientSecret } = await response.json();
@@ -297,7 +297,7 @@
                 const { error } = await stripe.confirmPayment({
                     elements,
                     confirmParams: {
-                        return_url: ${window.location.origin}/payment-success.html
+                        return_url: `${window.location.origin}/payment-success.html`
                     }
                 });
 
