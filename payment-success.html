@@ -88,7 +88,7 @@
         }
 
         /* Background image styling */
-        #background {
+        #card-image {
             width: 100%;
             height: auto;
             display: block;
@@ -98,7 +98,6 @@
         #text-area {
             width: 100%;
             background-color: transparent;
-            position: relative;
             padding: 10px;
         }
 
@@ -182,12 +181,7 @@
         <div id="printable-content">
             <!-- Card Container -->
             <div id="card-container">
-                <!-- Background Image -->
-                <img id="background" src="" alt="Card Background">
-                <!-- Text Area -->
-                <div id="text-area">
-                    <!-- The saved text fields will be inserted here -->
-                </div>
+                <!-- The card content will be loaded here -->
             </div>
 
             <!-- Container to display the generated addresses and QR codes -->
@@ -209,14 +203,40 @@
     <script>
         // Function to load the card content from localStorage and display it
         function loadCard() {
-            const backgroundSrc = localStorage.getItem('backgroundSrc');
-            const textFieldsHTML = localStorage.getItem('textFieldsHTML');
-            if (backgroundSrc && textFieldsHTML) {
-                const backgroundImage = document.getElementById('background');
-                backgroundImage.src = backgroundSrc;
+            const cardHTML = localStorage.getItem('cardHTML');
+            if (cardHTML) {
+                const cardContainer = document.getElementById('card-container');
 
-                const textArea = document.getElementById('text-area');
-                textArea.innerHTML = textFieldsHTML;
+                // Create a temporary div to hold the card HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = cardHTML;
+
+                // Extract the background image and text fields
+                const backgroundImage = tempDiv.querySelector('#background');
+                const textFields = tempDiv.querySelectorAll('.text-field');
+
+                // Create new elements for the card
+                const imageElement = document.createElement('img');
+                imageElement.id = 'card-image';
+                imageElement.src = backgroundImage.src;
+
+                const textArea = document.createElement('div');
+                textArea.id = 'text-area';
+
+                // Append text fields to the text area
+                textFields.forEach(function(field) {
+                    // Remove any absolute positioning styles
+                    field.style.position = 'static';
+                    field.style.left = '';
+                    field.style.top = '';
+                    textArea.appendChild(field);
+                });
+
+                // Clear the card container and append the image and text area
+                cardContainer.innerHTML = '';
+                cardContainer.appendChild(imageElement);
+                cardContainer.appendChild(textArea);
+
             } else {
                 console.error('No card data found in localStorage');
             }
