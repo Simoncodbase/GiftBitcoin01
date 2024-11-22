@@ -13,7 +13,10 @@
     <style>
         /* Define CSS variables for sizes */
         :root {
-            --card-width: 45%;
+            --card-width: 30vw;
+            --card-height: 40vw;
+            --image-height: 30vw;
+            --text-area-height: 10vw;
         }
 
         /* Main container styling */
@@ -79,30 +82,37 @@
         /* Card container setup */
         #card-container {
             width: var(--card-width);
+            height: var(--card-height);
+            position: relative;
             border: 1px solid #000;
             background-color: white;
+            flex-shrink: 0;
             margin: 10px;
         }
 
         /* Background image styling */
         #card-image {
             width: 100%;
-            height: auto;
+            height: var(--image-height);
+            position: absolute;
+            top: 0;
+            left: 0;
             display: block;
         }
 
         /* Text area styling */
         #text-area {
+            position: absolute;
+            top: var(--image-height);
+            left: 0;
             width: 100%;
+            height: var(--text-area-height);
             background-color: transparent;
-            position: relative; /* Set position to relative */
-            height: auto;
         }
 
         /* Style for text fields */
         .text-field {
-            position: absolute; /* Allow absolute positioning within text-area */
-            /* Styles for top, left, font-size, etc., are preserved from the saved card */
+            position: absolute;
         }
 
         /* Style for the Bitcoin addresses and QR codes */
