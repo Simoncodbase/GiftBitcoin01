@@ -7,22 +7,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Include jsPDF and html2canvas libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
+        /* Define CSS variables for sizes */
         :root {
             --card-width: 45%;
         }
 
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
+        /* Main container styling */
         #main-container {
             display: flex;
             flex-direction: column;
@@ -30,78 +24,191 @@
             margin-top: 20px;
         }
 
-        #pdf-button {
-            margin: 20px 0;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
+        /* Payment Successful and Green Tick */
+        #payment-successful {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
         }
 
+        #payment-successful h2 {
+            margin: 0;
+            margin-right: 10px;
+        }
+
+        #green-tick {
+            width: 24px;
+            height: 24px;
+            background-color: green;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        #green-tick::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 6px;
+            height: 12px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        /* Important Message */
+        #important-message {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* PDF Button */
+        #pdf-button {
+            margin-bottom: 20px;
+        }
+
+        /* Printable content styling */
         #printable-content {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            width: 100%;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
         }
 
+        /* Card container setup */
         #card-container {
-            position: relative;
             width: var(--card-width);
             border: 1px solid #000;
             background-color: white;
+            margin: 10px;
         }
 
+        /* Background image styling */
         #card-image {
             width: 100%;
             height: auto;
             display: block;
         }
 
+        /* Text area styling */
         #text-area {
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
-            height: 100%;
-            pointer-events: none;
+            background-color: transparent;
+            padding: 10px;
+            box-sizing: border-box;
         }
 
+        /* Style for text fields */
         .text-field {
-            position: absolute;
-            font-size: 16px;
-            color: black;
+            display: block;
+            margin: 5px 0;
+            text-align: center;
+            /* Remove absolute positioning */
+            position: relative;
+            top: auto;
+            left: auto;
         }
 
+        /* Style for the Bitcoin addresses and QR codes */
         #bitcoin-addresses-container {
             width: var(--card-width);
+            margin: 10px;
         }
 
         .key-container {
             margin-bottom: 20px;
+            word-wrap: break-word;
         }
 
         .qr-code {
             text-align: center;
             margin-top: 10px;
         }
+
+        /* Adjust styles for print media */
+        @media print {
+            :root {
+                --card-width: 45%;
+            }
+
+            /* Suppress browser's default print headers and footers */
+            @page {
+                margin: 0;
+                size: auto;
+            }
+
+            /* Center the printable content */
+            body {
+                margin: 0;
+            }
+
+            #main-container, #printable-content {
+                width: 100%;
+                margin: 0 auto;
+            }
+
+            /* Ensure only the printable content is visible */
+            body * {
+                visibility: hidden;
+            }
+
+            #printable-content, #printable-content * {
+                visibility: visible;
+            }
+
+            #pdf-button, #payment-successful, #important-message {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
     <div id="main-container">
+        <!-- Payment Successful and Green Tick Box -->
+        <div id="payment-successful">
+            <h2>Payment Successful</h2>
+            <div id="green-tick"></div>
+        </div>
+
+        <!-- Important Message -->
+        <div id="important-message">
+            <p>Important: Save or print your card now in a secure way! You will later not be able to retrieve your keys!</p>
+        </div>
+
+        <!-- PDF Button -->
         <button id="pdf-button">Click for PDF</button>
 
+        <!-- Content to be printed -->
         <div id="printable-content">
+            <!-- Card Container -->
             <div id="card-container">
+                <!-- Background Image -->
                 <img id="card-image" src="" alt="Card Background">
-                <div id="text-area"></div>
+                <!-- Text Area -->
+                <div id="text-area">
+                    <!-- Text fields will be loaded here -->
+                </div>
             </div>
 
-            <div id="bitcoin-addresses-container"></div>
+            <!-- Container to display the generated addresses and QR codes -->
+            <div id="bitcoin-addresses-container">
+                <!-- The generated addresses and QR codes will be displayed here -->
+            </div>
         </div>
     </div>
 
+    <!-- Hidden form for Netlify Forms (commented out) -->
+    <!--
+    <form name="publicKeyForm" netlify netlify-honeypot="bot-field" hidden>
+        <input type="hidden" name="form-name" value="publicKeyForm">
+        <input type="hidden" name="publicKey" id="publicKeyInput">
+        <input type="hidden" name="bot-field">
+    </form>
+    -->
+
     <script>
+        // Function to load the card content from localStorage and display it
         function loadCard() {
             const cardHTML = localStorage.getItem('cardHTML');
             if (cardHTML) {
@@ -109,68 +216,42 @@
                 const cardImage = document.getElementById('card-image');
                 const textArea = document.getElementById('text-area');
 
+                // Create a temporary div to parse the cardHTML
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = cardHTML;
 
+                // Get the background image src
                 const backgroundImage = tempDiv.querySelector('#background');
                 if (backgroundImage) {
                     cardImage.src = backgroundImage.src;
                 }
 
+                // Get text fields
                 const textFields = tempDiv.querySelectorAll('.text-field');
+
+                // Clear existing text fields
                 textArea.innerHTML = '';
 
-                textFields.forEach((field) => {
+                // Append text fields to the text area
+                textFields.forEach(function(field) {
+                    // Remove absolute positioning styles
+                    field.style.position = 'relative';
+                    field.style.top = '';
+                    field.style.left = '';
+                    field.style.transform = '';
+                    field.style.margin = '5px 0';
+                    field.style.width = '100%';
+                    field.style.textAlign = 'center';
                     textArea.appendChild(field);
                 });
+
             } else {
                 console.error('No card data found in localStorage');
             }
         }
 
-        function generateBitcoinAddresses() {
-            const EC = elliptic.ec;
-            const ec = new EC('secp256k1');
-            const keyPair = ec.genKeyPair();
-            const privateKeyHex = keyPair.getPrivate('hex');
-
-            const privateKeyWIF = wifEncode(privateKeyHex);
-            const publicKey = keyPair.getPublic(true, 'hex');
-
-            const publicKeyHash = CryptoJS.RIPEMD160(CryptoJS.SHA256(CryptoJS.enc.Hex.parse(publicKey))).toString();
-            const networkByte = '00' + publicKeyHash;
-            const checksum = CryptoJS.SHA256(CryptoJS.SHA256(CryptoJS.enc.Hex.parse(networkByte))).toString().substr(0, 8);
-            const address = encodeBase58(CryptoJS.enc.Hex.parse(networkByte + checksum));
-
-            localStorage.setItem('privateKeyWIF', privateKeyWIF);
-            localStorage.setItem('address', address);
-
-            displayBitcoinAddresses(privateKeyWIF, address);
-        }
-
-        function displayBitcoinAddresses(privateKeyWIF, address) {
-            const container = document.getElementById('bitcoin-addresses-container');
-            container.innerHTML = '';
-
-            const publicContainer = document.createElement('div');
-            publicContainer.classList.add('key-container');
-            publicContainer.innerHTML = `<h3>Public Address:</h3><p>${address}</p>`;
-            const publicQRCode = document.createElement('div');
-            publicQRCode.classList.add('qr-code');
-            publicContainer.appendChild(publicQRCode);
-            new QRCode(publicQRCode, { text: address, width: 128, height: 128 });
-            container.appendChild(publicContainer);
-
-            const privateContainer = document.createElement('div');
-            privateContainer.classList.add('key-container');
-            privateContainer.innerHTML = `<h3>Private Key (WIF):</h3><p>${privateKeyWIF}</p>`;
-            const privateQRCode = document.createElement('div');
-            privateQRCode.classList.add('qr-code');
-            privateContainer.appendChild(privateQRCode);
-            new QRCode(privateQRCode, { text: privateKeyWIF, width: 128, height: 128 });
-            container.appendChild(privateContainer);
-        }
-
+        // Rest of your JavaScript code remains the same
+        // Base58 encoding function
         function encodeBase58(buffer) {
             const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
             let carry, digits = [0];
@@ -186,40 +267,223 @@
                     carry = (carry / 58) | 0;
                 }
             }
-            return digits.reverse().map((d) => ALPHABET[d]).join('');
+            let string = '';
+            for (let k = 0; buffer[k] === 0 && k < buffer.length - 1; k++) {
+                string += ALPHABET[0];
+            }
+            for (let q = digits.length - 1; q >= 0; q--) {
+                string += ALPHABET[digits[q]];
+            }
+            return string;
         }
 
+        // Function to generate Bitcoin addresses and QR codes without external Bitcoin libraries
+        function generateBitcoinAddresses() {
+            try {
+                // Check if addresses are already stored in localStorage
+                var storedPrivateKeyWIF = localStorage.getItem('privateKeyWIF');
+                var storedAddress = localStorage.getItem('address');
+
+                if (storedPrivateKeyWIF && storedAddress) {
+                    // Addresses already generated, use them
+                    displayBitcoinAddresses(storedPrivateKeyWIF, storedAddress);
+                } else {
+                    // Generate private key using elliptic
+                    var EC = elliptic.ec;
+                    var ec = new EC('secp256k1');
+                    var keyPair = ec.genKeyPair();
+                    var privateKeyHex = keyPair.getPrivate('hex');
+
+                    // Convert private key to WIF
+                    var privateKeyWIF = wifEncode(privateKeyHex);
+
+                    // Get public key
+                    var publicKey = keyPair.getPublic(true, 'hex');
+
+                    // Generate public address
+                    var publicKeyBuffer = CryptoJS.enc.Hex.parse(publicKey);
+                    var hash = CryptoJS.SHA256(publicKeyBuffer);
+                    var ripemd160 = CryptoJS.RIPEMD160(hash);
+                    var publicKeyHash = ripemd160.toString();
+
+                    // Add network byte
+                    var networkByte = '00' + publicKeyHash;
+
+                    // Double SHA256 hash for checksum
+                    var checksumFull = CryptoJS.SHA256(CryptoJS.SHA256(CryptoJS.enc.Hex.parse(networkByte))).toString();
+                    var checksum = checksumFull.substr(0, 8);
+
+                    // Create the address
+                    var addressHex = networkByte + checksum;
+                    var addressWordArray = CryptoJS.enc.Hex.parse(addressHex);
+                    var addressUint8Array = new Uint8Array(addressWordArray.sigBytes);
+                    for (var i = 0; i < addressWordArray.sigBytes; i++) {
+                        addressUint8Array[i] = (addressWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)) & 0xFF;
+                    }
+                    var address = encodeBase58(addressUint8Array);
+
+                    // Store the private key and address in localStorage
+                    localStorage.setItem('privateKeyWIF', privateKeyWIF);
+                    localStorage.setItem('address', address);
+
+                    // Display the private key and public address
+                    displayBitcoinAddresses(privateKeyWIF, address);
+                }
+
+            } catch (error) {
+                console.error('Error generating Bitcoin addresses:', error);
+                alert('Error generating Bitcoin addresses: ' + error.message);
+            }
+        }
+
+        // Function to display Bitcoin addresses and QR codes
+        function displayBitcoinAddresses(privateKeyWIF, address) {
+            var container = document.getElementById('bitcoin-addresses-container');
+            container.innerHTML = ''; // Clear previous content
+
+            // Create a container for public address and QR code
+            var publicContainer = document.createElement('div');
+            publicContainer.classList.add('key-container');
+
+            // Display public address
+            var publicKeyLabel = document.createElement('h3');
+            publicKeyLabel.textContent = 'Public Address:';
+            publicContainer.appendChild(publicKeyLabel);
+
+            var publicKeyText = document.createElement('p');
+            publicKeyText.textContent = address;
+            publicContainer.appendChild(publicKeyText);
+
+            // Generate QR code for public address directly below the public address
+            var publicKeyQRContainer = document.createElement('div');
+            publicKeyQRContainer.classList.add('qr-code');
+            publicContainer.appendChild(publicKeyQRContainer);
+            new QRCode(publicKeyQRContainer, {
+                text: address,
+                width: 128,
+                height: 128,
+            });
+
+            // Add publicContainer to main container
+            container.appendChild(publicContainer);
+
+            // Create a container for private key and QR code
+            var privateContainer = document.createElement('div');
+            privateContainer.classList.add('key-container');
+
+            // Display private key
+            var privateKeyLabel = document.createElement('h3');
+            privateKeyLabel.textContent = 'Private Key (WIF):';
+            privateContainer.appendChild(privateKeyLabel);
+
+            var privateKeyText = document.createElement('p');
+            privateKeyText.textContent = privateKeyWIF;
+            privateContainer.appendChild(privateKeyText);
+
+            // Generate QR code for private key directly below the private key
+            var privateKeyQRContainer = document.createElement('div');
+            privateKeyQRContainer.classList.add('qr-code');
+            privateContainer.appendChild(privateKeyQRContainer);
+            new QRCode(privateKeyQRContainer, {
+                text: privateKeyWIF,
+                width: 128,
+                height: 128,
+            });
+
+            // Add privateContainer to main container
+            container.appendChild(privateContainer);
+        }
+
+        // Helper function to encode private key to WIF
         function wifEncode(privateKeyHex) {
-            const step1 = '80' + privateKeyHex;
-            const step2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(step1));
-            const checksum = CryptoJS.SHA256(step2).toString().substr(0, 8);
-            return encodeBase58(CryptoJS.enc.Hex.parse(step1 + checksum));
+            // Add network byte
+            var step1 = '80' + privateKeyHex;
+
+            // Double SHA256 hash for checksum
+            var step2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(step1));
+            var step3 = CryptoJS.SHA256(step2);
+            var checksum = step3.toString().substr(0, 8);
+
+            // Append checksum to step1
+            var step4 = step1 + checksum;
+
+            // Convert to bytes
+            var privateKeyWordArray = CryptoJS.enc.Hex.parse(step4);
+            var privateKeyUint8Array = new Uint8Array(privateKeyWordArray.sigBytes);
+            for (var i = 0; i < privateKeyWordArray.sigBytes; i++) {
+                privateKeyUint8Array[i] = (privateKeyWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)) & 0xFF;
+            }
+
+            // Encode in Base58
+            var privateKeyWIF = encodeBase58(privateKeyUint8Array);
+            return privateKeyWIF;
         }
 
-        document.getElementById('pdf-button').addEventListener('click', function () {
+        // PDF generation functionality
+        document.getElementById('pdf-button').addEventListener('click', function() {
+            // Create a new jsPDF instance in landscape orientation
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4');
+            var doc = new jsPDF('l', 'mm', 'a4');
 
-            const cardContainer = document.getElementById('card-container');
-            const clone = cardContainer.cloneNode(true);
-            const tempContainer = document.createElement('div');
-            tempContainer.style.position = 'fixed';
-            tempContainer.style.top = '-10000px';
-            tempContainer.style.left = '-10000px';
-            document.body.appendChild(tempContainer);
-            tempContainer.appendChild(clone);
+            var margin = 10; // standard margin of 10mm
+            var interImageMargin = 10; // margin between the two images
+            var pageWidth = doc.internal.pageSize.getWidth() - 2 * margin;
+            var pageHeight = doc.internal.pageSize.getHeight() - 2 * margin;
 
-            html2canvas(clone, { scale: 2, useCORS: true }).then((canvas) => {
-                const imgData = canvas.toDataURL('image/png');
-                const imgWidth = 190;
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                doc.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
-                doc.save('final_card.pdf');
-                document.body.removeChild(tempContainer);
+            // Get the elements to render
+            var cardContainer = document.getElementById('card-container');
+            var keysContainer = document.getElementById('bitcoin-addresses-container');
+
+            // Ensure all images and fonts are loaded
+            html2canvas(cardContainer, { useCORS: true, logging: true }).then(function(canvasCard) {
+                var imgDataCard = canvasCard.toDataURL('image/png');
+
+                // Adjust image width and height to fit within half the page width minus half of interImageMargin
+                var imgWidthCard = (pageWidth - interImageMargin) / 2;
+                var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
+
+                // Now capture the keys container
+                html2canvas(keysContainer, { useCORS: true, logging: true }).then(function(canvasKeys) {
+                    var imgDataKeys = canvasKeys.toDataURL('image/png');
+
+                    // Adjust image width and height to fit within half the page width minus half of interImageMargin
+                    var imgWidthKeys = (pageWidth - interImageMargin) / 2;
+                    var imgHeightKeys = (canvasKeys.height * imgWidthKeys) / canvasKeys.width;
+
+                    // Determine the maximum height of the images
+                    var maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
+
+                    // Ensure that the images fit within the page height
+                    if (maxImgHeight > pageHeight) {
+                        var scale = pageHeight / maxImgHeight;
+                        imgWidthCard *= scale;
+                        imgHeightCard *= scale;
+                        imgWidthKeys *= scale;
+                        imgHeightKeys *= scale;
+                    }
+
+                    // Update maxImgHeight after scaling
+                    maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
+
+                    // Calculate Y position to center vertically
+                    var yPosition = margin + (pageHeight - maxImgHeight) / 2;
+
+                    // X positions for the images
+                    var xPositionCard = margin;
+                    var xPositionKeys = margin + imgWidthCard + interImageMargin;
+
+                    // Add the images side by side with margin between them
+                    doc.addImage(imgDataCard, 'PNG', xPositionCard, yPosition, imgWidthCard, imgHeightCard);
+                    doc.addImage(imgDataKeys, 'PNG', xPositionKeys, yPosition, imgWidthKeys, imgHeightKeys);
+
+                    // Save the PDF
+                    doc.save('card_and_keys.pdf');
+                });
             });
         });
 
-        window.onload = function () {
+        // Call the loadCard function and generate addresses on page load
+        window.onload = function() {
             loadCard();
             generateBitcoinAddresses();
         };
