@@ -422,7 +422,12 @@
             var keysContainer = document.getElementById('bitcoin-addresses-container');
 
             // Use html2canvas to capture the card container
-            html2canvas(cardContainer).then(function(canvasCard) {
+            html2canvas(cardContainer, {
+                scale: window.devicePixelRatio,
+                useCORS: true,
+                allowTaint: true,
+                logging: true
+            }).then(function(canvasCard) {
                 var imgDataCard = canvasCard.toDataURL('image/png');
 
                 // Adjust image width and height to fit within half the page width minus half of interImageMargin
@@ -430,7 +435,12 @@
                 var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
 
                 // Now capture the keys container
-                html2canvas(keysContainer).then(function(canvasKeys) {
+                html2canvas(keysContainer, {
+                    scale: window.devicePixelRatio,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: true
+                }).then(function(canvasKeys) {
                     var imgDataKeys = canvasKeys.toDataURL('image/png');
 
                     // Adjust image width and height to fit within half the page width minus half of interImageMargin
