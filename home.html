@@ -168,6 +168,7 @@
         /* Specific styles for upload button */
         #upload-button {
             background: #28a745;
+            display: none;
         }
 
         #upload-button:hover {
@@ -249,7 +250,7 @@
                         <option value="upload-own-picture">Upload Own Picture</option>
                     </select>
                     <!-- Upload Own Picture Button -->
-                    <button id="upload-button" onclick="triggerFileInput()" style="display: none;">Upload Own Picture</button>
+                    <button id="upload-button" onclick="triggerFileInput()">Upload Own Picture</button>
                     <!-- Hidden File Input -->
                     <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="handleFileUpload(event)">
                 </div>
@@ -261,9 +262,9 @@
             </div>
 
             <!-- Add/Remove Text Buttons -->
-            <button onclick="addTextField()" style="margin-top: 20px;">Add Text Field</button>
+            <button onclick="addTextField()">Add Text Field</button>
             <button onclick="toggleFontOptions()">Format Text</button>
-            <button onclick="removeSelectedTextField()" style="margin-top: 20px;">Remove Selected Text Field</button>
+            <button onclick="removeSelectedTextField()">Remove Selected Text Field</button>
 
             <!-- Font, Size, and Color Selectors -->
             <div id="font-options">
@@ -291,7 +292,7 @@
             </div>
 
             <!-- Review Order Button -->
-            <button onclick="reviewOrder()" style="margin-top: 20px;">Review Order</button>
+            <button onclick="reviewOrder()">Review Order</button>
         </div>
     </div>
 

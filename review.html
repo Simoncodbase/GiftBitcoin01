@@ -195,8 +195,6 @@
 
         <!-- Controls Container -->
         <div class="controls-container">
-            <button onclick="addTextField()">Add text field</button>
-            <button onclick="formatTextField()">Format textfield</button>
             <button onclick="editCard()">Edit Card</button>
             
             <form id="payment-form">
@@ -247,17 +245,6 @@
             window.location.href = 'home.html';
         }
 
-        // Dummy functions for the added buttons
-        function addTextField() {
-            // Functionality to add a text field
-            alert('Add text field functionality is not implemented on this page.');
-        }
-
-        function formatTextField() {
-            // Functionality to format a text field
-            alert('Format textfield functionality is not implemented on this page.');
-        }
-
         // Initialize payment form
         async function initialize() {
             try {
@@ -271,7 +258,7 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Payment initialization failed: ${response.status}`);
+                    throw new Error(Payment initialization failed: ${response.status});
                 }
 
                 const { clientSecret } = await response.json();
@@ -310,7 +297,7 @@
                 const { error } = await stripe.confirmPayment({
                     elements,
                     confirmParams: {
-                        return_url: `${window.location.origin}/payment-success.html`
+                        return_url: ${window.location.origin}/payment-success.html
                     }
                 });
 
