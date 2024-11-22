@@ -14,11 +14,6 @@
         /* Define CSS variables for sizes */
         :root {
             --card-width: 45%;
-            --card-height: auto;
-            --background-width: 100%;
-            --background-height: auto;
-            --text-area-top: 70%;
-            --text-area-height: 30%;
         }
 
         /* Main container styling */
@@ -84,34 +79,34 @@
         /* Card container setup */
         #card-container {
             width: var(--card-width);
-            position: relative;
             border: 1px solid #000;
             background-color: white;
             margin: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         /* Background image styling */
         #background {
-            width: var(--background-width);
-            height: var(--background-height);
-            position: relative;
+            width: 100%;
+            height: auto;
             display: block;
         }
 
         /* Text area styling */
         #text-area {
-            position: absolute;
-            top: var(--text-area-top);
-            left: 0;
             width: 100%;
-            height: var(--text-area-height);
             background-color: transparent;
+            position: relative;
+            padding: 10px;
         }
 
         /* Style for text fields */
         .text-field {
-            position: absolute;
-            /* Other styles will be preserved from saved card */
+            width: 100%;
+            text-align: center;
+            margin: 5px 0;
         }
 
         /* Style for the Bitcoin addresses and QR codes */
@@ -187,7 +182,12 @@
         <div id="printable-content">
             <!-- Card Container -->
             <div id="card-container">
-                <!-- The saved card content will be inserted here -->
+                <!-- Background Image -->
+                <img id="background" src="" alt="Card Background">
+                <!-- Text Area -->
+                <div id="text-area">
+                    <!-- The saved text fields will be inserted here -->
+                </div>
             </div>
 
             <!-- Container to display the generated addresses and QR codes -->
@@ -209,10 +209,14 @@
     <script>
         // Function to load the card content from localStorage and display it
         function loadCard() {
-            const cardHTML = localStorage.getItem('cardHTML');
-            if (cardHTML) {
-                const cardContainer = document.getElementById('card-container');
-                cardContainer.innerHTML = cardHTML;
+            const backgroundSrc = localStorage.getItem('backgroundSrc');
+            const textFieldsHTML = localStorage.getItem('textFieldsHTML');
+            if (backgroundSrc && textFieldsHTML) {
+                const backgroundImage = document.getElementById('background');
+                backgroundImage.src = backgroundSrc;
+
+                const textArea = document.getElementById('text-area');
+                textArea.innerHTML = textFieldsHTML;
             } else {
                 console.error('No card data found in localStorage');
             }
