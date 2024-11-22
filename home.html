@@ -73,10 +73,13 @@
             padding: 5px;
             min-width: 50px;
             min-height: 20px;
+            max-width: 100%;
+            max-height: 100%;
             background-color: rgba(255, 255, 255, 0.7);
             word-wrap: break-word;
             user-select: text;
             text-align: center; /* Set default alignment to center */
+            overflow: hidden;
         }
 
         /* Selected text field */
@@ -326,7 +329,7 @@
                 </select>
 
                 <label for="font-size">Size:</label>
-                <input type="number" id="font-size" value="14" min="10" onchange="updateSelectedTextStyle()">
+                <input type="number" id="font-size" value="14" min="4" onchange="updateSelectedTextStyle()">
 
                 <label for="font-color">Color:</label>
                 <input type="color" id="font-color" value="#000000" onchange="updateSelectedTextStyle()">
@@ -479,11 +482,40 @@
                 }
             };
 
+            // Add input event listener to handle text input
+            newTextField.addEventListener('input', function(event) {
+                handleTextInput(newTextField);
+            });
+
             // Append the text field to the text-area-content
             textAreaContent.appendChild(newTextField);
             makeDraggable(newTextField);
             // Add the new text field to the currentTextFields array
             currentTextFields.push(newTextField);
+        }
+
+        // Function to handle text input and adjust font size
+        function handleTextInput(textField) {
+            // Check if text content overflows text field
+            const isOverflowing = textField.scrollWidth > textField.clientWidth ||
+                                  textField.scrollHeight > textField.clientHeight;
+
+            if (isOverflowing) {
+                // Get current font size
+                let currentFontSize = window.getComputedStyle(textField).fontSize;
+                let fontSizeValue = parseFloat(currentFontSize);
+                // If font size is greater than 4px, reduce font size
+                if (fontSizeValue > 4) {
+                    fontSizeValue -= 1;
+                    textField.style.fontSize = fontSizeValue + 'px';
+                } else {
+                    // Font size is 4px or less
+                    // Prevent further input and display error message
+                    alert('maximum text size and minimum font size reached');
+                    // Remove the last character typed
+                    textField.innerText = textField.innerText.slice(0, -1);
+                }
+            }
         }
 
         // Function to select a text field
@@ -494,6 +526,24 @@
             selectedTextField = field;
             selectedTextField.classList.add('selected'); // Highlight selected field
             selectedTextField.focus(); // Focus on the text field for editing
+
+            // Update font options to reflect selected text field's style
+            const fontSelect = document.getElementById('font-select');
+            const fontSizeInput = document.getElementById('font-size');
+            const fontColorInput = document.getElementById('font-color');
+
+            fontSelect.value = window.getComputedStyle(selectedTextField).fontFamily.replace(/['"]/g, "");
+            fontSizeInput.value = parseFloat(window.getComputedStyle(selectedTextField).fontSize);
+            fontColorInput.value = rgbToHex(window.getComputedStyle(selectedTextField).color);
+        }
+
+        // Function to convert RGB color to HEX
+        function rgbToHex(color) {
+            const rgb = color.match(/\d+/g);
+            return "#" + rgb.map(x => {
+                const hex = parseInt(x).toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            }).join('');
         }
 
         // Function to remove the selected text field
@@ -606,6 +656,11 @@
                     makeDraggable(textField);
                     currentTextFields.push(textField);
                     totalTextFieldCount++;
+
+                    // Add input event listener to handle text input
+                    textField.addEventListener('input', function(event) {
+                        handleTextInput(textField);
+                    });
                 });
             }
         }
