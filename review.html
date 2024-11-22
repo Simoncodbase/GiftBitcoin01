@@ -32,16 +32,48 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Printable content styling */
-        #printable-content {
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: 20px;
+        /* For large displays, show controls on the right */
+        @media (min-width: 1024px) {
+            .main-container {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+
+            /* Printable content takes up the remaining space */
+            .printable-container {
+                flex: 1;
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: flex-start;
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+
+            .controls-container {
+                width: 250px; /* Shrink the width as far as possible */
+                margin-left: 20px;
+            }
+        }
+
+        /* For small and medium displays, stack content */
+        @media (max-width: 1023px) {
+            .printable-container {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                align-items: flex-start;
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+
+            .controls-container {
+                margin-top: 20px;
+            }
         }
 
         /* Card container setup */
@@ -148,11 +180,6 @@
 
         /* Responsive design */
         @media (max-width: 768px) {
-            #printable-content {
-                flex-direction: column;
-                align-items: center;
-            }
-
             #card-container,
             #image-container {
                 width: 80vw;
@@ -186,7 +213,7 @@
 <body>
     <div class="main-container">
         <!-- Printable Content -->
-        <div id="printable-content">
+        <div class="printable-container">
             <!-- Card Container -->
             <div id="card-container">
                 <!-- The saved card content will be inserted here -->
@@ -201,7 +228,7 @@
         <!-- Controls Container -->
         <div class="controls-container">
             <button onclick="editCard()">Edit Card</button>
-            <button id="pdf-button">Click for PDF of Card Preview</button>
+            <button id="pdf-button">Click for PDF of Card (takes 3 seconds to generate)</button>
 
             <form id="payment-form">
                 <h2>Payment Details</h2>
