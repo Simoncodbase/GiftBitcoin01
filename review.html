@@ -203,41 +203,47 @@
     -->
 
     <script>
-        // Function to load the card content from localStorage and display it
-        function loadCard() {
-            const cardHTML = localStorage.getItem('cardHTML');
-            if (cardHTML) {
-                const cardContainer = document.getElementById('card-container');
-                const cardImage = document.getElementById('card-image');
-                const textArea = document.getElementById('text-area');
+    document.getElementById('pdf-button').addEventListener('click', function () {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
 
-                // Create a temporary div to parse the cardHTML
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = cardHTML;
+        // Create a clone of the card container
+        const cardContainer = document.getElementById('card-container');
+        const clone = cardContainer.cloneNode(true);
 
-                // Get the background image src
-                const backgroundImage = tempDiv.querySelector('#background');
-                if (backgroundImage) {
-                    cardImage.src = backgroundImage.src;
-                }
+        // Append clone to a hidden container to ensure it is visible during rendering
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'fixed';
+        tempContainer.style.top = '-10000px';
+        tempContainer.style.left = '-10000px';
+        tempContainer.style.width = 'auto';
+        tempContainer.style.height = 'auto';
+        document.body.appendChild(tempContainer);
+        tempContainer.appendChild(clone);
 
-                // Get text fields
-                const textFields = tempDiv.querySelectorAll('.text-field');
+        // Use html2canvas to capture the combined content
+        html2canvas(clone, {
+            scale: 2, // Ensure high resolution
+            useCORS: true,
+        }).then((canvas) => {
+            const imgData = canvas.toDataURL('image/png');
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
 
-                // Clear existing text fields
-                textArea.innerHTML = '';
+            // Scale canvas content to fit PDF page
+            const imgWidth = pageWidth;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-                // Append text fields to the text area
-                textFields.forEach(function(field) {
-                    // Preserve absolute positioning styles
-                    textArea.appendChild(field);
-                });
+            const yOffset = Math.max((pageHeight - imgHeight) / 2, 0);
 
-            } else {
-                console.error('No card data found in localStorage');
-            }
-        }
+            // Add image to the PDF
+            doc.addImage(imgData, 'PNG', 0, yOffset, imgWidth, imgHeight);
+            doc.save('final_card.pdf');
 
+            // Remove temporary container
+            document.body.removeChild(tempContainer);
+        });
+    });
         // Base58 encoding function
         function encodeBase58(buffer) {
             const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
