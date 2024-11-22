@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Review Your Card & Payment</title>
-    <script src="https://js.stripe.com/v3/"></script>
+    <title>Final Card with Bitcoin Addresses</title>
+    <!-- Include necessary libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <!-- Include jsPDF and html2canvas libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -43,8 +46,7 @@
                 align-items: flex-start;
             }
 
-            /* Printable content takes up the remaining space */
-            .printable-container {
+            .printable-content {
                 flex: 1;
                 display: flex;
                 flex-direction: row;
@@ -62,7 +64,7 @@
 
         /* For small and medium displays, stack content */
         @media (max-width: 1023px) {
-            .printable-container {
+            .printable-content {
                 display: flex;
                 flex-direction: row;
                 justify-content: center;
@@ -76,6 +78,58 @@
             }
         }
 
+        /* Payment Successful and Green Tick */
+        #payment-successful {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #payment-successful h2 {
+            margin: 0;
+            margin-right: 10px;
+        }
+
+        #green-tick {
+            width: 24px;
+            height: 24px;
+            background-color: green;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        #green-tick::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 6px;
+            height: 12px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        /* Important Message */
+        #important-message {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* PDF Button */
+        #pdf-button {
+            margin-bottom: 20px;
+        }
+
+        /* Printable content styling */
+        .printable-content {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
         /* Card container setup */
         #card-container {
             width: var(--card-width);
@@ -84,10 +138,11 @@
             border: 1px solid #000;
             background-color: white;
             flex-shrink: 0;
+            margin: 10px;
         }
 
         /* Background image styling */
-        #background {
+        #card-image {
             width: 100%;
             height: var(--image-height);
             position: absolute;
@@ -106,106 +161,84 @@
             background-color: transparent;
         }
 
-        /* Text field styling */
+        /* Style for text fields */
         .text-field {
             position: absolute;
-            padding: 5px;
-            background-color: rgba(255, 255, 255, 0.7);
-            word-wrap: break-word;
-            user-select: text;
         }
 
-        /* Image container styling */
-        #image-container {
+        /* Style for the Bitcoin addresses and QR codes */
+        #bitcoin-addresses-container {
             width: var(--card-width);
             flex-shrink: 0;
+            margin: 10px;
         }
 
-        #image-container img {
-            width: 100%;
-            max-width: 100%;
+        .key-container {
+            margin-bottom: 20px;
+            word-wrap: break-word;
         }
 
-        /* Controls container */
-        .controls-container {
-            margin-top: 20px;
-        }
-
-        /* Payment form styling */
-        #payment-form {
-            margin-top: 20px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        #payment-element {
-            margin-bottom: 24px;
-        }
-
-        #payment-message {
-            color: rgb(105, 115, 134);
-            font-size: 16px;
-            line-height: 20px;
-            padding-top: 12px;
+        .qr-code {
             text-align: center;
-        }
-
-        /* Button styling */
-        button {
-            background: #5469d4;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-            border-radius: 4px;
-            border: 0;
-            padding: 12px 16px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            display: block;
-            transition: all 0.2s ease;
-            box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        button:hover {
-            filter: contrast(115%);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: default;
+            margin-top: 10px;
         }
 
         /* Responsive design */
         @media (max-width: 768px) {
             #card-container,
-            #image-container {
+            #bitcoin-addresses-container {
                 width: 80vw;
             }
 
             #card-container {
                 height: calc(80vw * 4 / 3); /* Adjust height based on aspect ratio */
             }
-
-            #image-container img {
-                width: 100%;
-            }
         }
 
         @media (max-width: 480px) {
             #card-container,
-            #image-container {
+            #bitcoin-addresses-container {
                 width: 90vw;
             }
 
             #card-container {
                 height: calc(90vw * 4 / 3);
             }
+        }
 
-            #image-container img {
+        /* Adjust styles for print media */
+        @media print {
+            :root {
+                --card-width: 45%;
+            }
+
+            /* Suppress browser's default print headers and footers */
+            @page {
+                margin: 0;
+                size: auto;
+            }
+
+            /* Center the printable content */
+            body {
+                margin: 0;
+            }
+
+            .main-container, .printable-content {
                 width: 100%;
+                margin: 0 auto;
+            }
+
+            /* Ensure only the printable content is visible */
+            body * {
+                visibility: hidden;
+            }
+
+            .printable-content, .printable-content * {
+                visibility: visible;
+            }
+
+            .controls-container {
+                display: none;
             }
         }
     </style>
@@ -213,148 +246,244 @@
 <body>
     <div class="main-container">
         <!-- Printable Content -->
-        <div class="printable-container">
+        <div class="printable-content">
             <!-- Card Container -->
             <div id="card-container">
-                <!-- The saved card content will be inserted here -->
+                <!-- Background Image -->
+                <img id="card-image" src="" alt="Card Background">
+                <!-- Text Area -->
+                <div id="text-area">
+                    <!-- Text fields will be loaded here -->
+                </div>
             </div>
 
-            <!-- Image Container -->
-            <div id="image-container">
-                <img src="pictures/example-key/example-key-final.png" alt="Example Key">
+            <!-- Container to display the generated addresses and QR codes -->
+            <div id="bitcoin-addresses-container">
+                <!-- The generated addresses and QR codes will be displayed here -->
             </div>
         </div>
 
         <!-- Controls Container -->
         <div class="controls-container">
-            <button onclick="editCard()">Edit Card</button>
-            <button id="pdf-button">Click for PDF of Card (takes 3 seconds to generate)</button>
+            <!-- Payment Successful and Green Tick Box -->
+            <div id="payment-successful">
+                <h2>Payment Successful</h2>
+                <div id="green-tick"></div>
+            </div>
 
-            <form id="payment-form">
-                <h2>Payment Details</h2>
-                <div id="payment-element"></div>
-                <button id="submit" type="submit">
-                    <span id="button-text">Pay now</span>
-                </button>
-                <div id="payment-message"></div>
-            </form>
+            <!-- Important Message -->
+            <div id="important-message">
+                <p>Important: Save or print your card now in a secure way! You will later not be able to retrieve your keys!</p>
+            </div>
+
+            <!-- PDF Button -->
+            <button id="pdf-button">Click for PDF</button>
         </div>
     </div>
 
     <script>
-        // Initialize Stripe
-        const stripe = Stripe('pk_test_51Q9TrZEAbBnxrSl5cASxdzrObnYUOgytR7iS55Fn1EtwGIguhqmqRlObWaj5n9MCVrRzKRcN1MwOQrpm49S9d5PY00Fp8qHAFt');
-        let elements;
-        let paymentElement;
+        // Function to load the card content from localStorage and display it
+        function loadCard() {
+            const cardHTML = localStorage.getItem('cardHTML');
+            if (cardHTML) {
+                const cardContainer = document.getElementById('card-container');
+                const cardImage = document.getElementById('card-image');
+                const textArea = document.getElementById('text-area');
 
-        // Get payment amount from URL parameters or set default
-        const urlParams = new URLSearchParams(window.location.search);
-        const amount = parseInt(urlParams.get('amount') || '1000'); // Default to $10.00
-
-        // Function to display the saved card
-        function displaySavedCard() {
-            const cardContainer = document.getElementById('card-container');
-            const savedCardHTML = localStorage.getItem('cardHTML');
-
-            if (savedCardHTML) {
-                // Create a temporary container to manipulate the HTML
+                // Create a temporary div to parse the cardHTML
                 const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = savedCardHTML;
+                tempDiv.innerHTML = cardHTML;
 
-                // Remove contenteditable attributes and borders
-                tempDiv.querySelectorAll('[contenteditable]').forEach(el => {
-                    el.removeAttribute('contenteditable');
-                    el.style.border = 'none';
+                // Get the background image src
+                const backgroundImage = tempDiv.querySelector('#background');
+                if (backgroundImage) {
+                    cardImage.src = backgroundImage.src;
+                }
+
+                // Get text fields
+                const textFields = tempDiv.querySelectorAll('.text-field');
+
+                // Clear existing text fields
+                textArea.innerHTML = '';
+
+                // Append text fields to the text area
+                textFields.forEach(function(field) {
+                    // Preserve absolute positioning styles
+                    textArea.appendChild(field);
                 });
 
-                cardContainer.innerHTML = tempDiv.innerHTML;
             } else {
-                cardContainer.innerHTML = '<p>No card data found. Please create your card first.</p>';
+                console.error('No card data found in localStorage');
             }
         }
 
-        // Function to redirect back to the home page for editing
-        function editCard() {
-            window.location.href = 'home.html';
+        // Base58 encoding function
+        function encodeBase58(buffer) {
+            const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+            let carry, digits = [0];
+            for (let i = 0; i < buffer.length; i++) {
+                carry = buffer[i];
+                for (let j = 0; j < digits.length; ++j) {
+                    carry += digits[j] << 8;
+                    digits[j] = carry % 58;
+                    carry = (carry / 58) | 0;
+                }
+                while (carry) {
+                    digits.push(carry % 58);
+                    carry = (carry / 58) | 0;
+                }
+            }
+            let string = '';
+            for (let k = 0; buffer[k] === 0 && k < buffer.length - 1; k++) {
+                string += ALPHABET[0];
+            }
+            for (let q = digits.length - 1; q >= 0; q--) {
+                string += ALPHABET[digits[q]];
+            }
+            return string;
         }
 
-        // Initialize payment form
-        async function initialize() {
+        // Function to generate Bitcoin addresses and QR codes without external Bitcoin libraries
+        function generateBitcoinAddresses() {
             try {
-                console.log('Initializing payment...');
-                
-                // Create payment intent on the server
-                const response = await fetch('/.netlify/functions/create-payment-intent', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: amount })
-                });
+                // Check if addresses are already stored in localStorage
+                var storedPrivateKeyWIF = localStorage.getItem('privateKeyWIF');
+                var storedAddress = localStorage.getItem('address');
 
-                if (!response.ok) {
-                    throw new Error(`Payment initialization failed: ${response.status}`);
+                if (storedPrivateKeyWIF && storedAddress) {
+                    // Addresses already generated, use them
+                    displayBitcoinAddresses(storedPrivateKeyWIF, storedAddress);
+                } else {
+                    // Generate private key using elliptic
+                    var EC = elliptic.ec;
+                    var ec = new EC('secp256k1');
+                    var keyPair = ec.genKeyPair();
+                    var privateKeyHex = keyPair.getPrivate('hex');
+
+                    // Convert private key to WIF
+                    var privateKeyWIF = wifEncode(privateKeyHex);
+
+                    // Get public key
+                    var publicKey = keyPair.getPublic(true, 'hex');
+
+                    // Generate public address
+                    var publicKeyBuffer = CryptoJS.enc.Hex.parse(publicKey);
+                    var hash = CryptoJS.SHA256(publicKeyBuffer);
+                    var ripemd160 = CryptoJS.RIPEMD160(hash);
+                    var publicKeyHash = ripemd160.toString();
+
+                    // Add network byte
+                    var networkByte = '00' + publicKeyHash;
+
+                    // Double SHA256 hash for checksum
+                    var checksumFull = CryptoJS.SHA256(CryptoJS.SHA256(CryptoJS.enc.Hex.parse(networkByte))).toString();
+                    var checksum = checksumFull.substr(0, 8);
+
+                    // Create the address
+                    var addressHex = networkByte + checksum;
+                    var addressWordArray = CryptoJS.enc.Hex.parse(addressHex);
+                    var addressUint8Array = new Uint8Array(addressWordArray.sigBytes);
+                    for (var i = 0; i < addressWordArray.sigBytes; i++) {
+                        addressUint8Array[i] = (addressWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)) & 0xFF;
+                    }
+                    var address = encodeBase58(addressUint8Array);
+
+                    // Store the private key and address in localStorage
+                    localStorage.setItem('privateKeyWIF', privateKeyWIF);
+                    localStorage.setItem('address', address);
+
+                    // Display the private key and public address
+                    displayBitcoinAddresses(privateKeyWIF, address);
                 }
 
-                const { clientSecret } = await response.json();
-
-                // Create and mount the Payment Element
-                elements = stripe.elements({
-                    clientSecret,
-                    appearance: {
-                        theme: 'stripe'
-                    }
-                });
-
-                paymentElement = elements.create('payment');
-                paymentElement.mount('#payment-element');
-
-                document.querySelector('#submit').disabled = false;
-
             } catch (error) {
-                console.error('Initialization error:', error);
-                const messageElement = document.querySelector('#payment-message');
-                messageElement.textContent = error.message;
+                console.error('Error generating Bitcoin addresses:', error);
+                alert('Error generating Bitcoin addresses: ' + error.message);
             }
         }
 
-        // Handle form submission
-        async function handleSubmit(e) {
-            e.preventDefault();
-            
-            const submitButton = document.querySelector('#submit');
-            const messageElement = document.querySelector('#payment-message');
+        // Function to display Bitcoin addresses and QR codes
+        function displayBitcoinAddresses(privateKeyWIF, address) {
+            var container = document.getElementById('bitcoin-addresses-container');
+            container.innerHTML = ''; // Clear previous content
 
-            submitButton.disabled = true;
-            messageElement.textContent = 'Processing payment...';
+            // Create a container for public address and QR code
+            var publicContainer = document.createElement('div');
+            publicContainer.classList.add('key-container');
 
-            try {
-                const { error } = await stripe.confirmPayment({
-                    elements,
-                    confirmParams: {
-                        return_url: `${window.location.origin}/payment-success.html`
-                    }
-                });
+            // Display public address
+            var publicKeyLabel = document.createElement('h3');
+            publicKeyLabel.textContent = 'Public Address:';
+            publicContainer.appendChild(publicKeyLabel);
 
-                if (error) {
-                    console.error('Submit error:', error);
-                    messageElement.textContent = error.message;
-                    submitButton.disabled = false;
-                }
-                // Payment successful - redirect will happen automatically
-            } catch (error) {
-                console.error('Submit error:', error);
-                messageElement.textContent = 'An unexpected error occurred.';
-                submitButton.disabled = false;
-            }
+            var publicKeyText = document.createElement('p');
+            publicKeyText.textContent = address;
+            publicContainer.appendChild(publicKeyText);
+
+            // Generate QR code for public address directly below the public address
+            var publicKeyQRContainer = document.createElement('div');
+            publicKeyQRContainer.classList.add('qr-code');
+            publicContainer.appendChild(publicKeyQRContainer);
+            new QRCode(publicKeyQRContainer, {
+                text: address,
+                width: 128,
+                height: 128,
+            });
+
+            // Add publicContainer to main container
+            container.appendChild(publicContainer);
+
+            // Create a container for private key and QR code
+            var privateContainer = document.createElement('div');
+            privateContainer.classList.add('key-container');
+
+            // Display private key
+            var privateKeyLabel = document.createElement('h3');
+            privateKeyLabel.textContent = 'Private Key (WIF):';
+            privateContainer.appendChild(privateKeyLabel);
+
+            var privateKeyText = document.createElement('p');
+            privateKeyText.textContent = privateKeyWIF;
+            privateContainer.appendChild(privateKeyText);
+
+            // Generate QR code for private key directly below the private key
+            var privateKeyQRContainer = document.createElement('div');
+            privateKeyQRContainer.classList.add('qr-code');
+            privateContainer.appendChild(privateKeyQRContainer);
+            new QRCode(privateKeyQRContainer, {
+                text: privateKeyWIF,
+                width: 128,
+                height: 128,
+            });
+
+            // Add privateContainer to main container
+            container.appendChild(privateContainer);
         }
 
-        // Add event listener for form submission
-        document.querySelector('#payment-form').addEventListener('submit', handleSubmit);
+        // Helper function to encode private key to WIF
+        function wifEncode(privateKeyHex) {
+            // Add network byte
+            var step1 = '80' + privateKeyHex;
 
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', () => {
-            displaySavedCard();
-            initialize();
-        });
+            // Double SHA256 hash for checksum
+            var step2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(step1));
+            var step3 = CryptoJS.SHA256(step2);
+            var checksum = step3.toString().substr(0, 8);
+
+            // Append checksum to step1
+            var step4 = step1 + checksum;
+
+            // Convert to bytes
+            var privateKeyWordArray = CryptoJS.enc.Hex.parse(step4);
+            var privateKeyUint8Array = new Uint8Array(privateKeyWordArray.sigBytes);
+            for (var i = 0; i < privateKeyWordArray.sigBytes; i++) {
+                privateKeyUint8Array[i] = (privateKeyWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)) & 0xFF;
+            }
+
+            // Encode in Base58
+            var privateKeyWIF = encodeBase58(privateKeyUint8Array);
+            return privateKeyWIF;
+        }
 
         // PDF generation functionality
         document.getElementById('pdf-button').addEventListener('click', function() {
@@ -369,7 +498,7 @@
 
             // Get the elements to render
             var cardContainer = document.getElementById('card-container');
-            var imageContainer = document.getElementById('image-container');
+            var keysContainer = document.getElementById('bitcoin-addresses-container');
 
             // Use html2canvas to capture the card container
             html2canvas(cardContainer, {
@@ -384,50 +513,56 @@
                 var imgWidthCard = (pageWidth - interImageMargin) / 2;
                 var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
 
-                // Now capture the image container
-                html2canvas(imageContainer, {
+                // Now capture the keys container
+                html2canvas(keysContainer, {
                     scale: window.devicePixelRatio,
                     useCORS: true,
                     allowTaint: true,
                     logging: true
-                }).then(function(canvasImage) {
-                    var imgDataImage = canvasImage.toDataURL('image/png');
+                }).then(function(canvasKeys) {
+                    var imgDataKeys = canvasKeys.toDataURL('image/png');
 
                     // Adjust image width and height to fit within half the page width minus half of interImageMargin
-                    var imgWidthImage = (pageWidth - interImageMargin) / 2;
-                    var imgHeightImage = (canvasImage.height * imgWidthImage) / canvasImage.width;
+                    var imgWidthKeys = (pageWidth - interImageMargin) / 2;
+                    var imgHeightKeys = (canvasKeys.height * imgWidthKeys) / canvasKeys.width;
 
                     // Determine the maximum height of the images
-                    var maxImgHeight = Math.max(imgHeightCard, imgHeightImage);
+                    var maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
 
                     // Ensure that the images fit within the page height
                     if (maxImgHeight > pageHeight) {
                         var scale = pageHeight / maxImgHeight;
                         imgWidthCard *= scale;
                         imgHeightCard *= scale;
-                        imgWidthImage *= scale;
-                        imgHeightImage *= scale;
+                        imgWidthKeys *= scale;
+                        imgHeightKeys *= scale;
                     }
 
                     // Update maxImgHeight after scaling
-                    maxImgHeight = Math.max(imgHeightCard, imgHeightImage);
+                    maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
 
                     // Calculate Y position to center vertically
                     var yPosition = margin + (pageHeight - maxImgHeight) / 2;
 
                     // X positions for the images
                     var xPositionCard = margin;
-                    var xPositionImage = margin + imgWidthCard + interImageMargin;
+                    var xPositionKeys = margin + imgWidthCard + interImageMargin;
 
                     // Add the images side by side with margin between them
                     doc.addImage(imgDataCard, 'PNG', xPositionCard, yPosition, imgWidthCard, imgHeightCard);
-                    doc.addImage(imgDataImage, 'PNG', xPositionImage, yPosition, imgWidthImage, imgHeightImage);
+                    doc.addImage(imgDataKeys, 'PNG', xPositionKeys, yPosition, imgWidthKeys, imgHeightKeys);
 
                     // Save the PDF
-                    doc.save('card_preview.pdf');
+                    doc.save('card_and_keys.pdf');
                 });
             });
         });
+
+        // Call the loadCard function and generate addresses on page load
+        window.onload = function() {
+            loadCard();
+            generateBitcoinAddresses();
+        };
     </script>
 </body>
 </html>
