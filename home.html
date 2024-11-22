@@ -76,6 +76,7 @@
             background-color: rgba(255, 255, 255, 0.7);
             word-wrap: break-word;
             user-select: text;
+            text-align: center; /* Set default alignment to center */
         }
 
         /* Selected text field */
@@ -144,6 +145,36 @@
             width: 100%;
             padding: 8px;
             margin: 5px 0;
+        }
+
+        /* Alignment buttons container */
+        #alignment-buttons {
+            margin-top: 10px;
+        }
+
+        /* Small button styling */
+        .small-button {
+            background: #5469d4;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            border-radius: 4px;
+            border: 0;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-block;
+            transition: all 0.2s ease;
+            margin: 5px 5px 5px 0;
+        }
+
+        .small-button:hover {
+            filter: contrast(115%);
+        }
+
+        .small-button:disabled {
+            opacity: 0.5;
+            cursor: default;
         }
 
         /* Button styling */
@@ -299,6 +330,14 @@
 
                 <label for="font-color">Color:</label>
                 <input type="color" id="font-color" value="#000000" onchange="updateSelectedTextStyle()">
+
+                <!-- Alignment options -->
+                <label>Alignment:</label>
+                <div id="alignment-buttons">
+                    <button type="button" class="small-button" onclick="setAlignment('left')">Left</button>
+                    <button type="button" class="small-button" onclick="setAlignment('center')">Center</button>
+                    <button type="button" class="small-button" onclick="setAlignment('right')">Right</button>
+                </div>
             </div>
 
             <!-- Review Order Button -->
@@ -433,6 +472,7 @@
             newTextField.style.left = position.left;
 
             newTextField.innerText = 'Editable Text';
+            newTextField.style.textAlign = 'center'; // Set default alignment to center
             newTextField.onclick = function(event) {
                 if (!isDragging) {
                     selectTextField(newTextField);
@@ -481,6 +521,12 @@
             selectedTextField.style.fontFamily = font;
             selectedTextField.style.fontSize = size + 'px';
             selectedTextField.style.color = color;
+        }
+
+        // Function to set the alignment of the selected text field
+        function setAlignment(alignment) {
+            if (!selectedTextField) return;
+            selectedTextField.style.textAlign = alignment;
         }
 
         // Make text field draggable
