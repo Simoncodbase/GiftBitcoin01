@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <title>Review Your Card & Payment</title>
     <script src="https://js.stripe.com/v3/"></script>
+    <!-- Include jsPDF and html2canvas libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* Define CSS variables for sizes */
         :root {
@@ -29,11 +32,6 @@
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-        }
-
-        /* Controls container */
-        .controls-container {
-            margin-bottom: 20px;
         }
 
         /* Printable content styling */
@@ -94,6 +92,11 @@
         #image-container img {
             width: 100%;
             max-width: 100%;
+        }
+
+        /* Controls container */
+        .controls-container {
+            margin-top: 20px;
         }
 
         /* Payment form styling */
@@ -182,20 +185,6 @@
 </head>
 <body>
     <div class="main-container">
-        <!-- Controls Container -->
-        <div class="controls-container">
-            <button onclick="editCard()">Edit Card</button>
-            
-            <form id="payment-form">
-                <h2>Payment Details</h2>
-                <div id="payment-element"></div>
-                <button id="submit" type="submit">
-                    <span id="button-text">Pay now</span>
-                </button>
-                <div id="payment-message"></div>
-            </form>
-        </div>
-
         <!-- Printable Content -->
         <div id="printable-content">
             <!-- Card Container -->
@@ -207,6 +196,21 @@
             <div id="image-container">
                 <img src="pictures/example-key/example-key-final.png" alt="Example Key">
             </div>
+        </div>
+
+        <!-- Controls Container -->
+        <div class="controls-container">
+            <button onclick="editCard()">Edit Card</button>
+            <button id="pdf-button">Click for PDF of Card Preview</button>
+
+            <form id="payment-form">
+                <h2>Payment Details</h2>
+                <div id="payment-element"></div>
+                <button id="submit" type="submit">
+                    <span id="button-text">Pay now</span>
+                </button>
+                <div id="payment-message"></div>
+            </form>
         </div>
     </div>
 
@@ -323,6 +327,79 @@
         document.addEventListener('DOMContentLoaded', () => {
             displaySavedCard();
             initialize();
+        });
+
+        // PDF generation functionality
+        document.getElementById('pdf-button').addEventListener('click', function() {
+            // Create a new jsPDF instance in landscape orientation
+            const { jsPDF } = window.jspdf;
+            var doc = new jsPDF('l', 'mm', 'a4');
+
+            var margin = 10; // standard margin of 10mm
+            var interImageMargin = 20; // doubled from 10mm to 20mm
+            var pageWidth = doc.internal.pageSize.getWidth() - 2 * margin;
+            var pageHeight = doc.internal.pageSize.getHeight() - 2 * margin;
+
+            // Get the elements to render
+            var cardContainer = document.getElementById('card-container');
+            var imageContainer = document.getElementById('image-container');
+
+            // Use html2canvas to capture the card container
+            html2canvas(cardContainer, {
+                scale: window.devicePixelRatio,
+                useCORS: true,
+                allowTaint: true,
+                logging: true
+            }).then(function(canvasCard) {
+                var imgDataCard = canvasCard.toDataURL('image/png');
+
+                // Adjust image width and height to fit within half the page width minus half of interImageMargin
+                var imgWidthCard = (pageWidth - interImageMargin) / 2;
+                var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
+
+                // Now capture the image container
+                html2canvas(imageContainer, {
+                    scale: window.devicePixelRatio,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: true
+                }).then(function(canvasImage) {
+                    var imgDataImage = canvasImage.toDataURL('image/png');
+
+                    // Adjust image width and height to fit within half the page width minus half of interImageMargin
+                    var imgWidthImage = (pageWidth - interImageMargin) / 2;
+                    var imgHeightImage = (canvasImage.height * imgWidthImage) / canvasImage.width;
+
+                    // Determine the maximum height of the images
+                    var maxImgHeight = Math.max(imgHeightCard, imgHeightImage);
+
+                    // Ensure that the images fit within the page height
+                    if (maxImgHeight > pageHeight) {
+                        var scale = pageHeight / maxImgHeight;
+                        imgWidthCard *= scale;
+                        imgHeightCard *= scale;
+                        imgWidthImage *= scale;
+                        imgHeightImage *= scale;
+                    }
+
+                    // Update maxImgHeight after scaling
+                    maxImgHeight = Math.max(imgHeightCard, imgHeightImage);
+
+                    // Calculate Y position to center vertically
+                    var yPosition = margin + (pageHeight - maxImgHeight) / 2;
+
+                    // X positions for the images
+                    var xPositionCard = margin;
+                    var xPositionImage = margin + imgWidthCard + interImageMargin;
+
+                    // Add the images side by side with margin between them
+                    doc.addImage(imgDataCard, 'PNG', xPositionCard, yPosition, imgWidthCard, imgHeightCard);
+                    doc.addImage(imgDataImage, 'PNG', xPositionImage, yPosition, imgWidthImage, imgHeightImage);
+
+                    // Save the PDF
+                    doc.save('card_preview.pdf');
+                });
+            });
         });
     </script>
 </body>
