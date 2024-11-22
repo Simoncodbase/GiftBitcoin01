@@ -331,6 +331,21 @@
             ],
         };
 
+        // Predefined initial positions for text fields
+        const defaultPositions = [
+            { top: '0px', left: '10px' },
+            { top: '20px', left: '10px' },
+            { top: '40px', left: '10px' },
+            { top: '60px', left: '10px' },
+            { top: '80px', left: '10px' }
+        ];
+
+        // Variables to keep track of text fields
+        let totalTextFieldCount = 0;
+        let currentTextFields = []; // Array to keep track of currently displayed text fields
+        let selectedTextField = null;
+        let isDragging = false; // Flag to track if dragging
+
         // Function to update background images based on selected category
         function updateBackgrounds() {
             const category = document.getElementById('category-select').value;
@@ -398,68 +413,37 @@
             window.location.href = 'review.html';
         }
 
-        // Variables to keep track of text fields
-        let textFieldsDisplayed = [];
-        let textFieldPositions = [];
-        let totalTextFieldCount = 0;
-        let selectedTextField = null;
-        let isDragging = false; // Flag to track if dragging
-
         // Function to add a new text field
         function addTextField() {
-            const textAreaContent = document.getElementById('text-area-content');
-
-            if (textFieldsDisplayed.length < 5) {
-                totalTextFieldCount++;
-                // Create new text field
-                const newTextField = document.createElement('div');
-                newTextField.classList.add('text-field');
-                newTextField.setAttribute('contenteditable', 'true');
-                // Position the new text field
-                let topPosition = (textFieldsDisplayed.length * 20) + 'px';
-                let leftPosition = '10px';
-                newTextField.style.top = topPosition;
-                newTextField.style.left = leftPosition;
-                // Store the position
-                textFieldPositions.push({ top: topPosition, left: leftPosition });
-                newTextField.innerText = 'Editable Text';
-                newTextField.onclick = function(event) {
-                    if (!isDragging) {
-                        selectTextField(newTextField);
-                    }
-                };
-                // Append the text field
-                textAreaContent.appendChild(newTextField);
-                makeDraggable(newTextField);
-                // Add to textFieldsDisplayed
-                textFieldsDisplayed.push(newTextField);
-            } else {
-                // Maximum of 5 text fields displayed
-                totalTextFieldCount++;
-                // Remove oldest text field
-                const oldestTextField = textFieldsDisplayed.shift();
-                oldestTextField.remove();
-                // Create new text field
-                const newTextField = document.createElement('div');
-                newTextField.classList.add('text-field');
-                newTextField.setAttribute('contenteditable', 'true');
-                // Position the new text field at the position of the original text field
-                let positionIndex = (totalTextFieldCount - 1) % 5;
-                let position = textFieldPositions[positionIndex];
-                newTextField.style.top = position.top;
-                newTextField.style.left = position.left;
-                newTextField.innerText = 'Editable Text';
-                newTextField.onclick = function(event) {
-                    if (!isDragging) {
-                        selectTextField(newTextField);
-                    }
-                };
-                // Append the text field
-                textAreaContent.appendChild(newTextField);
-                makeDraggable(newTextField);
-                // Add to textFieldsDisplayed
-                textFieldsDisplayed.push(newTextField);
+            if (currentTextFields.length >= 5) {
+                alert('You can only have a maximum of 5 text fields at a time.');
+                return;
             }
+            totalTextFieldCount++;
+            const textAreaContent = document.getElementById('text-area-content');
+            const newTextField = document.createElement('div');
+
+            newTextField.classList.add('text-field');
+            newTextField.setAttribute('contenteditable', 'true');
+
+            // Position the new text field within the text area
+            let positionIndex = (totalTextFieldCount - 1) % 5;
+            let position = defaultPositions[positionIndex];
+            newTextField.style.top = position.top;
+            newTextField.style.left = position.left;
+
+            newTextField.innerText = 'Editable Text';
+            newTextField.onclick = function(event) {
+                if (!isDragging) {
+                    selectTextField(newTextField);
+                }
+            };
+
+            // Append the text field to the text-area-content
+            textAreaContent.appendChild(newTextField);
+            makeDraggable(newTextField);
+            // Add the new text field to the currentTextFields array
+            currentTextFields.push(newTextField);
         }
 
         // Function to select a text field
@@ -475,10 +459,10 @@
         // Function to remove the selected text field
         function removeSelectedTextField() {
             if (selectedTextField) {
-                // Remove from textFieldsDisplayed
-                const index = textFieldsDisplayed.indexOf(selectedTextField);
+                // Remove from currentTextFields
+                const index = currentTextFields.indexOf(selectedTextField);
                 if (index !== -1) {
-                    textFieldsDisplayed.splice(index, 1);
+                    currentTextFields.splice(index, 1);
                 }
                 selectedTextField.remove();
                 selectedTextField = null;
@@ -562,13 +546,11 @@
                 const cardContainer = document.getElementById('card-container');
                 cardContainer.innerHTML = savedCardHTML;
 
-                // Initialize variables
-                textFieldsDisplayed = [];
-                totalTextFieldCount = 0;
-                textFieldPositions = [];
-
                 // Re-attach event listeners to the text fields
                 const textAreaContent = document.getElementById('text-area-content');
+                currentTextFields = [];
+                totalTextFieldCount = 0;
+
                 textAreaContent.querySelectorAll('.text-field').forEach(function(textField) {
                     textField.onclick = function(event) {
                         if (!isDragging) {
@@ -576,16 +558,8 @@
                         }
                     };
                     makeDraggable(textField);
-                    // Add to textFieldsDisplayed
-                    textFieldsDisplayed.push(textField);
+                    currentTextFields.push(textField);
                     totalTextFieldCount++;
-                    // Store positions of first 5 text fields
-                    if (textFieldPositions.length < 5) {
-                        textFieldPositions.push({
-                            top: textField.style.top,
-                            left: textField.style.left
-                        });
-                    }
                 });
             }
         }
