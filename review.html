@@ -82,9 +82,6 @@
             border: 1px solid #000;
             background-color: white;
             margin: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
         /* Background image styling */
@@ -98,17 +95,14 @@
         #text-area {
             width: 100%;
             background-color: transparent;
-            padding: 10px;
-            /* Remove position absolute */
+            position: relative; /* Set position to relative */
+            height: auto;
         }
 
         /* Style for text fields */
         .text-field {
-            width: 100%;
-            text-align: center;
-            margin: 5px 0;
-            /* Remove absolute positioning */
-            position: relative;
+            position: absolute; /* Allow absolute positioning within text-area */
+            /* Styles for top, left, font-size, etc., are preserved from the saved card */
         }
 
         /* Style for the Bitcoin addresses and QR codes */
@@ -235,12 +229,7 @@
 
                 // Append text fields to the text area
                 textFields.forEach(function(field) {
-                    // Remove absolute positioning styles
-                    field.style.position = 'relative';
-                    field.style.top = '';
-                    field.style.left = '';
-                    field.style.transform = '';
-                    field.style.margin = '5px 0';
+                    // Preserve absolute positioning styles
                     textArea.appendChild(field);
                 });
 
@@ -249,7 +238,6 @@
             }
         }
 
-        // Rest of your JavaScript code remains the same
         // Base58 encoding function
         function encodeBase58(buffer) {
             const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
