@@ -14,7 +14,11 @@
         /* Define CSS variables for sizes */
         :root {
             --card-width: 45%;
-            --card-height: calc(var(--card-width) * 4 / 3); /* Maintain aspect ratio */
+            --card-height: auto;
+            --background-width: 100%;
+            --background-height: auto;
+            --text-area-top: 70%;
+            --text-area-height: 30%;
         }
 
         /* Main container styling */
@@ -68,21 +72,18 @@
             margin-bottom: 20px;
         }
 
-        /* Printable content container setup */
+        /* Printable content styling */
         #printable-content {
             display: flex;
             flex-direction: row;
             justify-content: center;
             align-items: flex-start;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
+            flex-wrap: wrap;
         }
 
         /* Card container setup */
         #card-container {
             width: var(--card-width);
-            height: var(--card-height);
             position: relative;
             border: 1px solid #000;
             background-color: white;
@@ -91,20 +92,19 @@
 
         /* Background image styling */
         #background {
-            width: 100%;
-            height: 75%; /* Picture takes up 75% of the card height */
-            position: absolute;
-            top: 0;
-            left: 0;
+            width: var(--background-width);
+            height: var(--background-height);
+            position: relative;
+            display: block;
         }
 
         /* Text area styling */
         #text-area {
             position: absolute;
-            top: 75%; /* Start at 75% of the card height */
+            top: var(--text-area-top);
             left: 0;
             width: 100%;
-            height: 25%; /* Remaining 25% */
+            height: var(--text-area-height);
             background-color: transparent;
         }
 
@@ -112,11 +112,6 @@
         .text-field {
             position: absolute;
             /* Other styles will be preserved from saved card */
-        }
-
-        /* Ensure the card content scales correctly */
-        #card-container * {
-            max-width: 100%;
         }
 
         /* Style for the Bitcoin addresses and QR codes */
@@ -127,17 +122,18 @@
 
         .key-container {
             margin-bottom: 20px;
+            word-wrap: break-word;
         }
 
         .qr-code {
-            text-align: left;
+            text-align: center;
+            margin-top: 10px;
         }
 
         /* Adjust styles for print media */
         @media print {
             :root {
                 --card-width: 45%;
-                --card-height: calc(var(--card-width) * 4 / 3);
             }
 
             /* Suppress browser's default print headers and footers */
