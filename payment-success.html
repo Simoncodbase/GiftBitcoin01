@@ -82,9 +82,6 @@
             border: 1px solid #000;
             background-color: white;
             margin: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
         /* Background image styling */
@@ -98,14 +95,14 @@
         #text-area {
             width: 100%;
             background-color: transparent;
-            padding: 10px;
+            position: relative; /* Set position to relative */
+            height: auto;
         }
 
         /* Style for text fields */
         .text-field {
-            width: 100%;
-            text-align: center;
-            margin: 5px 0;
+            position: absolute; /* Allow absolute positioning within text-area */
+            /* Styles for top, left, font-size, etc., are preserved from the saved card */
         }
 
         /* Style for the Bitcoin addresses and QR codes */
@@ -181,7 +178,12 @@
         <div id="printable-content">
             <!-- Card Container -->
             <div id="card-container">
-                <!-- The card content will be loaded here -->
+                <!-- Background Image -->
+                <img id="card-image" src="" alt="Card Background">
+                <!-- Text Area -->
+                <div id="text-area">
+                    <!-- Text fields will be loaded here -->
+                </div>
             </div>
 
             <!-- Container to display the generated addresses and QR codes -->
@@ -206,36 +208,30 @@
             const cardHTML = localStorage.getItem('cardHTML');
             if (cardHTML) {
                 const cardContainer = document.getElementById('card-container');
+                const cardImage = document.getElementById('card-image');
+                const textArea = document.getElementById('text-area');
 
-                // Create a temporary div to hold the card HTML
+                // Create a temporary div to parse the cardHTML
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = cardHTML;
 
-                // Extract the background image and text fields
+                // Get the background image src
                 const backgroundImage = tempDiv.querySelector('#background');
+                if (backgroundImage) {
+                    cardImage.src = backgroundImage.src;
+                }
+
+                // Get text fields
                 const textFields = tempDiv.querySelectorAll('.text-field');
 
-                // Create new elements for the card
-                const imageElement = document.createElement('img');
-                imageElement.id = 'card-image';
-                imageElement.src = backgroundImage.src;
-
-                const textArea = document.createElement('div');
-                textArea.id = 'text-area';
+                // Clear existing text fields
+                textArea.innerHTML = '';
 
                 // Append text fields to the text area
                 textFields.forEach(function(field) {
-                    // Remove any absolute positioning styles
-                    field.style.position = 'static';
-                    field.style.left = '';
-                    field.style.top = '';
+                    // Preserve absolute positioning styles
                     textArea.appendChild(field);
                 });
-
-                // Clear the card container and append the image and text area
-                cardContainer.innerHTML = '';
-                cardContainer.appendChild(imageElement);
-                cardContainer.appendChild(textArea);
 
             } else {
                 console.error('No card data found in localStorage');
@@ -426,7 +422,12 @@
             var keysContainer = document.getElementById('bitcoin-addresses-container');
 
             // Use html2canvas to capture the card container
-            html2canvas(cardContainer).then(function(canvasCard) {
+            html2canvas(cardContainer, {
+                scale: window.devicePixelRatio,
+                useCORS: true,
+                allowTaint: true,
+                logging: true
+            }).then(function(canvasCard) {
                 var imgDataCard = canvasCard.toDataURL('image/png');
 
                 // Adjust image width and height to fit within half the page width minus half of interImageMargin
@@ -434,7 +435,12 @@
                 var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
 
                 // Now capture the keys container
-                html2canvas(keysContainer).then(function(canvasKeys) {
+                html2canvas(keysContainer, {
+                    scale: window.devicePixelRatio,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: true
+                }).then(function(canvasKeys) {
                     var imgDataKeys = canvasKeys.toDataURL('image/png');
 
                     // Adjust image width and height to fit within half the page width minus half of interImageMargin
