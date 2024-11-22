@@ -2,491 +2,674 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Final Card with Bitcoin Addresses</title>
-    <!-- Include necessary libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Include jsPDF and html2canvas libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title>Customized Card Creator</title>
     <style>
-        /* Define CSS variables for sizes */
-        :root {
-            --card-width: 45%;
+        /* Base styling */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
         }
 
         /* Main container styling */
-        #main-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 20px;
-        }
-
-        /* Payment Successful and Green Tick */
-        #payment-successful {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        #payment-successful h2 {
-            margin: 0;
-            margin-right: 10px;
-        }
-
-        #green-tick {
-            width: 24px;
-            height: 24px;
-            background-color: green;
-            border-radius: 50%;
-            position: relative;
-        }
-
-        #green-tick::after {
-            content: '';
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            width: 6px;
-            height: 12px;
-            border: solid white;
-            border-width: 0 2px 2px 0;
-            transform: translate(-50%, -50%) rotate(45deg);
-        }
-
-        /* Important Message */
-        #important-message {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        /* PDF Button */
-        #pdf-button {
-            margin-bottom: 20px;
-        }
-
-        /* Printable content styling */
-        #printable-content {
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
             display: flex;
             flex-direction: row;
-            justify-content: center;
-            align-items: flex-start;
-            flex-wrap: wrap;
+            gap: 20px;
         }
 
         /* Card container setup */
         #card-container {
-            width: var(--card-width);
+            width: 30vw; /*30% of viewport width */
+            height: 40vw; /* Height is 40% of viewport width */
+            position: relative;
             border: 1px solid #000;
             background-color: white;
-            margin: 10px;
+            flex-shrink: 0;
         }
 
         /* Background image styling */
-        #card-image {
+        #background {
+            width: 30vw;
+            height: 30vw;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+
+        /* Text area */
+        #text-area {
+            position: absolute;
+            top: 30vw; /* Start below the background image */
+            left: 0;
+            width: 100%;
+            height: 10vw;
+            background-color: transparent;
+            overflow: hidden;
+        }
+
+        /* Text area content (for relative positioning) */
+        #text-area-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Text field styling */
+        .text-field {
+            position: absolute;
+            cursor: move;
+            border: 1px dashed #000;
+            padding: 5px;
+            min-width: 50px;
+            min-height: 20px;
+            max-width: 100%;
+            max-height: 100%;
+            background-color: rgba(255, 255, 255, 0.7);
+            word-wrap: break-word;
+            user-select: text;
+            text-align: center; /* Set default alignment to center */
+            overflow: hidden;
+        }
+
+        /* Selected text field */
+        .text-field.selected {
+            border: 2px solid red;
+        }
+
+        /* Controls container */
+        .controls-container {
+            margin-left: 20px;
+            flex-grow: 1;
+            max-width: 600px;
+        }
+
+        /* Background selector styling */
+        #background-selector {
+            margin-left: 10px;
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        #category-select {
+            padding: 8px;
+            margin: 10px 0;
+            width: 100%;
+        }
+
+        /* Background images grid */
+        #background-images {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .background-image {
+            cursor: pointer;
             width: 100%;
             height: auto;
+            border-radius: 4px;
+            transition: transform 0.2s;
+        }
+
+        .background-image:hover {
+            transform: scale(1.05);
+        }
+
+        /* Font options styling */
+        #font-options {
+            margin-top: 10px;
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        #font-options label {
             display: block;
-        }
-
-        /* Text area styling */
-        #text-area {
-            width: 100%;
-            background-color: transparent;
-            padding: 10px;
-            box-sizing: border-box;
-        }
-
-        /* Style for text fields */
-        .text-field {
-            display: block;
-            margin: 5px 0;
-            text-align: center;
-            /* Remove absolute positioning */
-            position: relative;
-            top: auto;
-            left: auto;
-        }
-
-        /* Style for the Bitcoin addresses and QR codes */
-        #bitcoin-addresses-container {
-            width: var(--card-width);
-            margin: 10px;
-        }
-
-        .key-container {
-            margin-bottom: 20px;
-            word-wrap: break-word;
-        }
-
-        .qr-code {
-            text-align: center;
             margin-top: 10px;
         }
 
-        /* Adjust styles for print media */
-        @media print {
-            :root {
-                --card-width: 45%;
+        #font-options select,
+        #font-options input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+        }
+
+        /* Alignment buttons container */
+        #alignment-buttons {
+            margin-top: 10px;
+        }
+
+        /* Small button styling */
+        .small-button {
+            background: #5469d4;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            border-radius: 4px;
+            border: 0;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-block;
+            transition: all 0.2s ease;
+            margin: 5px 5px 5px 0;
+        }
+
+        .small-button:hover {
+            filter: contrast(115%);
+        }
+
+        .small-button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        /* Button styling */
+        button {
+            background: #5469d4;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            border-radius: 4px;
+            border: 0;
+            padding: 12px 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: block;
+            transition: all 0.2s ease;
+            box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            filter: contrast(115%);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        /* Specific styles for upload button */
+        #upload-button {
+            background: #28a745;
+            display: none;
+        }
+
+        #upload-button:hover {
+            background: #218838;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                align-items: center;
             }
 
-            /* Suppress browser's default print headers and footers */
-            @page {
-                margin: 0;
-                size: auto;
+            #card-container {
+                width: 80vw;
+                height: 100vw;
+                margin-bottom: 20px;
             }
 
-            /* Center the printable content */
-            body {
-                margin: 0;
-            }
-
-            #main-container, #printable-content {
+            .controls-container {
                 width: 100%;
-                margin: 0 auto;
             }
 
-            /* Ensure only the printable content is visible */
-            body * {
-                visibility: hidden;
+            #background-images {
+                grid-template-columns: repeat(2, 1fr);
             }
 
-            #printable-content, #printable-content * {
-                visibility: visible;
+            /* Adjust the width of the background images in the controls */
+            .controls-container .background-image {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
             }
 
-            #pdf-button, #payment-successful, #important-message {
-                display: none;
+            #card-container {
+                width: 90vw;
+                height: 120vw;
+            }
+
+            #background-images {
+                grid-template-columns: 1fr;
+            }
+
+            .background-image {
+                height: 200px;
+            }
+
+            #category-select {
+                width: 100%;
             }
         }
     </style>
 </head>
 <body>
-    <div id="main-container">
-        <!-- Payment Successful and Green Tick Box -->
-        <div id="payment-successful">
-            <h2>Payment Successful</h2>
-            <div id="green-tick"></div>
+    <div class="main-container">
+        <div id="card-container">
+            <!-- Background Image (Initially hidden) -->
+            <img id="background" src="">
+            <!-- Text area -->
+            <div id="text-area">
+                <div id="text-area-content"></div>
+            </div>
         </div>
 
-        <!-- Important Message -->
-        <div id="important-message">
-            <p>Important: Save or print your card now in a secure way! You will later not be able to retrieve your keys!</p>
-        </div>
+        <div class="controls-container">
+            <!-- Category Selector -->
+            <div id="background-selector">
+                <h3>Select a Background</h3>
+                <div style="display: flex; align-items: center;">
+                    <label for="category-select">Category:</label>
+                    <select id="category-select" onchange="updateBackgrounds()" style="margin-right: 10px;">
+                        <option value="">--Select Category--</option>
+                        <option value="crypto-king">Crypto-King</option>
+                        <option value="crypto-queen">Crypto-Queen</option>
+                        <option value="birthday">Birthday</option>
+                        <option value="christmas">Christmas</option>
+                        <option value="upload-own-picture">Upload Own Picture</option>
+                    </select>
+                    <!-- Upload Own Picture Button -->
+                    <button id="upload-button" onclick="triggerFileInput()">Upload Own Picture</button>
+                    <!-- Hidden File Input -->
+                    <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="handleFileUpload(event)">
+                </div>
 
-        <!-- PDF Button -->
-        <button id="pdf-button">Click for PDF</button>
-
-        <!-- Content to be printed -->
-        <div id="printable-content">
-            <!-- Card Container -->
-            <div id="card-container">
-                <!-- Background Image -->
-                <img id="card-image" src="" alt="Card Background">
-                <!-- Text Area -->
-                <div id="text-area">
-                    <!-- Text fields will be loaded here -->
+                <!-- Background Images will be displayed here -->
+                <div id="background-images">
+                    <!-- Images will be inserted here based on the selected category -->
                 </div>
             </div>
 
-            <!-- Container to display the generated addresses and QR codes -->
-            <div id="bitcoin-addresses-container">
-                <!-- The generated addresses and QR codes will be displayed here -->
+            <!-- Add/Remove Text Buttons -->
+            <button onclick="addTextField()">Add Text Field</button>
+            <button onclick="toggleFontOptions()">Format Text</button>
+            <button onclick="removeSelectedTextField()">Remove Selected Text Field</button>
+
+            <!-- Font, Size, and Color Selectors -->
+            <div id="font-options">
+                <h3>Text Options</h3>
+                <label for="font-select">Font:</label>
+                <select id="font-select" onchange="updateSelectedTextStyle()">
+                    <option value="">--Select Font--</option>
+                    <option style="font-family: Arial;" value="Arial">Arial</option>
+                    <option style="font-family: 'Times New Roman';" value="Times New Roman">Times New Roman</option>
+                    <option style="font-family: 'Courier New';" value="Courier New">Courier New</option>
+                    <option style="font-family: Georgia;" value="Georgia">Georgia</option>
+                    <option style="font-family: Verdana;" value="Verdana">Verdana</option>
+                    <option style="font-family: Tahoma;" value="Tahoma">Tahoma</option>
+                    <option style="font-family: 'Trebuchet MS';" value="Trebuchet MS">Trebuchet MS</option>
+                    <option style="font-family: 'Comic Sans MS';" value="Comic Sans MS">Comic Sans MS</option>
+                    <option style="font-family: Impact;" value="Impact">Impact</option>
+                    <option style="font-family: Papyrus;" value="Papyrus">Papyrus</option>
+                </select>
+
+                <label for="font-size">Size:</label>
+                <input type="number" id="font-size" value="14" min="4" onchange="updateSelectedTextStyle()">
+
+                <label for="font-color">Color:</label>
+                <input type="color" id="font-color" value="#000000" onchange="updateSelectedTextStyle()">
+
+                <!-- Alignment options -->
+                <label>Alignment:</label>
+                <div id="alignment-buttons">
+                    <button type="button" class="small-button" onclick="setAlignment('left')">Left</button>
+                    <button type="button" class="small-button" onclick="setAlignment('center')">Center</button>
+                    <button type="button" class="small-button" onclick="setAlignment('right')">Right</button>
+                </div>
             </div>
+
+            <!-- Review Order Button -->
+            <button onclick="reviewOrder()">Review Order</button>
         </div>
     </div>
 
-    <!-- Hidden form for Netlify Forms (commented out) -->
-    <!--
-    <form name="publicKeyForm" netlify netlify-honeypot="bot-field" hidden>
-        <input type="hidden" name="form-name" value="publicKeyForm">
-        <input type="hidden" name="publicKey" id="publicKeyInput">
-        <input type="hidden" name="bot-field">
-    </form>
-    -->
-
     <script>
-        // Function to load the card content from localStorage and display it
-        function loadCard() {
-            const cardHTML = localStorage.getItem('cardHTML');
-            if (cardHTML) {
-                const cardContainer = document.getElementById('card-container');
-                const cardImage = document.getElementById('card-image');
-                const textArea = document.getElementById('text-area');
-
-                // Create a temporary div to parse the cardHTML
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = cardHTML;
-
-                // Get the background image src
-                const backgroundImage = tempDiv.querySelector('#background');
-                if (backgroundImage) {
-                    cardImage.src = backgroundImage.src;
-                }
-
-                // Get text fields
-                const textFields = tempDiv.querySelectorAll('.text-field');
-
-                // Clear existing text fields
-                textArea.innerHTML = '';
-
-                // Append text fields to the text area
-                textFields.forEach(function(field) {
-                    // Remove absolute positioning styles
-                    field.style.position = 'relative';
-                    field.style.top = '';
-                    field.style.left = '';
-                    field.style.transform = '';
-                    field.style.margin = '5px 0';
-                    field.style.width = '100%';
-                    field.style.textAlign = 'center';
-                    textArea.appendChild(field);
-                });
-
-            } else {
-                console.error('No card data found in localStorage');
-            }
-        }
-
-        // Rest of your JavaScript code remains the same
-        // Base58 encoding function
-        function encodeBase58(buffer) {
-            const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-            let carry, digits = [0];
-            for (let i = 0; i < buffer.length; i++) {
-                carry = buffer[i];
-                for (let j = 0; j < digits.length; ++j) {
-                    carry += digits[j] << 8;
-                    digits[j] = carry % 58;
-                    carry = (carry / 58) | 0;
-                }
-                while (carry) {
-                    digits.push(carry % 58);
-                    carry = (carry / 58) | 0;
-                }
-            }
-            let string = '';
-            for (let k = 0; buffer[k] === 0 && k < buffer.length - 1; k++) {
-                string += ALPHABET[0];
-            }
-            for (let q = digits.length - 1; q >= 0; q--) {
-                string += ALPHABET[digits[q]];
-            }
-            return string;
-        }
-
-        // Function to generate Bitcoin addresses and QR codes without external Bitcoin libraries
-        function generateBitcoinAddresses() {
-            try {
-                // Check if addresses are already stored in localStorage
-                var storedPrivateKeyWIF = localStorage.getItem('privateKeyWIF');
-                var storedAddress = localStorage.getItem('address');
-
-                if (storedPrivateKeyWIF && storedAddress) {
-                    // Addresses already generated, use them
-                    displayBitcoinAddresses(storedPrivateKeyWIF, storedAddress);
-                } else {
-                    // Generate private key using elliptic
-                    var EC = elliptic.ec;
-                    var ec = new EC('secp256k1');
-                    var keyPair = ec.genKeyPair();
-                    var privateKeyHex = keyPair.getPrivate('hex');
-
-                    // Convert private key to WIF
-                    var privateKeyWIF = wifEncode(privateKeyHex);
-
-                    // Get public key
-                    var publicKey = keyPair.getPublic(true, 'hex');
-
-                    // Generate public address
-                    var publicKeyBuffer = CryptoJS.enc.Hex.parse(publicKey);
-                    var hash = CryptoJS.SHA256(publicKeyBuffer);
-                    var ripemd160 = CryptoJS.RIPEMD160(hash);
-                    var publicKeyHash = ripemd160.toString();
-
-                    // Add network byte
-                    var networkByte = '00' + publicKeyHash;
-
-                    // Double SHA256 hash for checksum
-                    var checksumFull = CryptoJS.SHA256(CryptoJS.SHA256(CryptoJS.enc.Hex.parse(networkByte))).toString();
-                    var checksum = checksumFull.substr(0, 8);
-
-                    // Create the address
-                    var addressHex = networkByte + checksum;
-                    var addressWordArray = CryptoJS.enc.Hex.parse(addressHex);
-                    var addressUint8Array = new Uint8Array(addressWordArray.sigBytes);
-                    for (var i = 0; i < addressWordArray.sigBytes; i++) {
-                        addressUint8Array[i] = (addressWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)) & 0xFF;
-                    }
-                    var address = encodeBase58(addressUint8Array);
-
-                    // Store the private key and address in localStorage
-                    localStorage.setItem('privateKeyWIF', privateKeyWIF);
-                    localStorage.setItem('address', address);
-
-                    // Display the private key and public address
-                    displayBitcoinAddresses(privateKeyWIF, address);
-                }
-
-            } catch (error) {
-                console.error('Error generating Bitcoin addresses:', error);
-                alert('Error generating Bitcoin addresses: ' + error.message);
-            }
-        }
-
-        // Function to display Bitcoin addresses and QR codes
-        function displayBitcoinAddresses(privateKeyWIF, address) {
-            var container = document.getElementById('bitcoin-addresses-container');
-            container.innerHTML = ''; // Clear previous content
-
-            // Create a container for public address and QR code
-            var publicContainer = document.createElement('div');
-            publicContainer.classList.add('key-container');
-
-            // Display public address
-            var publicKeyLabel = document.createElement('h3');
-            publicKeyLabel.textContent = 'Public Address:';
-            publicContainer.appendChild(publicKeyLabel);
-
-            var publicKeyText = document.createElement('p');
-            publicKeyText.textContent = address;
-            publicContainer.appendChild(publicKeyText);
-
-            // Generate QR code for public address directly below the public address
-            var publicKeyQRContainer = document.createElement('div');
-            publicKeyQRContainer.classList.add('qr-code');
-            publicContainer.appendChild(publicKeyQRContainer);
-            new QRCode(publicKeyQRContainer, {
-                text: address,
-                width: 128,
-                height: 128,
-            });
-
-            // Add publicContainer to main container
-            container.appendChild(publicContainer);
-
-            // Create a container for private key and QR code
-            var privateContainer = document.createElement('div');
-            privateContainer.classList.add('key-container');
-
-            // Display private key
-            var privateKeyLabel = document.createElement('h3');
-            privateKeyLabel.textContent = 'Private Key (WIF):';
-            privateContainer.appendChild(privateKeyLabel);
-
-            var privateKeyText = document.createElement('p');
-            privateKeyText.textContent = privateKeyWIF;
-            privateContainer.appendChild(privateKeyText);
-
-            // Generate QR code for private key directly below the private key
-            var privateKeyQRContainer = document.createElement('div');
-            privateKeyQRContainer.classList.add('qr-code');
-            privateContainer.appendChild(privateKeyQRContainer);
-            new QRCode(privateKeyQRContainer, {
-                text: privateKeyWIF,
-                width: 128,
-                height: 128,
-            });
-
-            // Add privateContainer to main container
-            container.appendChild(privateContainer);
-        }
-
-        // Helper function to encode private key to WIF
-        function wifEncode(privateKeyHex) {
-            // Add network byte
-            var step1 = '80' + privateKeyHex;
-
-            // Double SHA256 hash for checksum
-            var step2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(step1));
-            var step3 = CryptoJS.SHA256(step2);
-            var checksum = step3.toString().substr(0, 8);
-
-            // Append checksum to step1
-            var step4 = step1 + checksum;
-
-            // Convert to bytes
-            var privateKeyWordArray = CryptoJS.enc.Hex.parse(step4);
-            var privateKeyUint8Array = new Uint8Array(privateKeyWordArray.sigBytes);
-            for (var i = 0; i < privateKeyWordArray.sigBytes; i++) {
-                privateKeyUint8Array[i] = (privateKeyWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)) & 0xFF;
-            }
-
-            // Encode in Base58
-            var privateKeyWIF = encodeBase58(privateKeyUint8Array);
-            return privateKeyWIF;
-        }
-
-        // PDF generation functionality
-        document.getElementById('pdf-button').addEventListener('click', function() {
-            // Create a new jsPDF instance in landscape orientation
-            const { jsPDF } = window.jspdf;
-            var doc = new jsPDF('l', 'mm', 'a4');
-
-            var margin = 10; // standard margin of 10mm
-            var interImageMargin = 10; // margin between the two images
-            var pageWidth = doc.internal.pageSize.getWidth() - 2 * margin;
-            var pageHeight = doc.internal.pageSize.getHeight() - 2 * margin;
-
-            // Get the elements to render
-            var cardContainer = document.getElementById('card-container');
-            var keysContainer = document.getElementById('bitcoin-addresses-container');
-
-            // Ensure all images and fonts are loaded
-            html2canvas(cardContainer, { useCORS: true, logging: true }).then(function(canvasCard) {
-                var imgDataCard = canvasCard.toDataURL('image/png');
-
-                // Adjust image width and height to fit within half the page width minus half of interImageMargin
-                var imgWidthCard = (pageWidth - interImageMargin) / 2;
-                var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
-
-                // Now capture the keys container
-                html2canvas(keysContainer, { useCORS: true, logging: true }).then(function(canvasKeys) {
-                    var imgDataKeys = canvasKeys.toDataURL('image/png');
-
-                    // Adjust image width and height to fit within half the page width minus half of interImageMargin
-                    var imgWidthKeys = (pageWidth - interImageMargin) / 2;
-                    var imgHeightKeys = (canvasKeys.height * imgWidthKeys) / canvasKeys.width;
-
-                    // Determine the maximum height of the images
-                    var maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
-
-                    // Ensure that the images fit within the page height
-                    if (maxImgHeight > pageHeight) {
-                        var scale = pageHeight / maxImgHeight;
-                        imgWidthCard *= scale;
-                        imgHeightCard *= scale;
-                        imgWidthKeys *= scale;
-                        imgHeightKeys *= scale;
-                    }
-
-                    // Update maxImgHeight after scaling
-                    maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
-
-                    // Calculate Y position to center vertically
-                    var yPosition = margin + (pageHeight - maxImgHeight) / 2;
-
-                    // X positions for the images
-                    var xPositionCard = margin;
-                    var xPositionKeys = margin + imgWidthCard + interImageMargin;
-
-                    // Add the images side by side with margin between them
-                    doc.addImage(imgDataCard, 'PNG', xPositionCard, yPosition, imgWidthCard, imgHeightCard);
-                    doc.addImage(imgDataKeys, 'PNG', xPositionKeys, yPosition, imgWidthKeys, imgHeightKeys);
-
-                    // Save the PDF
-                    doc.save('card_and_keys.pdf');
-                });
-            });
-        });
-
-        // Call the loadCard function and generate addresses on page load
-        window.onload = function() {
-            loadCard();
-            generateBitcoinAddresses();
+        // Data: category backgrounds
+        const categoryBackgrounds = {
+            'crypto-king': [
+                'pictures/king/king1.webp',
+                'pictures/king/king2.webp',
+                'pictures/king/king3.webp',
+            ],
+            'crypto-queen': [
+                'pictures/queen/queen1.webp',
+                'pictures/queen/queen2.webp',
+                'pictures/queen/queen3.webp',
+            ],
+            'birthday': [
+                'pictures/birthday/birthday1.webp',
+                'pictures/birthday/birthday2.webp',
+                'pictures/birthday/birthday3.webp',
+            ],
+            'christmas': [
+                'pictures/christmas/christmas1.webp',
+                'pictures/christmas/christmas2.webp',
+                'pictures/christmas/christmas3.webp',
+            ],
         };
+
+        // Predefined initial positions for text fields
+        const defaultPositions = [
+            { top: '0px', left: '10px' },
+            { top: '20px', left: '10px' },
+            { top: '40px', left: '10px' },
+            { top: '60px', left: '10px' },
+            { top: '80px', left: '10px' }
+        ];
+
+        // Variables to keep track of text fields
+        let totalTextFieldCount = 0;
+        let currentTextFields = []; // Array to keep track of currently displayed text fields
+        let selectedTextField = null;
+        let isDragging = false; // Flag to track if dragging
+
+        // Function to update background images based on selected category
+        function updateBackgrounds() {
+            const category = document.getElementById('category-select').value;
+            const backgroundImagesDiv = document.getElementById('background-images');
+            const uploadButton = document.getElementById('upload-button');
+
+            backgroundImagesDiv.innerHTML = ''; // Clear previous images
+            uploadButton.style.display = 'none'; // Hide the upload button by default
+
+            if (category === 'upload-own-picture') {
+                // Show the upload button
+                uploadButton.style.display = 'block';
+            } else if (category && categoryBackgrounds[category]) {
+                categoryBackgrounds[category].forEach(imageUrl => {
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.classList.add('background-image');
+                    img.onclick = function() {
+                        changeBackground(imageUrl);
+                    };
+                    backgroundImagesDiv.appendChild(img);
+                });
+            }
+        }
+
+        // Function to trigger file input when upload button is clicked
+        function triggerFileInput() {
+            document.getElementById('file-input').click();
+        }
+
+        // Function to handle the file upload
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageUrl = e.target.result;
+                    // Display the uploaded image in the background-images div
+                    const backgroundImagesDiv = document.getElementById('background-images');
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.classList.add('background-image');
+                    img.onclick = function() {
+                        changeBackground(imageUrl);
+                    };
+                    backgroundImagesDiv.appendChild(img);
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Function to change the background
+        function changeBackground(imageUrl) {
+            var backgroundImage = document.getElementById('background');
+            backgroundImage.src = imageUrl;
+            backgroundImage.style.display = 'block'; // Show the background when clicked
+        }
+
+        // Function to handle the review order and save the card content to localStorage
+        function reviewOrder() {
+            const cardContainer = document.getElementById('card-container');
+            // Store the card HTML in localStorage
+            localStorage.setItem('cardHTML', cardContainer.innerHTML);
+            // Redirect to the review page
+            window.location.href = 'review.html';
+        }
+
+        // Function to add a new text field
+        function addTextField() {
+            if (currentTextFields.length >= 5) {
+                alert('You can only have a maximum of 5 text fields at a time.');
+                return;
+            }
+            totalTextFieldCount++;
+            const textAreaContent = document.getElementById('text-area-content');
+            const newTextField = document.createElement('div');
+
+            newTextField.classList.add('text-field');
+            newTextField.setAttribute('contenteditable', 'true');
+
+            // Position the new text field within the text area
+            let positionIndex = (totalTextFieldCount - 1) % 5;
+            let position = defaultPositions[positionIndex];
+            newTextField.style.top = position.top;
+            newTextField.style.left = position.left;
+
+            newTextField.innerText = 'Editable Text';
+            newTextField.style.textAlign = 'center'; // Set default alignment to center
+            newTextField.onclick = function(event) {
+                if (!isDragging) {
+                    selectTextField(newTextField);
+                }
+            };
+
+            // Add input event listener to handle text input
+            newTextField.addEventListener('input', function(event) {
+                handleTextInput(newTextField);
+            });
+
+            // Append the text field to the text-area-content
+            textAreaContent.appendChild(newTextField);
+            makeDraggable(newTextField);
+            // Add the new text field to the currentTextFields array
+            currentTextFields.push(newTextField);
+        }
+
+        // Function to handle text input and adjust font size
+        function handleTextInput(textField) {
+            // Check if text content overflows text field
+            const isOverflowing = textField.scrollWidth > textField.clientWidth ||
+                                  textField.scrollHeight > textField.clientHeight;
+
+            if (isOverflowing) {
+                // Get current font size
+                let currentFontSize = window.getComputedStyle(textField).fontSize;
+                let fontSizeValue = parseFloat(currentFontSize);
+                // If font size is greater than 4px, reduce font size
+                if (fontSizeValue > 4) {
+                    fontSizeValue -= 1;
+                    textField.style.fontSize = fontSizeValue + 'px';
+                } else {
+                    // Font size is 4px or less
+                    // Prevent further input and display error message
+                    alert('maximum text size and minimum font size reached');
+                    // Remove the last character typed
+                    textField.innerText = textField.innerText.slice(0, -1);
+                }
+            }
+        }
+
+        // Function to select a text field
+        function selectTextField(field) {
+            if (selectedTextField) {
+                selectedTextField.classList.remove('selected'); // Unselect current field
+            }
+            selectedTextField = field;
+            selectedTextField.classList.add('selected'); // Highlight selected field
+            selectedTextField.focus(); // Focus on the text field for editing
+
+            // Update font options to reflect selected text field's style
+            const fontSelect = document.getElementById('font-select');
+            const fontSizeInput = document.getElementById('font-size');
+            const fontColorInput = document.getElementById('font-color');
+
+            fontSelect.value = window.getComputedStyle(selectedTextField).fontFamily.replace(/['"]/g, "");
+            fontSizeInput.value = parseFloat(window.getComputedStyle(selectedTextField).fontSize);
+            fontColorInput.value = rgbToHex(window.getComputedStyle(selectedTextField).color);
+        }
+
+        // Function to convert RGB color to HEX
+        function rgbToHex(color) {
+            const rgb = color.match(/\d+/g);
+            return "#" + rgb.map(x => {
+                const hex = parseInt(x).toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            }).join('');
+        }
+
+        // Function to remove the selected text field
+        function removeSelectedTextField() {
+            if (selectedTextField) {
+                // Remove from currentTextFields
+                const index = currentTextFields.indexOf(selectedTextField);
+                if (index !== -1) {
+                    currentTextFields.splice(index, 1);
+                }
+                selectedTextField.remove();
+                selectedTextField = null;
+                document.getElementById('font-options').style.display = 'none';
+            }
+        }
+
+        // Update font, size, and color of the selected text field
+        function updateSelectedTextStyle() {
+            if (!selectedTextField) return;
+
+            const font = document.getElementById('font-select').value;
+            const size = document.getElementById('font-size').value;
+            const color = document.getElementById('font-color').value;
+
+            selectedTextField.style.fontFamily = font;
+            selectedTextField.style.fontSize = size + 'px';
+            selectedTextField.style.color = color;
+        }
+
+        // Function to set the alignment of the selected text field
+        function setAlignment(alignment) {
+            if (!selectedTextField) return;
+            selectedTextField.style.textAlign = alignment;
+        }
+
+        // Make text field draggable
+        function makeDraggable(element) {
+            let offsetX = 0, offsetY = 0, mouseX = 0, mouseY = 0;
+
+            element.onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                e.preventDefault();
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e.preventDefault();
+                isDragging = true; // Set the dragging flag when moving the element
+                offsetX = mouseX - e.clientX;
+                offsetY = mouseY - e.clientY;
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                let newTop = element.offsetTop - offsetY;
+                let newLeft = element.offsetLeft - offsetX;
+                // Ensure the element stays within the text-area boundaries
+                const container = document.getElementById('text-area-content');
+                const elemWidth = element.offsetWidth;
+                const elemHeight = element.offsetHeight;
+                if (newLeft < 0) newLeft = 0;
+                if (newTop < 0) newTop = 0;
+                if (newLeft + elemWidth > container.clientWidth) newLeft = container.clientWidth - elemWidth;
+                if (newTop + elemHeight > container.clientHeight) newTop = container.clientHeight - elemHeight;
+                element.style.top = newTop + "px";
+                element.style.left = newLeft + "px";
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+                setTimeout(() => { isDragging = false; }, 100); // Delay resetting the dragging flag
+            }
+        }
+
+        // Function to toggle font options
+        function toggleFontOptions() {
+            const fontOptions = document.getElementById('font-options');
+            if (fontOptions.style.display === 'none' || fontOptions.style.display === '') {
+                if (selectedTextField) {
+                    fontOptions.style.display = 'block';
+                } else {
+                    alert('Please select a text field first.');
+                }
+            } else {
+                fontOptions.style.display = 'none';
+            }
+        }
+
+        // Function to load saved card from localStorage
+        function loadSavedCard() {
+            const savedCardHTML = localStorage.getItem('cardHTML');
+            if (savedCardHTML) {
+                const cardContainer = document.getElementById('card-container');
+                cardContainer.innerHTML = savedCardHTML;
+
+                // Re-attach event listeners to the text fields
+                const textAreaContent = document.getElementById('text-area-content');
+                currentTextFields = [];
+                totalTextFieldCount = 0;
+
+                textAreaContent.querySelectorAll('.text-field').forEach(function(textField) {
+                    textField.onclick = function(event) {
+                        if (!isDragging) {
+                            selectTextField(textField);
+                        }
+                    };
+                    makeDraggable(textField);
+                    currentTextFields.push(textField);
+                    totalTextFieldCount++;
+
+                    // Add input event listener to handle text input
+                    textField.addEventListener('input', function(event) {
+                        handleTextInput(textField);
+                    });
+                });
+            }
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateBackgrounds();
+            loadSavedCard();
+        });
     </script>
 </body>
 </html>

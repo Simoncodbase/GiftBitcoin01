@@ -7,15 +7,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <!-- Include jsPDF and html2canvas libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* Define CSS variables for sizes */
         :root {
-            --card-width: 30vw;
-            --card-height: 40vw;
-            --background-width: 30vw;
-            --background-height: 30vw;
-            --text-area-top: 30vw;
-            --text-area-height: 10vw;
+            --card-width: 45%;
         }
 
         /* Main container styling */
@@ -64,71 +62,69 @@
             margin-bottom: 20px;
         }
 
-        /* Print Button */
-        #print-button {
+        /* PDF Button */
+        #pdf-button {
             margin-bottom: 20px;
+        }
+
+        /* Printable content styling */
+        #printable-content {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
         }
 
         /* Card container setup */
         #card-container {
             width: var(--card-width);
-            height: var(--card-height);
-            position: relative;
             border: 1px solid #000;
             background-color: white;
-            margin-bottom: 20px;
+            margin: 10px;
         }
 
         /* Background image styling */
-        #background {
-            width: var(--background-width);
-            height: var(--background-height);
-            position: absolute;
-            top: 0;
-            left: 0;
-            display: block; /* Ensure background is visible */
+        #card-image {
+            width: 100%;
+            height: auto;
+            display: block;
         }
 
         /* Text area styling */
         #text-area {
-            position: absolute;
-            top: var(--text-area-top);
-            left: 0;
             width: 100%;
-            height: var(--text-area-height);
             background-color: transparent;
+            position: relative; /* Set position to relative */
+            height: auto;
         }
 
         /* Style for text fields */
         .text-field {
-            position: absolute;
-            /* Other styles will be preserved from saved card */
+            position: absolute; /* Allow absolute positioning within text-area */
+            /* Styles for top, left, font-size, etc., are preserved from the saved card */
         }
 
         /* Style for the Bitcoin addresses and QR codes */
         #bitcoin-addresses-container {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
+            width: var(--card-width);
+            margin: 10px;
         }
 
         .key-container {
             margin-bottom: 20px;
+            word-wrap: break-word;
         }
 
         .qr-code {
-            text-align: left;
+            text-align: center;
+            margin-top: 10px;
         }
 
         /* Adjust styles for print media */
         @media print {
             :root {
-                --card-width: 300px;
-                --card-height: 400px;
-                --background-width: 300px;
-                --background-height: 300px;
-                --text-area-top: 300px;
-                --text-area-height: 100px;
+                --card-width: 45%;
             }
 
             /* Suppress browser's default print headers and footers */
@@ -143,7 +139,7 @@
             }
 
             #main-container, #printable-content {
-                width: var(--card-width);
+                width: 100%;
                 margin: 0 auto;
             }
 
@@ -156,7 +152,7 @@
                 visibility: visible;
             }
 
-            #print-button, #payment-successful, #important-message {
+            #pdf-button, #payment-successful, #important-message {
                 display: none;
             }
         }
@@ -175,14 +171,19 @@
             <p>Important: Save or print your card now in a secure way! You will later not be able to retrieve your keys!</p>
         </div>
 
-        <!-- Print Button -->
-        <button id="print-button">Print</button>
+        <!-- PDF Button -->
+        <button id="pdf-button">Click for PDF</button>
 
         <!-- Content to be printed -->
         <div id="printable-content">
             <!-- Card Container -->
             <div id="card-container">
-                <!-- The saved card content will be inserted here -->
+                <!-- Background Image -->
+                <img id="card-image" src="" alt="Card Background">
+                <!-- Text Area -->
+                <div id="text-area">
+                    <!-- Text fields will be loaded here -->
+                </div>
             </div>
 
             <!-- Container to display the generated addresses and QR codes -->
@@ -207,7 +208,31 @@
             const cardHTML = localStorage.getItem('cardHTML');
             if (cardHTML) {
                 const cardContainer = document.getElementById('card-container');
-                cardContainer.innerHTML = cardHTML;
+                const cardImage = document.getElementById('card-image');
+                const textArea = document.getElementById('text-area');
+
+                // Create a temporary div to parse the cardHTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = cardHTML;
+
+                // Get the background image src
+                const backgroundImage = tempDiv.querySelector('#background');
+                if (backgroundImage) {
+                    cardImage.src = backgroundImage.src;
+                }
+
+                // Get text fields
+                const textFields = tempDiv.querySelectorAll('.text-field');
+
+                // Clear existing text fields
+                textArea.innerHTML = '';
+
+                // Append text fields to the text area
+                textFields.forEach(function(field) {
+                    // Preserve absolute positioning styles
+                    textArea.appendChild(field);
+                });
+
             } else {
                 console.error('No card data found in localStorage');
             }
@@ -290,24 +315,6 @@
 
                     // Display the private key and public address
                     displayBitcoinAddresses(privateKeyWIF, address);
-
-                    // **Netlify Forms Submission (disabled)**
-                    /*
-                    // Prepare data to send to Netlify Forms
-                    var data = {
-                        'form-name': 'publicKeyForm',
-                        'publicKey': publicKey
-                    };
-
-                    // Submit the form via fetch()
-                    fetch('/', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: encodeFormData(data)
-                    })
-                    .then(() => console.log('Public key successfully submitted to Netlify Forms'))
-                    .catch(error => console.error('Error submitting public key to Netlify Forms:', error));
-                    */
                 }
 
             } catch (error) {
@@ -399,20 +406,77 @@
             return privateKeyWIF;
         }
 
-        // Helper function to URL-encode form data (commented out)
-        /*
-        function encodeFormData(data) {
-            return Object.keys(data)
-                .map(function(key) {
-                    return encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
-                })
-                .join('&');
-        }
-        */
+        // PDF generation functionality
+        document.getElementById('pdf-button').addEventListener('click', function() {
+            // Create a new jsPDF instance in landscape orientation
+            const { jsPDF } = window.jspdf;
+            var doc = new jsPDF('l', 'mm', 'a4');
 
-        // Print functionality
-        document.getElementById('print-button').addEventListener('click', function() {
-            window.print();
+            var margin = 10; // standard margin of 10mm
+            var interImageMargin = 10; // margin between the two images
+            var pageWidth = doc.internal.pageSize.getWidth() - 2 * margin;
+            var pageHeight = doc.internal.pageSize.getHeight() - 2 * margin;
+
+            // Get the elements to render
+            var cardContainer = document.getElementById('card-container');
+            var keysContainer = document.getElementById('bitcoin-addresses-container');
+
+            // Use html2canvas to capture the card container
+            html2canvas(cardContainer, {
+                scale: window.devicePixelRatio,
+                useCORS: true,
+                allowTaint: true,
+                logging: true
+            }).then(function(canvasCard) {
+                var imgDataCard = canvasCard.toDataURL('image/png');
+
+                // Adjust image width and height to fit within half the page width minus half of interImageMargin
+                var imgWidthCard = (pageWidth - interImageMargin) / 2;
+                var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
+
+                // Now capture the keys container
+                html2canvas(keysContainer, {
+                    scale: window.devicePixelRatio,
+                    useCORS: true,
+                    allowTaint: true,
+                    logging: true
+                }).then(function(canvasKeys) {
+                    var imgDataKeys = canvasKeys.toDataURL('image/png');
+
+                    // Adjust image width and height to fit within half the page width minus half of interImageMargin
+                    var imgWidthKeys = (pageWidth - interImageMargin) / 2;
+                    var imgHeightKeys = (canvasKeys.height * imgWidthKeys) / canvasKeys.width;
+
+                    // Determine the maximum height of the images
+                    var maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
+
+                    // Ensure that the images fit within the page height
+                    if (maxImgHeight > pageHeight) {
+                        var scale = pageHeight / maxImgHeight;
+                        imgWidthCard *= scale;
+                        imgHeightCard *= scale;
+                        imgWidthKeys *= scale;
+                        imgHeightKeys *= scale;
+                    }
+
+                    // Update maxImgHeight after scaling
+                    maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
+
+                    // Calculate Y position to center vertically
+                    var yPosition = margin + (pageHeight - maxImgHeight) / 2;
+
+                    // X positions for the images
+                    var xPositionCard = margin;
+                    var xPositionKeys = margin + imgWidthCard + interImageMargin;
+
+                    // Add the images side by side with margin between them
+                    doc.addImage(imgDataCard, 'PNG', xPositionCard, yPosition, imgWidthCard, imgHeightCard);
+                    doc.addImage(imgDataKeys, 'PNG', xPositionKeys, yPosition, imgWidthKeys, imgHeightKeys);
+
+                    // Save the PDF
+                    doc.save('card_and_keys.pdf');
+                });
+            });
         });
 
         // Call the loadCard function and generate addresses on page load
