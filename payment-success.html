@@ -13,12 +13,12 @@
     <style>
         /* Define CSS variables for sizes */
         :root {
-            --card-width: 30vw;
-            --card-height: 40vw;
-            --background-width: 30vw;
-            --background-height: 30vw;
-            --text-area-top: 30vw;
-            --text-area-height: 10vw;
+            --card-width: 45%;
+            --card-height: calc(var(--card-width) * 4 / 3); /* Maintaining aspect ratio */
+            --background-width: 100%;
+            --background-height: 75%; /* Adjusted to fill the card */
+            --text-area-top: 75%; /* Adjusted accordingly */
+            --text-area-height: 25%; /* Remaining space */
         }
 
         /* Main container styling */
@@ -72,6 +72,16 @@
             margin-bottom: 20px;
         }
 
+        /* Printable content container setup */
+        #printable-content {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+            max-width: 1200px;
+        }
+
         /* Card container setup */
         #card-container {
             width: var(--card-width);
@@ -79,7 +89,7 @@
             position: relative;
             border: 1px solid #000;
             background-color: white;
-            margin-bottom: 20px;
+            margin: 10px;
         }
 
         /* Background image styling */
@@ -110,9 +120,9 @@
 
         /* Style for the Bitcoin addresses and QR codes */
         #bitcoin-addresses-container {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
+            width: var(--card-width);
+            margin: 10px;
+            /* Remove any flex properties that may interfere */
         }
 
         .key-container {
@@ -126,12 +136,12 @@
         /* Adjust styles for print media */
         @media print {
             :root {
-                --card-width: 300px;
-                --card-height: 400px;
-                --background-width: 300px;
-                --background-height: 300px;
-                --text-area-top: 300px;
-                --text-area-height: 100px;
+                --card-width: 45%;
+                --card-height: calc(var(--card-width) * 4 / 3);
+                --background-width: 100%;
+                --background-height: 75%;
+                --text-area-top: 75%;
+                --text-area-height: 25%;
             }
 
             /* Suppress browser's default print headers and footers */
@@ -146,7 +156,7 @@
             }
 
             #main-container, #printable-content {
-                width: var(--card-width);
+                width: 100%;
                 margin: 0 auto;
             }
 
