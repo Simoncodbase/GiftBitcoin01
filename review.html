@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Customized Card Creator</title>
+    <title>Review Your Card & Payment</title>
+    <script src="https://js.stripe.com/v3/"></script>
     <style>
-        /* Base styling */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -14,7 +14,6 @@
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
-            padding: 20px;
         }
 
         /* Main container styling */
@@ -27,10 +26,18 @@
             gap: 20px;
         }
 
+        /* Left Column */
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            width: 30vw;
+        }
+
         /* Card container setup */
         #card-container {
-            width: 30vw; /*30% of viewport width */
-            height: 40vw; /* Height is 40% of viewport width */
+            width: 100%;
+            height: 40vw;
             position: relative;
             border: 1px solid #000;
             background-color: white;
@@ -39,145 +46,57 @@
 
         /* Background image styling */
         #background {
-            width: 30vw;
+            width: 100%;
             height: 30vw;
             position: absolute;
             top: 0;
             left: 0;
-            display: none;
+            display: block;
         }
 
-        /* Text area */
+        /* Text area styling */
         #text-area {
             position: absolute;
-            top: 30vw; /* Start below the background image */
+            top: 30vw;
             left: 0;
             width: 100%;
             height: 10vw;
             background-color: transparent;
-            overflow: hidden;
-        }
-
-        /* Text area content (for relative positioning) */
-        #text-area-content {
-            position: relative;
-            width: 100%;
-            height: 100%;
         }
 
         /* Text field styling */
         .text-field {
             position: absolute;
-            cursor: move;
-            border: 1px dashed #000;
             padding: 5px;
-            min-width: 50px;
-            min-height: 20px;
-            max-width: 100%;
-            max-height: 100%;
             background-color: rgba(255, 255, 255, 0.7);
             word-wrap: break-word;
             user-select: text;
-            text-align: center; /* Set default alignment to center */
-            overflow: hidden;
-        }
-
-        /* Selected text field */
-        .text-field.selected {
-            border: 2px solid red;
         }
 
         /* Controls container */
         .controls-container {
-            margin-left: 20px;
             flex-grow: 1;
             max-width: 600px;
         }
 
-        /* Background selector styling */
-        #background-selector {
-            margin-left: 10px;
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        #category-select {
-            padding: 8px;
-            margin: 10px 0;
-            width: 100%;
-        }
-
-        /* Background images grid */
-        #background-images {
-            margin-top: 10px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-        }
-
-        .background-image {
-            cursor: pointer;
-            width: 100%;
-            height: auto;
+        /* Payment form styling */
+        #payment-form {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
             border-radius: 4px;
-            transition: transform 0.2s;
         }
 
-        .background-image:hover {
-            transform: scale(1.05);
+        #payment-element {
+            margin-bottom: 24px;
         }
 
-        /* Font options styling */
-        #font-options {
-            margin-top: 10px;
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 8px;
-            display: none;
-        }
-
-        #font-options label {
-            display: block;
-            margin-top: 10px;
-        }
-
-        #font-options select,
-        #font-options input {
-            width: 100%;
-            padding: 8px;
-            margin: 5px 0;
-        }
-
-        /* Alignment buttons container */
-        #alignment-buttons {
-            margin-top: 10px;
-        }
-
-        /* Small button styling */
-        .small-button {
-            background: #5469d4;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
-            border-radius: 4px;
-            border: 0;
-            padding: 8px 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-block;
-            transition: all 0.2s ease;
-            margin: 5px 5px 5px 0;
-        }
-
-        .small-button:hover {
-            filter: contrast(115%);
-        }
-
-        .small-button:disabled {
-            opacity: 0.5;
-            cursor: default;
+        #payment-message {
+            color: rgb(105, 115, 134);
+            font-size: 16px;
+            line-height: 20px;
+            padding-top: 12px;
+            text-align: center;
         }
 
         /* Button styling */
@@ -207,14 +126,14 @@
             cursor: default;
         }
 
-        /* Specific styles for upload button */
-        #upload-button {
-            background: #28a745;
-            display: none;
+        /* Image container styling */
+        #image-container {
+            margin-top: 20px;
         }
 
-        #upload-button:hover {
-            background: #218838;
+        #image-container img {
+            width: 100%;
+            max-width: 100%;
         }
 
         /* Responsive design */
@@ -224,8 +143,12 @@
                 align-items: center;
             }
 
-            #card-container {
+            .left-column {
                 width: 80vw;
+            }
+
+            #card-container {
+                width: 100%;
                 height: 100vw;
                 margin-bottom: 20px;
             }
@@ -234,35 +157,22 @@
                 width: 100%;
             }
 
-            #background-images {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            /* Adjust the width of the background images in the controls */
-            .controls-container .background-image {
+            #image-container img {
                 width: 100%;
             }
         }
 
         @media (max-width: 480px) {
-            body {
-                padding: 10px;
+            .left-column {
+                width: 90vw;
             }
 
             #card-container {
-                width: 90vw;
+                width: 100%;
                 height: 120vw;
             }
 
-            #background-images {
-                grid-template-columns: 1fr;
-            }
-
-            .background-image {
-                height: 200px;
-            }
-
-            #category-select {
+            #image-container img {
                 width: 100%;
             }
         }
@@ -270,405 +180,147 @@
 </head>
 <body>
     <div class="main-container">
-        <div id="card-container">
-            <!-- Background Image (Initially hidden) -->
-            <img id="background" src="">
-            <!-- Text area -->
-            <div id="text-area">
-                <div id="text-area-content"></div>
+        <!-- Left Column -->
+        <div class="left-column">
+            <!-- Card Container -->
+            <div id="card-container">
+                <!-- The saved card content will be inserted here -->
+            </div>
+
+            <!-- Image Container -->
+            <div id="image-container">
+                <img src="pictures/example-key/example-key-final.png" alt="Example Key">
             </div>
         </div>
 
+        <!-- Controls Container -->
         <div class="controls-container">
-            <!-- Category Selector -->
-            <div id="background-selector">
-                <h3>Select a Background</h3>
-                <div style="display: flex; align-items: center;">
-                    <label for="category-select">Category:</label>
-                    <select id="category-select" onchange="updateBackgrounds()" style="margin-right: 10px;">
-                        <option value="">--Select Category--</option>
-                        <option value="crypto-king">Crypto-King</option>
-                        <option value="crypto-queen">Crypto-Queen</option>
-                        <option value="birthday">Birthday</option>
-                        <option value="christmas">Christmas</option>
-                        <option value="upload-own-picture">Upload Own Picture</option>
-                    </select>
-                    <!-- Upload Own Picture Button -->
-                    <button id="upload-button" onclick="triggerFileInput()">Upload Own Picture</button>
-                    <!-- Hidden File Input -->
-                    <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="handleFileUpload(event)">
-                </div>
-
-                <!-- Background Images will be displayed here -->
-                <div id="background-images">
-                    <!-- Images will be inserted here based on the selected category -->
-                </div>
-            </div>
-
-            <!-- Add/Remove Text Buttons -->
-            <button onclick="addTextField()">Add Text Field</button>
-            <button onclick="toggleFontOptions()">Format Text</button>
-            <button onclick="removeSelectedTextField()">Remove Selected Text Field</button>
-
-            <!-- Font, Size, and Color Selectors -->
-            <div id="font-options">
-                <h3>Text Options</h3>
-                <label for="font-select">Font:</label>
-                <select id="font-select" onchange="updateSelectedTextStyle()">
-                    <option value="">--Select Font--</option>
-                    <option style="font-family: Arial;" value="Arial">Arial</option>
-                    <option style="font-family: 'Times New Roman';" value="Times New Roman">Times New Roman</option>
-                    <option style="font-family: 'Courier New';" value="Courier New">Courier New</option>
-                    <option style="font-family: Georgia;" value="Georgia">Georgia</option>
-                    <option style="font-family: Verdana;" value="Verdana">Verdana</option>
-                    <option style="font-family: Tahoma;" value="Tahoma">Tahoma</option>
-                    <option style="font-family: 'Trebuchet MS';" value="Trebuchet MS">Trebuchet MS</option>
-                    <option style="font-family: 'Comic Sans MS';" value="Comic Sans MS">Comic Sans MS</option>
-                    <option style="font-family: Impact;" value="Impact">Impact</option>
-                    <option style="font-family: Papyrus;" value="Papyrus">Papyrus</option>
-                </select>
-
-                <label for="font-size">Size:</label>
-                <input type="number" id="font-size" value="14" min="4" onchange="updateSelectedTextStyle()">
-
-                <label for="font-color">Color:</label>
-                <input type="color" id="font-color" value="#000000" onchange="updateSelectedTextStyle()">
-
-                <!-- Alignment options -->
-                <label>Alignment:</label>
-                <div id="alignment-buttons">
-                    <button type="button" class="small-button" onclick="setAlignment('left')">Left</button>
-                    <button type="button" class="small-button" onclick="setAlignment('center')">Center</button>
-                    <button type="button" class="small-button" onclick="setAlignment('right')">Right</button>
-                </div>
-            </div>
-
-            <!-- Review Order Button -->
-            <button onclick="reviewOrder()">Review Order</button>
+            <button onclick="editCard()">Edit Card</button>
+            
+            <form id="payment-form">
+                <h2>Payment Details</h2>
+                <div id="payment-element"></div>
+                <button id="submit" type="submit">
+                    <span id="button-text">Pay now</span>
+                </button>
+                <div id="payment-message"></div>
+            </form>
         </div>
     </div>
 
     <script>
-        // Data: category backgrounds
-        const categoryBackgrounds = {
-            'crypto-king': [
-                'pictures/king/king1.webp',
-                'pictures/king/king2.webp',
-                'pictures/king/king3.webp',
-            ],
-            'crypto-queen': [
-                'pictures/queen/queen1.webp',
-                'pictures/queen/queen2.webp',
-                'pictures/queen/queen3.webp',
-            ],
-            'birthday': [
-                'pictures/birthday/birthday1.webp',
-                'pictures/birthday/birthday2.webp',
-                'pictures/birthday/birthday3.webp',
-            ],
-            'christmas': [
-                'pictures/christmas/christmas1.webp',
-                'pictures/christmas/christmas2.webp',
-                'pictures/christmas/christmas3.webp',
-            ],
-        };
+        // Initialize Stripe
+        const stripe = Stripe('pk_test_51Q9TrZEAbBnxrSl5cASxdzrObnYUOgytR7iS55Fn1EtwGIguhqmqRlObWaj5n9MCVrRzKRcN1MwOQrpm49S9d5PY00Fp8qHAFt');
+        let elements;
+        let paymentElement;
 
-        // Predefined initial positions for text fields
-        const defaultPositions = [
-            { top: '0px', left: '10px' },
-            { top: '20px', left: '10px' },
-            { top: '40px', left: '10px' },
-            { top: '60px', left: '10px' },
-            { top: '80px', left: '10px' }
-        ];
+        // Get payment amount from URL parameters or set default
+        const urlParams = new URLSearchParams(window.location.search);
+        const amount = parseInt(urlParams.get('amount') || '1000'); // Default to $10.00
 
-        // Variables to keep track of text fields
-        let totalTextFieldCount = 0;
-        let currentTextFields = []; // Array to keep track of currently displayed text fields
-        let selectedTextField = null;
-        let isDragging = false; // Flag to track if dragging
-
-        // Function to update background images based on selected category
-        function updateBackgrounds() {
-            const category = document.getElementById('category-select').value;
-            const backgroundImagesDiv = document.getElementById('background-images');
-            const uploadButton = document.getElementById('upload-button');
-
-            backgroundImagesDiv.innerHTML = ''; // Clear previous images
-            uploadButton.style.display = 'none'; // Hide the upload button by default
-
-            if (category === 'upload-own-picture') {
-                // Show the upload button
-                uploadButton.style.display = 'block';
-            } else if (category && categoryBackgrounds[category]) {
-                categoryBackgrounds[category].forEach(imageUrl => {
-                    const img = document.createElement('img');
-                    img.src = imageUrl;
-                    img.classList.add('background-image');
-                    img.onclick = function() {
-                        changeBackground(imageUrl);
-                    };
-                    backgroundImagesDiv.appendChild(img);
-                });
-            }
-        }
-
-        // Function to trigger file input when upload button is clicked
-        function triggerFileInput() {
-            document.getElementById('file-input').click();
-        }
-
-        // Function to handle the file upload
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const imageUrl = e.target.result;
-                    // Display the uploaded image in the background-images div
-                    const backgroundImagesDiv = document.getElementById('background-images');
-                    const img = document.createElement('img');
-                    img.src = imageUrl;
-                    img.classList.add('background-image');
-                    img.onclick = function() {
-                        changeBackground(imageUrl);
-                    };
-                    backgroundImagesDiv.appendChild(img);
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // Function to change the background
-        function changeBackground(imageUrl) {
-            var backgroundImage = document.getElementById('background');
-            backgroundImage.src = imageUrl;
-            backgroundImage.style.display = 'block'; // Show the background when clicked
-        }
-
-        // Function to handle the review order and save the card content to localStorage
-        function reviewOrder() {
+        // Function to display the saved card
+        function displaySavedCard() {
             const cardContainer = document.getElementById('card-container');
-            // Store the card HTML in localStorage
-            localStorage.setItem('cardHTML', cardContainer.innerHTML);
-            // Redirect to the review page
-            window.location.href = 'review.html';
-        }
-
-        // Function to add a new text field
-        function addTextField() {
-            if (currentTextFields.length >= 5) {
-                alert('You can only have a maximum of 5 text fields at a time.');
-                return;
-            }
-            totalTextFieldCount++;
-            const textAreaContent = document.getElementById('text-area-content');
-            const newTextField = document.createElement('div');
-
-            newTextField.classList.add('text-field');
-            newTextField.setAttribute('contenteditable', 'true');
-
-            // Position the new text field within the text area
-            let positionIndex = (totalTextFieldCount - 1) % 5;
-            let position = defaultPositions[positionIndex];
-            newTextField.style.top = position.top;
-            newTextField.style.left = position.left;
-
-            newTextField.innerText = 'Editable Text';
-            newTextField.style.textAlign = 'center'; // Set default alignment to center
-            newTextField.onclick = function(event) {
-                if (!isDragging) {
-                    selectTextField(newTextField);
-                }
-            };
-
-            // Add input event listener to handle text input
-            newTextField.addEventListener('input', function(event) {
-                handleTextInput(newTextField);
-            });
-
-            // Append the text field to the text-area-content
-            textAreaContent.appendChild(newTextField);
-            makeDraggable(newTextField);
-            // Add the new text field to the currentTextFields array
-            currentTextFields.push(newTextField);
-        }
-
-        // Function to handle text input and adjust font size
-        function handleTextInput(textField) {
-            // Check if text content overflows text field
-            const isOverflowing = textField.scrollWidth > textField.clientWidth ||
-                                  textField.scrollHeight > textField.clientHeight;
-
-            if (isOverflowing) {
-                // Get current font size
-                let currentFontSize = window.getComputedStyle(textField).fontSize;
-                let fontSizeValue = parseFloat(currentFontSize);
-                // If font size is greater than 4px, reduce font size
-                if (fontSizeValue > 4) {
-                    fontSizeValue -= 1;
-                    textField.style.fontSize = fontSizeValue + 'px';
-                } else {
-                    // Font size is 4px or less
-                    // Prevent further input and display error message
-                    alert('maximum text size and minimum font size reached');
-                    // Remove the last character typed
-                    textField.innerText = textField.innerText.slice(0, -1);
-                }
-            }
-        }
-
-        // Function to select a text field
-        function selectTextField(field) {
-            if (selectedTextField) {
-                selectedTextField.classList.remove('selected'); // Unselect current field
-            }
-            selectedTextField = field;
-            selectedTextField.classList.add('selected'); // Highlight selected field
-            selectedTextField.focus(); // Focus on the text field for editing
-
-            // Update font options to reflect selected text field's style
-            const fontSelect = document.getElementById('font-select');
-            const fontSizeInput = document.getElementById('font-size');
-            const fontColorInput = document.getElementById('font-color');
-
-            fontSelect.value = window.getComputedStyle(selectedTextField).fontFamily.replace(/['"]/g, "");
-            fontSizeInput.value = parseFloat(window.getComputedStyle(selectedTextField).fontSize);
-            fontColorInput.value = rgbToHex(window.getComputedStyle(selectedTextField).color);
-        }
-
-        // Function to convert RGB color to HEX
-        function rgbToHex(color) {
-            const rgb = color.match(/\d+/g);
-            return "#" + rgb.map(x => {
-                const hex = parseInt(x).toString(16);
-                return hex.length === 1 ? '0' + hex : hex;
-            }).join('');
-        }
-
-        // Function to remove the selected text field
-        function removeSelectedTextField() {
-            if (selectedTextField) {
-                // Remove from currentTextFields
-                const index = currentTextFields.indexOf(selectedTextField);
-                if (index !== -1) {
-                    currentTextFields.splice(index, 1);
-                }
-                selectedTextField.remove();
-                selectedTextField = null;
-                document.getElementById('font-options').style.display = 'none';
-            }
-        }
-
-        // Update font, size, and color of the selected text field
-        function updateSelectedTextStyle() {
-            if (!selectedTextField) return;
-
-            const font = document.getElementById('font-select').value;
-            const size = document.getElementById('font-size').value;
-            const color = document.getElementById('font-color').value;
-
-            selectedTextField.style.fontFamily = font;
-            selectedTextField.style.fontSize = size + 'px';
-            selectedTextField.style.color = color;
-        }
-
-        // Function to set the alignment of the selected text field
-        function setAlignment(alignment) {
-            if (!selectedTextField) return;
-            selectedTextField.style.textAlign = alignment;
-        }
-
-        // Make text field draggable
-        function makeDraggable(element) {
-            let offsetX = 0, offsetY = 0, mouseX = 0, mouseY = 0;
-
-            element.onmousedown = dragMouseDown;
-
-            function dragMouseDown(e) {
-                e.preventDefault();
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-                document.onmouseup = closeDragElement;
-                document.onmousemove = elementDrag;
-            }
-
-            function elementDrag(e) {
-                e.preventDefault();
-                isDragging = true; // Set the dragging flag when moving the element
-                offsetX = mouseX - e.clientX;
-                offsetY = mouseY - e.clientY;
-                mouseX = e.clientX;
-                mouseY = e.clientY;
-                let newTop = element.offsetTop - offsetY;
-                let newLeft = element.offsetLeft - offsetX;
-                // Ensure the element stays within the text-area boundaries
-                const container = document.getElementById('text-area-content');
-                const elemWidth = element.offsetWidth;
-                const elemHeight = element.offsetHeight;
-                if (newLeft < 0) newLeft = 0;
-                if (newTop < 0) newTop = 0;
-                if (newLeft + elemWidth > container.clientWidth) newLeft = container.clientWidth - elemWidth;
-                if (newTop + elemHeight > container.clientHeight) newTop = container.clientHeight - elemHeight;
-                element.style.top = newTop + "px";
-                element.style.left = newLeft + "px";
-            }
-
-            function closeDragElement() {
-                document.onmouseup = null;
-                document.onmousemove = null;
-                setTimeout(() => { isDragging = false; }, 100); // Delay resetting the dragging flag
-            }
-        }
-
-        // Function to toggle font options
-        function toggleFontOptions() {
-            const fontOptions = document.getElementById('font-options');
-            if (fontOptions.style.display === 'none' || fontOptions.style.display === '') {
-                if (selectedTextField) {
-                    fontOptions.style.display = 'block';
-                } else {
-                    alert('Please select a text field first.');
-                }
-            } else {
-                fontOptions.style.display = 'none';
-            }
-        }
-
-        // Function to load saved card from localStorage
-        function loadSavedCard() {
             const savedCardHTML = localStorage.getItem('cardHTML');
+
             if (savedCardHTML) {
-                const cardContainer = document.getElementById('card-container');
-                cardContainer.innerHTML = savedCardHTML;
+                // Create a temporary container to manipulate the HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = savedCardHTML;
 
-                // Re-attach event listeners to the text fields
-                const textAreaContent = document.getElementById('text-area-content');
-                currentTextFields = [];
-                totalTextFieldCount = 0;
-
-                textAreaContent.querySelectorAll('.text-field').forEach(function(textField) {
-                    textField.onclick = function(event) {
-                        if (!isDragging) {
-                            selectTextField(textField);
-                        }
-                    };
-                    makeDraggable(textField);
-                    currentTextFields.push(textField);
-                    totalTextFieldCount++;
-
-                    // Add input event listener to handle text input
-                    textField.addEventListener('input', function(event) {
-                        handleTextInput(textField);
-                    });
+                // Remove contenteditable attributes and borders
+                tempDiv.querySelectorAll('[contenteditable]').forEach(el => {
+                    el.removeAttribute('contenteditable');
+                    el.style.border = 'none';
                 });
+
+                cardContainer.innerHTML = tempDiv.innerHTML;
+            } else {
+                cardContainer.innerHTML = '<p>No card data found. Please create your card first.</p>';
             }
         }
+
+        // Function to redirect back to the home page for editing
+        function editCard() {
+            window.location.href = 'home.html';
+        }
+
+        // Initialize payment form
+        async function initialize() {
+            try {
+                console.log('Initializing payment...');
+                
+                // Create payment intent on the server
+                const response = await fetch('/.netlify/functions/create-payment-intent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: amount })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Payment initialization failed: ${response.status}`);
+                }
+
+                const { clientSecret } = await response.json();
+
+                // Create and mount the Payment Element
+                elements = stripe.elements({
+                    clientSecret,
+                    appearance: {
+                        theme: 'stripe'
+                    }
+                });
+
+                paymentElement = elements.create('payment');
+                paymentElement.mount('#payment-element');
+
+                document.querySelector('#submit').disabled = false;
+
+            } catch (error) {
+                console.error('Initialization error:', error);
+                const messageElement = document.querySelector('#payment-message');
+                messageElement.textContent = error.message;
+            }
+        }
+
+        // Handle form submission
+        async function handleSubmit(e) {
+            e.preventDefault();
+            
+            const submitButton = document.querySelector('#submit');
+            const messageElement = document.querySelector('#payment-message');
+
+            submitButton.disabled = true;
+            messageElement.textContent = 'Processing payment...';
+
+            try {
+                const { error } = await stripe.confirmPayment({
+                    elements,
+                    confirmParams: {
+                        return_url: `${window.location.origin}/payment-success.html`
+                    }
+                });
+
+                if (error) {
+                    console.error('Submit error:', error);
+                    messageElement.textContent = error.message;
+                    submitButton.disabled = false;
+                }
+                // Payment successful - redirect will happen automatically
+            } catch (error) {
+                console.error('Submit error:', error);
+                messageElement.textContent = 'An unexpected error occurred.';
+                submitButton.disabled = false;
+            }
+        }
+
+        // Add event listener for form submission
+        document.querySelector('#payment-form').addEventListener('submit', handleSubmit);
 
         // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            updateBackgrounds();
-            loadSavedCard();
+        document.addEventListener('DOMContentLoaded', () => {
+            displaySavedCard();
+            initialize();
         });
     </script>
 </body>
