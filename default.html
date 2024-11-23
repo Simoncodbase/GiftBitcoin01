@@ -1,0 +1,78 @@
+import React from 'react';
+import { ChevronRight } from 'lucide-react';
+
+const LandingPage = () => {
+  return (
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="flex justify-between items-center px-8 py-4 border-b">
+        <nav className="flex gap-8">
+          <a href="/design" className="text-gray-600 hover:text-gray-900">Design your gift package</a>
+          <a href="/examples" className="text-gray-600 hover:text-gray-900">Examples</a>
+          <a href="/about" className="text-gray-600 hover:text-gray-900">About</a>
+        </nav>
+        <div className="w-12 h-12">
+          <img 
+            src="/api/placeholder/48/48"
+            alt="Gift Logo"
+            className="w-full h-full object-contain"
+          />
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          
+          {/* Left Column */}
+          <div className="flex flex-col items-center space-y-8">
+            <h1 className="text-4xl md:text-5xl font-bold text-center">
+              Bitcoin gift package
+            </h1>
+            
+            <a 
+              href="/home.html" 
+              className="bg-yellow-500 hover:bg-yellow-600 text-black px-8 py-3 rounded-lg font-semibold flex items-center gap-2 transition-colors"
+            >
+              Create it now
+              <ChevronRight size={20} />
+            </a>
+            
+            <div className="mt-12">
+              <h2 className="text-2xl font-semibold text-center mb-6">
+                Three simple steps
+              </h2>
+              <ol className="space-y-4">
+                <li className="flex items-center gap-4">
+                  <span className="bg-yellow-500 rounded-full w-8 h-8 flex items-center justify-center font-bold">1</span>
+                  <span>Create card</span>
+                </li>
+                <li className="flex items-center gap-4">
+                  <span className="bg-yellow-500 rounded-full w-8 h-8 flex items-center justify-center font-bold">2</span>
+                  <span>Choose amount & pay</span>
+                </li>
+                <li className="flex items-center gap-4">
+                  <span className="bg-yellow-500 rounded-full w-8 h-8 flex items-center justify-center font-bold">3</span>
+                  <span>Download & gift</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+          
+          {/* Right Column */}
+          <div className="flex justify-center">
+            <div className="w-64 h-64">
+              <img
+                src="/api/placeholder/256/256"
+                alt="Bitcoin Gift Package"
+                className="w-full h-full object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default LandingPage;
