@@ -27,43 +27,53 @@
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+        .frame {
+            height: calc(100vh - 70px); /* Subtract header height */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-white">
     <!-- Header -->
-    <header class="flex justify-between items-center px-8 py-4 border-b">
+    <header class="flex justify-between items-center px-8 py-4 border-b h-[70px]">
+        <!-- Logo on the left -->
+        <div>
+            <img src="design/logo1.png" alt="Gift Logo" style="width: 50px; height: 50px;">
+        </div>
+        
+        <!-- Navigation on the right -->
         <nav class="flex gap-8">
             <a href="/design" class="text-gray-600 hover:text-gray-900">Design your gift package</a>
             <a href="/examples" class="text-gray-600 hover:text-gray-900">Examples</a>
             <a href="/about" class="text-gray-600 hover:text-gray-900">About</a>
         </nav>
-        <div class="w-12 h-12">
-            <img src="design/logo1.png" alt="Gift Logo" class="w-full h-full object-contain">
-        </div>
     </header>
 
     <!-- Main Content -->
-    <main class="container mx-auto px-4 py-12">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            
-            <!-- Left Column -->
-            <div class="flex flex-col items-center space-y-8">
-                <h1 class="text-4xl md:text-5xl font-bold text-center">
+    <main class="flex h-full">
+        <!-- Left Frame -->
+        <div class="w-1/2 frame">
+            <div class="text-center space-y-8">
+                <h1 class="text-4xl md:text-5xl font-bold">
                     Bitcoin gift package
                 </h1>
                 
-                <a href="home.html" class="btn-gold text-black px-8 py-3 rounded-lg font-semibold flex items-center gap-2">
-                    Create it now
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M9 18l6-6-6-6"/>
-                    </svg>
-                </a>
+                <div>
+                    <a href="home.html" class="btn-gold text-black px-8 py-3 rounded-lg font-semibold inline-flex items-center gap-2">
+                        Create it now
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                    </a>
+                </div>
                 
-                <div class="mt-12">
-                    <h2 class="text-2xl font-semibold text-center mb-6">
+                <div>
+                    <h2 class="text-2xl font-semibold mb-6">
                         Three simple steps
                     </h2>
-                    <ol class="space-y-4">
+                    <ol class="space-y-4 inline-block text-left">
                         <li class="flex items-center gap-4">
                             <span class="number-circle">1</span>
                             <span>Create card</span>
@@ -79,12 +89,12 @@
                     </ol>
                 </div>
             </div>
-            
-            <!-- Right Column -->
-            <div class="flex justify-center">
-                <div class="w-64 h-64">
-                    <img src="design/giftbox.png" alt="Bitcoin Gift Package" class="w-full h-full object-contain">
-                </div>
+        </div>
+        
+        <!-- Right Frame -->
+        <div class="w-1/2 frame">
+            <div class="flex justify-center items-center h-full">
+                <img src="design/giftbox.png" alt="Bitcoin Gift Package" class="max-w-[80%] h-auto">
             </div>
         </div>
     </main>
