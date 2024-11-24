@@ -1,101 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bitcoin Gift Package</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        .btn-gold {
-            background-color: #FFD700;
-            transition: background-color 0.3s ease;
-        }
-        .btn-gold:hover {
-            background-color: #FFED4A;
-        }
-        .number-circle {
-            background-color: #FFD700;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        .frame {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bitcoin Gift Package</title>
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="min-h-screen bg-white">
-    <!-- Top Frame -->
-    <header class="flex justify-between items-center px-8 py-4 border-b h-[70px]">
-        <!-- Logo -->
-        <div>
-            <img src="design/logo1.png" alt="Gift Logo" style="width: 50px; height: 50px;">
-        </div>
-        
-        <!-- Navigation -->
-        <nav class="flex gap-8">
-            <a href="/design" class="text-gray-600 hover:text-gray-900">Design your gift package</a>
-            <a href="/examples" class="text-gray-600 hover:text-gray-900">Examples</a>
-            <a href="/about" class="text-gray-600 hover:text-gray-900">About</a>
-        </nav>
-    </header>
+<body class="flex flex-col min-h-screen bg-white">
+  <!-- Top Navigation Bar -->
+  <header class="flex justify-between items-center px-8 py-4 border-b w-full">
+    <!-- Logo -->
+    <div>
+      <img src="design/logo1.png" alt="Gift Logo" class="w-12 h-12">
+    </div>
+    <!-- Navigation Links -->
+    <nav class="flex space-x-8">
+      <a href="/design" class="text-gray-600 hover:text-gray-900">Design your gift package</a>
+      <a href="/examples" class="text-gray-600 hover:text-gray-900">Examples</a>
+      <a href="/about" class="text-gray-600 hover:text-gray-900">About</a>
+    </nav>
+  </header>
 
-    <!-- Main Content -->
-    <main class="flex h-full">
-        <!-- Left Frame -->
-        <div class="w-1/2 frame">
-            <div class="text-center space-y-8">
-                <h1 class="text-4xl md:text-5xl font-bold">
-                    Bitcoin gift package
-                </h1>
-                
-                <div>
-                    <a href="home.html" class="btn-gold text-black px-8 py-3 rounded-lg font-semibold inline-flex items-center gap-2">
-                        Create it now
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9 18l6-6-6-6"/>
-                        </svg>
-                    </a>
-                </div>
-                
-                <div>
-                    <h2 class="text-2xl font-semibold mb-6">
-                        Three simple steps
-                    </h2>
-                    <ol class="space-y-4 inline-block text-left">
-                        <li class="flex items-center gap-4">
-                            <span class="number-circle">1</span>
-                            <span>Create card</span>
-                        </li>
-                        <li class="flex items-center gap-4">
-                            <span class="number-circle">2</span>
-                            <span>Choose amount & pay</span>
-                        </li>
-                        <li class="flex items-center gap-4">
-                            <span class="number-circle">3</span>
-                            <span>Download & gift</span>
-                        </li>
-                    </ol>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Right Frame -->
-        <div class="w-1/2 frame">
-            <div class="flex justify-center items-center h-full">
-                <img src="design/giftbox.png" alt="Bitcoin Gift Package" class="max-w-[80%] h-auto">
-            </div>
-        </div>
-    </main>
+  <!-- Main Content -->
+  <main class="flex flex-1">
+    <!-- Left Frame -->
+    <div class="w-1/2 flex flex-col items-center justify-center p-8">
+      <h1 class="text-4xl md:text-5xl font-bold text-center mb-8">
+        Bitcoin gift package
+      </h1>
+
+      <a href="home.html" class="bg-yellow-500 hover:bg-yellow-400 text-black px-8 py-3 rounded-lg font-semibold inline-flex items-center gap-2 mb-8 transition-colors duration-300">
+        Create it now
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path d="M9 18l6-6-6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+
+      <div class="text-center">
+        <h2 class="text-2xl font-semibold mb-6">
+          Three simple steps
+        </h2>
+        <ol class="space-y-4">
+          <li class="flex items-center gap-4 justify-center">
+            <span class="bg-yellow-500 w-8 h-8 rounded-full flex items-center justify-center font-bold shadow">
+              1
+            </span>
+            <span>Create card</span>
+          </li>
+          <li class="flex items-center gap-4 justify-center">
+            <span class="bg-yellow-500 w-8 h-8 rounded-full flex items-center justify-center font-bold shadow">
+              2
+            </span>
+            <span>Choose amount & pay</span>
+          </li>
+          <li class="flex items-center gap-4 justify-center">
+            <span class="bg-yellow-500 w-8 h-8 rounded-full flex items-center justify-center font-bold shadow">
+              3
+            </span>
+            <span>Download & gift</span>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Right Frame -->
+    <div class="w-1/2 flex items-center justify-center p-8">
+      <img src="design/giftbox.png" alt="Bitcoin Gift Package" class="max-w-full h-auto">
+    </div>
+  </main>
 </body>
 </html>
