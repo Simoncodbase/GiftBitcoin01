@@ -28,7 +28,6 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .frame {
-            height: calc(100vh - 70px); /* Subtract header height */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -36,14 +35,14 @@
     </style>
 </head>
 <body class="min-h-screen bg-white">
-    <!-- Header -->
+    <!-- Top Frame -->
     <header class="flex justify-between items-center px-8 py-4 border-b h-[70px]">
-        <!-- Logo on the left -->
+        <!-- Logo -->
         <div>
             <img src="design/logo1.png" alt="Gift Logo" style="width: 50px; height: 50px;">
         </div>
         
-        <!-- Navigation on the right -->
+        <!-- Navigation -->
         <nav class="flex gap-8">
             <a href="/design" class="text-gray-600 hover:text-gray-900">Design your gift package</a>
             <a href="/examples" class="text-gray-600 hover:text-gray-900">Examples</a>
