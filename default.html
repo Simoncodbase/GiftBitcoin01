@@ -6,6 +6,40 @@
   <title>Bitcoin Gift Package</title>
   <!-- Tailwind CSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .image-slider {
+      width: 100%;
+      height: auto;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .slider-images {
+      display: flex;
+      width: 300%;
+      animation: slide 9s infinite;
+    }
+
+    .slider-images img {
+      width: 100%;
+      flex-shrink: 0;
+    }
+
+    @keyframes slide {
+      0% {
+        transform: translateX(0%);
+      }
+      33% {
+        transform: translateX(-100%);
+      }
+      66% {
+        transform: translateX(-200%);
+      }
+      100% {
+        transform: translateX(0%);
+      }
+    }
+  </style>
 </head>
 <body class="flex flex-col min-h-screen bg-white">
   <!-- Top Navigation Bar -->
@@ -66,7 +100,13 @@
 
     <!-- Right Frame -->
     <div class="w-1/2 flex items-center justify-center p-8">
-      <img src="design/giftbox.png" alt="Bitcoin Gift Package" class="max-w-full h-auto">
+      <div class="image-slider">
+        <div class="slider-images">
+          <img src="design/birthday1.png" alt="Birthday Image">
+          <img src="design/christmas1.png" alt="Christmas Image">
+          <img src="design/queen1.png" alt="Crypto Queen Image">
+        </div>
+      </div>
     </div>
   </main>
 </body>
