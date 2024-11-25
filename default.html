@@ -19,17 +19,20 @@
       width: 104%; /* Increased by 30% (original was ~80%) */
       max-width: 520px; /* Increased by 30% (original max-width was 400px) */
       height: auto;
+      position: relative;
     }
 
     .animated-images-container {
       position: absolute;
       width: 50%;
-      height: 50%;
+      height: 25%; /* Adjusted to keep proportional to giftbox size */
+      left: 50%; /* Horizontally centered */
+      transform: translateX(-50%); /* Correct centering */
+      bottom: 20px; /* 20px above the bottom edge of the giftbox */
       display: flex;
       justify-content: center;
       align-items: center;
       overflow: hidden;
-      bottom: 50px; /* Positioned 50px above the bottom edge of the giftbox */
     }
 
     .animated-images {

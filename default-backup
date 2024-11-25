@@ -6,6 +6,68 @@
   <title>Bitcoin Gift Package</title>
   <!-- Tailwind CSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    /* Background and animation container styling */
+    .giftbox-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .giftbox-image {
+      width: 104%; /* Increased by 30% (original was ~80%) */
+      max-width: 520px; /* Increased by 30% (original max-width was 400px) */
+      height: auto;
+    }
+
+    .animated-images-container {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      bottom: 50px; /* Positioned 50px above the bottom edge of the giftbox */
+    }
+
+    .animated-images {
+      display: flex;
+      position: relative;
+      width: 300%;
+      height: 100%;
+      animation: swipe-animation 9s infinite;
+    }
+
+    .animated-images img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    @keyframes swipe-animation {
+      0% {
+        transform: translateX(0%);
+      }
+      33% {
+        transform: translateX(0%);
+      }
+      36% {
+        transform: translateX(-100%);
+      }
+      69% {
+        transform: translateX(-100%);
+      }
+      72% {
+        transform: translateX(-200%);
+      }
+      100% {
+        transform: translateX(-200%);
+      }
+    }
+  </style>
 </head>
 <body class="flex flex-col min-h-screen bg-white">
   <!-- Top Navigation Bar -->
@@ -65,8 +127,18 @@
     </div>
 
     <!-- Right Frame -->
-    <div class="w-1/2 flex items-center justify-center p-8">
-      <img src="design/giftbox.png" alt="Bitcoin Gift Package" class="max-w-full h-auto">
+    <div class="w-1/2 flex items-center justify-center p-8 giftbox-container">
+      <!-- Giftbox background -->
+      <img src="design/giftbox.png" alt="Bitcoin Gift Package" class="giftbox-image">
+      
+      <!-- Foreground animated images -->
+      <div class="animated-images-container">
+        <div class="animated-images">
+          <img src="design/Birthday1.JPG" alt="Birthday Image">
+          <img src="design/Christmas1.JPG" alt="Christmas Image">
+          <img src="design/Queen1.JPG" alt="Queen Image">
+        </div>
+      </div>
     </div>
   </main>
 </body>
