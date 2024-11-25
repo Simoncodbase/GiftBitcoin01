@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Customized Card Creator</title>
-    <style>
+<meta charset="utf-8"/>
+<title>Customized Card Creator</title>
+<style>
         /* Base styling */
         * {
             box-sizing: border-box;
@@ -266,89 +267,81 @@
                 width: 100%;
             }
         }
-    </style>
+    
+</style>
 </head>
 <body>
-    <div class="main-container">
-        <div id="card-container">
-            <!-- Background Image (Initially hidden) -->
-            <img id="background" src="">
-            <!-- Text area -->
-            <div id="text-area">
-                <div id="text-area-content"></div>
-            </div>
-        </div>
-
-        <div class="controls-container">
-            <!-- Category Selector -->
-            <div id="background-selector">
-                <h3>Select a Background</h3>
-                <div style="display: flex; align-items: center;">
-                    <label for="category-select">Category:</label>
-                    <select id="category-select" onchange="updateBackgrounds()" style="margin-right: 10px;">
-                        <option value="">--Select Category--</option>
-                        <option value="crypto-king">Crypto-King</option>
-                        <option value="crypto-queen">Crypto-Queen</option>
-                        <option value="birthday">Birthday</option>
-                        <option value="christmas">Christmas</option>
-                        <option value="upload-own-picture">Upload Own Picture</option>
-                    </select>
-                    <!-- Upload Own Picture Button -->
-                    <button id="upload-button" onclick="triggerFileInput()">Upload Own Picture</button>
-                    <!-- Hidden File Input -->
-                    <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="handleFileUpload(event)">
-                </div>
-
-                <!-- Background Images will be displayed here -->
-                <div id="background-images">
-                    <!-- Images will be inserted here based on the selected category -->
-                </div>
-            </div>
-
-            <!-- Add/Remove Text Buttons -->
-            <button onclick="addTextField()">Add Text Field</button>
-            <button onclick="toggleFontOptions()">Format Text</button>
-            <button onclick="removeSelectedTextField()">Remove Selected Text Field</button>
-
-            <!-- Font, Size, and Color Selectors -->
-            <div id="font-options">
-                <h3>Text Options</h3>
-                <label for="font-select">Font:</label>
-                <select id="font-select" onchange="updateSelectedTextStyle()">
-                    <option value="">--Select Font--</option>
-                    <option style="font-family: Arial;" value="Arial">Arial</option>
-                    <option style="font-family: 'Times New Roman';" value="Times New Roman">Times New Roman</option>
-                    <option style="font-family: 'Courier New';" value="Courier New">Courier New</option>
-                    <option style="font-family: Georgia;" value="Georgia">Georgia</option>
-                    <option style="font-family: Verdana;" value="Verdana">Verdana</option>
-                    <option style="font-family: Tahoma;" value="Tahoma">Tahoma</option>
-                    <option style="font-family: 'Trebuchet MS';" value="Trebuchet MS">Trebuchet MS</option>
-                    <option style="font-family: 'Comic Sans MS';" value="Comic Sans MS">Comic Sans MS</option>
-                    <option style="font-family: Impact;" value="Impact">Impact</option>
-                    <option style="font-family: Papyrus;" value="Papyrus">Papyrus</option>
-                </select>
-
-                <label for="font-size">Size:</label>
-                <input type="number" id="font-size" value="14" min="4" onchange="updateSelectedTextStyle()">
-
-                <label for="font-color">Color:</label>
-                <input type="color" id="font-color" value="#000000" onchange="updateSelectedTextStyle()">
-
-                <!-- Alignment options -->
-                <label>Alignment:</label>
-                <div id="alignment-buttons">
-                    <button type="button" class="small-button" onclick="setAlignment('left')">Left</button>
-                    <button type="button" class="small-button" onclick="setAlignment('center')">Center</button>
-                    <button type="button" class="small-button" onclick="setAlignment('right')">Right</button>
-                </div>
-            </div>
-
-            <!-- Review Order Button -->
-            <button onclick="reviewOrder()">Review Order</button>
-        </div>
-    </div>
-
-    <script>
+<div class="main-container">
+<div id="card-container">
+<!-- Background Image (Initially hidden) -->
+<img id="background" src=""/>
+<!-- Text area -->
+<div id="text-area">
+<div id="text-area-content"></div>
+</div>
+</div>
+<div class="controls-container">
+<!-- Category Selector -->
+<div id="background-selector">
+<h3>Select a Background</h3>
+<div style="display: flex; align-items: center;">
+<label for="category-select">Category:</label>
+<select id="category-select" onchange="updateBackgrounds()" style="margin-right: 10px;">
+<option value="">--Select Category--</option>
+<option value="crypto-king">Crypto-King</option>
+<option value="crypto-queen">Crypto-Queen</option>
+<option value="birthday">Birthday</option>
+<option value="christmas">Christmas</option>
+<option value="upload-own-picture">Upload Own Picture</option>
+</select>
+<!-- Upload Own Picture Button -->
+<button id="upload-button" onclick="triggerFileInput()">Upload Own Picture</button>
+<!-- Hidden File Input -->
+<input accept="image/*" id="file-input" onchange="handleFileUpload(event)" style="display: none;" type="file"/>
+</div>
+<!-- Background Images will be displayed here -->
+<div id="background-images">
+<!-- Images will be inserted here based on the selected category -->
+</div>
+</div>
+<!-- Add/Remove Text Buttons -->
+<button onclick="addTextField()">Add Text Field</button>
+<button onclick="toggleFontOptions()">Format Text</button>
+<button onclick="removeSelectedTextField()">Remove Selected Text Field</button>
+<!-- Font, Size, and Color Selectors -->
+<div id="font-options">
+<h3>Text Options</h3>
+<label for="font-select">Font:</label>
+<select id="font-select" onchange="updateSelectedTextStyle()">
+<option value="">--Select Font--</option>
+<option style="font-family: Arial;" value="Arial">Arial</option>
+<option style="font-family: 'Times New Roman';" value="Times New Roman">Times New Roman</option>
+<option style="font-family: 'Courier New';" value="Courier New">Courier New</option>
+<option style="font-family: Georgia;" value="Georgia">Georgia</option>
+<option style="font-family: Verdana;" value="Verdana">Verdana</option>
+<option style="font-family: Tahoma;" value="Tahoma">Tahoma</option>
+<option style="font-family: 'Trebuchet MS';" value="Trebuchet MS">Trebuchet MS</option>
+<option style="font-family: 'Comic Sans MS';" value="Comic Sans MS">Comic Sans MS</option>
+<option style="font-family: Impact;" value="Impact">Impact</option>
+<option style="font-family: Papyrus;" value="Papyrus">Papyrus</option>
+</select>
+<label for="font-size">Size:</label>
+<input id="font-size" min="4" onchange="updateSelectedTextStyle()" type="number" value="14"/>
+<label for="font-color">Color:</label>
+<input id="font-color" onchange="updateSelectedTextStyle()" type="color" value="#000000"/>
+<!-- Alignment options -->
+<label>Alignment:</label>
+<div id="alignment-buttons">
+<button class="small-button" onclick="setAlignment('left')" type="button">Left</button>
+<button class="small-button" onclick="setAlignment('center')" type="button">Center</button>
+<button class="small-button" onclick="setAlignment('right')" type="button">Right</button>
+</div>
+</div>
+<!-- Review Order Button -->
+<button onclick="reviewOrder()">Review Order</button>
+</div>
+</div>
+<script>
         // Data: category backgrounds
         const categoryBackgrounds = {
             'crypto-king': [

@@ -1,13 +1,14 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Review Your Card & Payment</title>
-    <script src="https://js.stripe.com/v3/"></script>
-    <!-- Include jsPDF and html2canvas libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
+<meta charset="utf-8"/>
+<title>Review Your Card &amp; Payment</title>
+<script src="https://js.stripe.com/v3/"></script>
+<!-- Include jsPDF and html2canvas libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
         /* Define CSS variables for sizes */
         :root {
             --card-width: 30vw;
@@ -206,40 +207,37 @@
                 justify-content: center;
             }
         }
-    </style>
+    
+</style>
 </head>
 <body>
-    <div class="main-container">
-        <!-- Printable Content -->
-        <div class="printable-container">
-            <!-- Card Container -->
-            <div id="card-container">
-                <!-- The saved card content will be inserted here -->
-            </div>
-
-            <!-- Image Container -->
-            <div id="image-container">
-                <img src="pictures/example-key/example-key-final.png" alt="Example Key">
-            </div>
-        </div>
-
-        <!-- Controls Container -->
-        <div class="controls-container">
-            <button onclick="editCard()">Edit Card</button>
-            <button id="pdf-button">Click for PDF of Card (takes 3 seconds to generate)</button>
-
-            <form id="payment-form">
-                <h2>Payment Details</h2>
-                <div id="payment-element"></div>
-                <button id="submit" type="submit">
-                    <span id="button-text">Pay now</span>
-                </button>
-                <div id="payment-message"></div>
-            </form>
-        </div>
-    </div>
-
-    <script>
+<div class="main-container">
+<!-- Printable Content -->
+<div class="printable-container">
+<!-- Card Container -->
+<div id="card-container">
+<!-- The saved card content will be inserted here -->
+</div>
+<!-- Image Container -->
+<div id="image-container">
+<img alt="Example Key" src="pictures/example-key/example-key-final.png"/>
+</div>
+</div>
+<!-- Controls Container -->
+<div class="controls-container">
+<button onclick="editCard()">Edit Card</button>
+<button id="pdf-button">Click for PDF of Card (takes 3 seconds to generate)</button>
+<form id="payment-form">
+<h2>Payment Details</h2>
+<div id="payment-element"></div>
+<button id="submit" type="submit">
+<span id="button-text">Pay now</span>
+</button>
+<div id="payment-message"></div>
+</form>
+</div>
+</div>
+<script>
         // Initialize Stripe
         const stripe = Stripe('pk_test_51Q9TrZEAbBnxrSl5cASxdzrObnYUOgytR7iS55Fn1EtwGIguhqmqRlObWaj5n9MCVrRzKRcN1MwOQrpm49S9d5PY00Fp8qHAFt');
         let elements;
