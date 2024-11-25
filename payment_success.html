@@ -134,6 +134,15 @@
             margin-top: 10px;
         }
 
+        /* Disclaimer styling */
+        #disclaimer {
+            margin-top: 20px;
+            font-size: 16px;
+            color: red;
+            text-align: center;
+            max-width: 80%;
+        }
+
         /* Adjust styles for print media */
         @media print {
             :root {
@@ -217,6 +226,10 @@ button:hover {
 <div id="bitcoin-addresses-container">
 <!-- The generated addresses and QR codes will be displayed here -->
 </div>
+</div>
+<!-- Disclaimer -->
+<div id="disclaimer">
+    <p><strong>Important:</strong> The private key should never be revealed to anyone. Please transfer the coins to a new wallet within 30 days. Note that the person who has given you this gift also knows your private key and can therefore transfer the assets at any time unless the funds are moved to a new wallet.</p>
 </div>
 </div>
 <!-- Hidden form for Netlify Forms (commented out) -->
