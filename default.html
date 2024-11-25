@@ -13,7 +13,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
+    }
+
+    .giftbox-image {
+      width: 80%; /* Adjusted to match the original size */
+      max-width: 400px;
+      height: auto;
     }
 
     .animated-images-container {
@@ -123,14 +128,14 @@
     <!-- Right Frame -->
     <div class="w-1/2 flex items-center justify-center p-8 giftbox-container">
       <!-- Giftbox background -->
-      <img src="design/giftbox.png" alt="Bitcoin Gift Package" class="absolute inset-0 w-full h-auto object-cover">
+      <img src="design/giftbox.png" alt="Bitcoin Gift Package" class="giftbox-image">
       
       <!-- Foreground animated images -->
       <div class="animated-images-container">
         <div class="animated-images">
-          <img src="design/Birthday1.png" alt="Birthday Image">
-          <img src="design/Christmas1.png" alt="Christmas Image">
-          <img src="design/Queen1.png" alt="Queen Image">
+          <img src="design/birthday1.JPG" alt="Birthday Image">
+          <img src="design/christmas1.JPG" alt="Christmas Image">
+          <img src="design/queen1.JPG" alt="Queen Image">
         </div>
       </div>
     </div>
