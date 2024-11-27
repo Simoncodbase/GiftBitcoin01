@@ -175,14 +175,14 @@
         </select>
         <br><br>
         <label for="amount-input">Amount:</label><br>
-        <input type="number" id="amount-input" name="amount-input" min="1" step="1">
+        <input type="number" id="amount-input" name="amount-input" min="20" max="200" step="1">
         <br><br>
         <div id="amount-message"></div>
         <br>
-        <button id="proceed-to-payment" type="button">Proceed to Payment</button>
     </form>
     <button onclick="editCard()">Edit Card</button>
-    <button id="pdf-button">Click for PDF of Card (takes 3 seconds to generate)</button>
+    <button id="pdf-button">Review your Card before paying (takes 3 seconds to generate)</button>
+    <button id="proceed-to-payment" type="button">Proceed to Payment</button>
     <form id="payment-form">
         <h2>Payment Details</h2>
         <div id="payment-element"></div>
@@ -235,13 +235,16 @@
         // Get the amount
         let amount = parseFloat(document.getElementById('amount-input').value);
 
-        if (!amount || isNaN(amount) || amount <= 0) {
-            amount = 0;
-        }
-
         const messageDiv = document.getElementById('amount-message');
 
-        if (amount > 0) {
+        if (!amount || isNaN(amount)) {
+            messageDiv.textContent = 'Please enter a valid amount.';
+            return;
+        }
+
+        if (amount < 20 || amount > 200) {
+            messageDiv.textContent = `The minimum amount is 20 ${currency}, the maximum amount is 200 ${currency}.`;
+        } else {
             // Calculate X-10
             let creditedAmount = amount - 10;
             creditedAmount = Math.max(0, creditedAmount);
@@ -251,9 +254,6 @@
 
             // Display the message
             messageDiv.textContent = message;
-        } else {
-            // Clear the message
-            messageDiv.textContent = 'Please enter a valid amount.';
         }
     }
 
@@ -340,8 +340,8 @@
 
         // Get entered amount
         let amount = parseFloat(document.getElementById('amount-input').value);
-        if (isNaN(amount) || amount <= 0) {
-            alert('Please enter a valid amount.');
+        if (isNaN(amount) || amount < 20 || amount > 200) {
+            alert(`Please enter an amount between 20 and 200 ${currency}.`);
             return;
         }
 
@@ -352,7 +352,7 @@
         initialize(amountInCents, currency);
 
         // Disable the payment options form
-        document.getElementById('payment-options').querySelectorAll('input, select, button').forEach(function(elem) {
+        document.getElementById('payment-options').querySelectorAll('input, select').forEach(function(elem) {
             elem.disabled = true;
         });
 
