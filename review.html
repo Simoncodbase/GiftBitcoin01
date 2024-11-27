@@ -223,14 +223,8 @@
             <option value="CHF">CHF</option>
         </select>
         <br><br>
-        <label>Amount:</label><br>
-        <input type="radio" id="amount-50" name="amount-option" value="50">
-        <label for="amount-50">50 (total package cost 64)</label><br>
-        <input type="radio" id="amount-100" name="amount-option" value="100">
-        <label for="amount-100">100 (total package cost 116)</label><br>
-        <input type="radio" id="amount-custom" name="amount-option" value="custom">
-        <label for="amount-custom">Enter your own amount:</label>
-        <input type="number" id="custom-amount" name="custom-amount" min="1" step="1" disabled>
+        <label for="amount-input">Amount:</label><br>
+        <input type="number" id="amount-input" name="amount-input" min="1" step="1">
         <br><br>
         <div id="amount-message"></div>
         <br>
@@ -288,19 +282,9 @@
         const currency = currencySelect.value;
 
         // Get the amount
-        let amount;
-        const amountOption = document.querySelector('input[name="amount-option"]:checked');
-        if (amountOption) {
-            if (amountOption.value === 'custom') {
-                amount = parseFloat(document.getElementById('custom-amount').value);
-            } else {
-                amount = parseFloat(amountOption.value);
-            }
-        } else {
-            amount = 0;
-        }
+        let amount = parseFloat(document.getElementById('amount-input').value);
 
-        if (!amount || isNaN(amount)) {
+        if (!amount || isNaN(amount) || amount <= 0) {
             amount = 0;
         }
 
@@ -318,7 +302,7 @@
             messageDiv.textContent = message;
         } else {
             // Clear the message
-            messageDiv.textContent = 'Please select an amount.';
+            messageDiv.textContent = 'Please enter a valid amount.';
         }
     }
 
@@ -400,21 +384,10 @@
         const currencySelect = document.getElementById('currency-select');
         const currency = currencySelect.value;
 
-        // Get selected amount
-        let amount;
-        const amountOption = document.querySelector('input[name="amount-option"]:checked');
-        if (amountOption) {
-            if (amountOption.value === 'custom') {
-                amount = parseFloat(document.getElementById('custom-amount').value);
-                if (isNaN(amount) || amount <= 0) {
-                    alert('Please enter a valid custom amount.');
-                    return;
-                }
-            } else {
-                amount = parseFloat(amountOption.value);
-            }
-        } else {
-            alert('Please select an amount.');
+        // Get entered amount
+        let amount = parseFloat(document.getElementById('amount-input').value);
+        if (isNaN(amount) || amount <= 0) {
+            alert('Please enter a valid amount.');
             return;
         }
 
@@ -439,22 +412,9 @@
         // Hide payment form initially
         document.getElementById('payment-form').style.display = 'none';
 
-        // Handle custom amount input
-        document.querySelectorAll('input[name="amount-option"]').forEach(function(elem) {
-            elem.addEventListener('change', function() {
-                const customAmountInput = document.getElementById('custom-amount');
-                if (this.value === 'custom') {
-                    customAmountInput.disabled = false;
-                } else {
-                    customAmountInput.disabled = true;
-                    customAmountInput.value = '';
-                }
-                updateAmountMessage();
-            });
-        });
-
+        // Add event listeners to update the amount message
         document.getElementById('currency-select').addEventListener('change', updateAmountMessage);
-        document.getElementById('custom-amount').addEventListener('input', updateAmountMessage);
+        document.getElementById('amount-input').addEventListener('input', updateAmountMessage);
 
         // Call updateAmountMessage on page load
         updateAmountMessage();
