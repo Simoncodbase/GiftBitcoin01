@@ -2,13 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<title>Review Your Card &amp; Payment</title>
+<title>Review Your Card & Payment</title>
 <script src="https://js.stripe.com/v3/"></script>
-<!-- Include jsPDF and html2canvas libraries -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-    /* Define CSS variables for sizes */
     :root {
         --card-width: 30vw;
         --card-height: 40vw;
@@ -25,56 +23,30 @@
     body {
         font-family: Arial, sans-serif;
         line-height: 1.6;
+        padding: 20px;
     }
 
-    /* Main container styling */
     .main-container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 20px;
         display: flex;
-        flex-direction: column;
-    }
-
-    /* For large displays, show controls on the right */
-    @media (min-width: 1024px) {
-        .main-container {
-            flex-direction: row;
-            align-items: flex-start;
-        }
-
-        /* Printable content takes up the remaining space */
-        .printable-container {
-            flex: 1;
-        }
-
-        .controls-container {
-            width: 750px; /* Increased width by 50% */
-            margin-left: 20px;
-        }
-    }
-
-    /* Printable content styling */
-    .printable-container {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        align-items: flex-start;
-        flex-wrap: nowrap;
         gap: 20px;
     }
 
-    /* Card container setup */
+    .printable-container {
+        flex-shrink: 0;
+        width: 30vw;
+    }
+
     #card-container {
         width: var(--card-width);
         height: var(--card-height);
         position: relative;
         border: 1px solid #000;
         background-color: white;
-        flex-shrink: 0;
     }
 
-    /* Background image styling */
     #background {
         width: 100%;
         height: var(--image-height);
@@ -84,7 +56,6 @@
         display: block;
     }
 
-    /* Text area styling */
     #text-area {
         position: absolute;
         top: var(--image-height);
@@ -94,345 +65,81 @@
         background-color: transparent;
     }
 
-    /* Text field styling */
-    .text-field {
-        position: absolute;
-        padding: 5px;
-        background-color: rgba(255, 255, 255, 0.7);
-        word-wrap: break-word;
-        user-select: text;
-    }
-
-    /* Controls container */
     .controls-container {
-        margin-top: 20px;
+        flex-grow: 1;
+        max-width: 600px;
     }
 
-    /* Payment form styling */
-    #payment-form {
-        margin-top: 20px;
-        padding: 20px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-    }
-
-    #payment-element {
-        margin-bottom: 24px;
-    }
-
-    #payment-message {
-        color: rgb(105, 115, 134);
-        font-size: 16px;
-        line-height: 20px;
-        padding-top: 12px;
-        text-align: center;
-    }
-
-    /* Button styling */
     button {
-        background: #F59E0B; /* Same as bg-yellow-500 in Tailwind */
-        color: #000000; /* Black text */
+        background: #F59E0B;
+        color: #000;
         font-family: Arial, sans-serif;
-        border-radius: 8px; /* Rounded corners */
+        border-radius: 8px;
         border: 0;
         padding: 12px 16px;
         font-size: 16px;
         font-weight: bold;
         cursor: pointer;
-        display: inline-block;
-        transition: all 0.2s ease;
+        display: block;
+        width: 100%;
+        margin-bottom: 10px;
     }
+
     button:hover {
-        background: #FBBF24; /* Same as hover:bg-yellow-400 in Tailwind */
+        background: #FBBF24;
     }
 
-    /* Responsive design */
-    @media (max-width: 768px) {
-        #card-container {
-            width: 80vw;
-            height: calc(80vw * 4 / 3); /* Adjust height based on aspect ratio */
-        }
-
-        .printable-container {
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-    }
-
-    @media (max-width: 480px) {
-        #card-container {
-            width: 90vw;
-            height: calc(90vw * 4 / 3);
-        }
-
-        .printable-container {
-            flex-wrap: wrap;
-            justify-content: center;
-        }
+    #payment-options, #payment-form {
+        margin-bottom: 20px;
     }
 </style>
 </head>
 <body>
 <div class="main-container">
-<!-- Printable Content -->
-<div class="printable-container">
-<!-- Card Container -->
-<div id="card-container">
-<!-- The saved card content will be inserted here -->
-</div>
-</div>
-<!-- Controls Container -->
-<div class="controls-container">
-    <form id="payment-options">
-        <h2>Payment Options</h2>
-        <label for="currency-select">Currency:</label>
-        <select id="currency-select" name="currency">
-            <option value="USD">USD</option>
-            <option value="EUR">EUR</option>
-            <option value="CHF">CHF</option>
-        </select>
-        <br><br>
-        <label for="amount-input">Amount:</label><br>
-        <input type="number" id="amount-input" name="amount-input" min="1" step="1">
-        <br><br>
-        <div id="amount-message"></div>
-        <br>
-        <button id="proceed-to-payment" type="button">Proceed to Payment</button>
-    </form>
-    <button onclick="editCard()">Edit Card</button>
-    <button id="pdf-button">Click for PDF of Card (takes 3 seconds to generate)</button>
-    <form id="payment-form">
-        <h2>Payment Details</h2>
-        <div id="payment-element"></div>
-        <button id="submit" type="submit">
-            <span id="button-text">Pay now</span>
-        </button>
-        <div id="payment-message"></div>
-    </form>
-</div>
+    <div class="printable-container">
+        <div id="card-container"></div>
+    </div>
+    <div class="controls-container">
+        <form id="payment-options">
+            <h2>Payment Options</h2>
+            <label for="currency-select">Currency:</label>
+            <select id="currency-select" name="currency">
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="CHF">CHF</option>
+            </select>
+            <br><br>
+            <label for="amount-input">Amount:</label><br>
+            <input type="number" id="amount-input" name="amount-input" min="1" step="1">
+            <br><br>
+            <div id="amount-message"></div>
+            <br>
+            <button id="proceed-to-payment" type="button">Proceed to Payment</button>
+        </form>
+        <button onclick="editCard()">Edit Card</button>
+        <button id="pdf-button">Click for PDF of Card (takes 3 seconds to generate)</button>
+        <form id="payment-form">
+            <h2>Payment Details</h2>
+            <div id="payment-element"></div>
+            <button id="submit" type="submit">
+                <span id="button-text">Pay now</span>
+            </button>
+            <div id="payment-message"></div>
+        </form>
+    </div>
 </div>
 <script>
-    // Initialize Stripe
-    const stripe = Stripe('pk_test_51Q9TrZEAbBnxrSl5cASxdzrObnYUOgytR7iS55Fn1EtwGIguhqmqRlObWaj5n9MCVrRzKRcN1MwOQrpm49S9d5PY00Fp8qHAFt');
-    let elements;
-    let paymentElement;
-
-    // Function to display the saved card
     function displaySavedCard() {
         const cardContainer = document.getElementById('card-container');
         const savedCardHTML = localStorage.getItem('cardHTML');
-
-        if (savedCardHTML) {
-            // Create a temporary container to manipulate the HTML
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = savedCardHTML;
-
-            // Remove contenteditable attributes and borders
-            tempDiv.querySelectorAll('[contenteditable]').forEach(el => {
-                el.removeAttribute('contenteditable');
-                el.style.border = 'none';
-            });
-
-            cardContainer.innerHTML = tempDiv.innerHTML;
-        } else {
-            cardContainer.innerHTML = '<p>No card data found. Please create your card first.</p>';
-        }
+        cardContainer.innerHTML = savedCardHTML || '<p>No card data found. Please create your card first.</p>';
     }
 
-    // Function to redirect back to the home page for editing
     function editCard() {
         window.location.href = 'home.html';
     }
 
-    // Function to update the amount message
-    function updateAmountMessage() {
-        // Get the currency
-        const currencySelect = document.getElementById('currency-select');
-        const currency = currencySelect.value;
-
-        // Get the amount
-        let amount = parseFloat(document.getElementById('amount-input').value);
-
-        if (!amount || isNaN(amount) || amount <= 0) {
-            amount = 0;
-        }
-
-        const messageDiv = document.getElementById('amount-message');
-
-        if (amount > 0) {
-            // Calculate X-10
-            let creditedAmount = amount - 10;
-            creditedAmount = Math.max(0, creditedAmount);
-
-            // Construct the message
-            const message = `Based on your amount of ${amount} ${currency}, the user will be credited ${creditedAmount} ${currency} in BTC within 24 hours based on the prevailing BTC/${currency} rate at the time of the execution.`;
-
-            // Display the message
-            messageDiv.textContent = message;
-        } else {
-            // Clear the message
-            messageDiv.textContent = 'Please enter a valid amount.';
-        }
-    }
-
-    // Handle form submission
-    async function handleSubmit(e) {
-        e.preventDefault();
-        
-        const submitButton = document.querySelector('#submit');
-        const messageElement = document.querySelector('#payment-message');
-
-        submitButton.disabled = true;
-        messageElement.textContent = 'Processing payment...';
-
-        try {
-            const { error } = await stripe.confirmPayment({
-                elements,
-                confirmParams: {
-                    return_url: `${window.location.origin}/payment-success.html`
-                }
-            });
-
-            if (error) {
-                console.error('Submit error:', error);
-                messageElement.textContent = error.message;
-                submitButton.disabled = false;
-            }
-            // Payment successful - redirect will happen automatically
-        } catch (error) {
-            console.error('Submit error:', error);
-            messageElement.textContent = 'An unexpected error occurred.';
-            submitButton.disabled = false;
-        }
-    }
-
-    // Initialize payment form
-    async function initialize(amount, currency) {
-        try {
-            console.log('Initializing payment with amount:', amount, 'currency:', currency);
-            
-            // Create payment intent on the server
-            const response = await fetch('/.netlify/functions/create-payment-intent', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount: amount, currency: currency })
-            });
-
-            if (!response.ok) {
-                throw new Error(`Payment initialization failed: ${response.status}`);
-            }
-
-            const { clientSecret } = await response.json();
-
-            // Create and mount the Payment Element
-            elements = stripe.elements({
-                clientSecret,
-                appearance: {
-                    theme: 'stripe'
-                }
-            });
-
-            paymentElement = elements.create('payment');
-            paymentElement.mount('#payment-element');
-
-            document.querySelector('#submit').disabled = false;
-
-        } catch (error) {
-            console.error('Initialization error:', error);
-            const messageElement = document.querySelector('#payment-message');
-            messageElement.textContent = error.message;
-        }
-    }
-
-    // Add event listener for form submission
-    document.querySelector('#payment-form').addEventListener('submit', handleSubmit);
-
-    // Add event listener for "Proceed to Payment" button
-    document.getElementById('proceed-to-payment').addEventListener('click', function() {
-        // Get selected currency
-        const currencySelect = document.getElementById('currency-select');
-        const currency = currencySelect.value;
-
-        // Get entered amount
-        let amount = parseFloat(document.getElementById('amount-input').value);
-        if (isNaN(amount) || amount <= 0) {
-            alert('Please enter a valid amount.');
-            return;
-        }
-
-        // Convert amount to smallest currency unit (e.g., cents)
-        let amountInCents = Math.round(amount * 100);
-
-        // Call initialize with amount and currency
-        initialize(amountInCents, currency);
-
-        // Disable the payment options form
-        document.getElementById('payment-options').querySelectorAll('input, select, button').forEach(function(elem) {
-            elem.disabled = true;
-        });
-
-        // Show the payment form
-        document.getElementById('payment-form').style.display = 'block';
-    });
-
-    // Initialize the page
-    document.addEventListener('DOMContentLoaded', () => {
-        displaySavedCard();
-        // Hide payment form initially
-        document.getElementById('payment-form').style.display = 'none';
-
-        // Add event listeners to update the amount message
-        document.getElementById('currency-select').addEventListener('change', updateAmountMessage);
-        document.getElementById('amount-input').addEventListener('input', updateAmountMessage);
-
-        // Call updateAmountMessage on page load
-        updateAmountMessage();
-    });
-
-    // PDF generation functionality adjusted
-    document.getElementById('pdf-button').addEventListener('click', function() {
-        // Create a new jsPDF instance in landscape orientation
-        const { jsPDF } = window.jspdf;
-        var doc = new jsPDF('l', 'mm', 'a4');
-
-        var margin = 10; // standard margin of 10mm
-        var pageWidth = doc.internal.pageSize.getWidth() - 2 * margin;
-        var pageHeight = doc.internal.pageSize.getHeight() - 2 * margin;
-
-        // Get the element to render
-        var cardContainer = document.getElementById('card-container');
-
-        // Use html2canvas to capture the card container
-        html2canvas(cardContainer, {
-            scale: window.devicePixelRatio,
-            useCORS: true,
-            allowTaint: true,
-            logging: true
-        }).then(function(canvasCard) {
-            var imgDataCard = canvasCard.toDataURL('image/png');
-
-            // Adjust image width and height to fit within the page
-            var imgWidthCard = pageWidth;
-            var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
-
-            // Ensure that the image fits within the page height
-            if (imgHeightCard > pageHeight) {
-                var scale = pageHeight / imgHeightCard;
-                imgWidthCard *= scale;
-                imgHeightCard *= scale;
-            }
-
-            // Calculate position to center the image
-            var xPosition = margin + (pageWidth - imgWidthCard) / 2;
-            var yPosition = margin + (pageHeight - imgHeightCard) / 2;
-
-            // Add the image to the PDF
-            doc.addImage(imgDataCard, 'PNG', xPosition, yPosition, imgWidthCard, imgHeightCard);
-
-            // Save the PDF
-            doc.save('card_preview.pdf');
-        });
-    });
+    document.addEventListener('DOMContentLoaded', displaySavedCard);
 </script>
 </body>
 </html>
