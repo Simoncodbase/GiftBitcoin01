@@ -103,17 +103,6 @@
         user-select: text;
     }
 
-    /* Image container styling */
-    #image-container {
-        width: var(--card-width);
-        flex-shrink: 0;
-    }
-
-    #image-container img {
-        width: 100%;
-        max-width: 100%;
-    }
-
     /* Controls container */
     .controls-container {
         margin-top: 20px;
@@ -159,17 +148,9 @@
 
     /* Responsive design */
     @media (max-width: 768px) {
-        #card-container,
-        #image-container {
-            width: 80vw;
-        }
-
         #card-container {
+            width: 80vw;
             height: calc(80vw * 4 / 3); /* Adjust height based on aspect ratio */
-        }
-
-        #image-container img {
-            width: 100%;
         }
 
         .printable-container {
@@ -179,17 +160,9 @@
     }
 
     @media (max-width: 480px) {
-        #card-container,
-        #image-container {
-            width: 90vw;
-        }
-
         #card-container {
+            width: 90vw;
             height: calc(90vw * 4 / 3);
-        }
-
-        #image-container img {
-            width: 100%;
         }
 
         .printable-container {
@@ -206,10 +179,6 @@
 <!-- Card Container -->
 <div id="card-container">
 <!-- The saved card content will be inserted here -->
-</div>
-<!-- Image Container -->
-<div id="image-container">
-<img alt="Example Key" src="pictures/example-key/example-key-final.png"/>
 </div>
 </div>
 <!-- Controls Container -->
@@ -420,20 +389,18 @@
         updateAmountMessage();
     });
 
-    // PDF generation functionality (unchanged)
+    // PDF generation functionality adjusted
     document.getElementById('pdf-button').addEventListener('click', function() {
         // Create a new jsPDF instance in landscape orientation
         const { jsPDF } = window.jspdf;
         var doc = new jsPDF('l', 'mm', 'a4');
 
         var margin = 10; // standard margin of 10mm
-        var interImageMargin = 20; // doubled from 10mm to 20mm
         var pageWidth = doc.internal.pageSize.getWidth() - 2 * margin;
         var pageHeight = doc.internal.pageSize.getHeight() - 2 * margin;
 
-        // Get the elements to render
+        // Get the element to render
         var cardContainer = document.getElementById('card-container');
-        var imageContainer = document.getElementById('image-container');
 
         // Use html2canvas to capture the card container
         html2canvas(cardContainer, {
@@ -444,52 +411,26 @@
         }).then(function(canvasCard) {
             var imgDataCard = canvasCard.toDataURL('image/png');
 
-            // Adjust image width and height to fit within half the page width minus half of interImageMargin
-            var imgWidthCard = (pageWidth - interImageMargin) / 2;
+            // Adjust image width and height to fit within the page
+            var imgWidthCard = pageWidth;
             var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
 
-            // Now capture the image container
-            html2canvas(imageContainer, {
-                scale: window.devicePixelRatio,
-                useCORS: true,
-                allowTaint: true,
-                logging: true
-            }).then(function(canvasImage) {
-                var imgDataImage = canvasImage.toDataURL('image/png');
+            // Ensure that the image fits within the page height
+            if (imgHeightCard > pageHeight) {
+                var scale = pageHeight / imgHeightCard;
+                imgWidthCard *= scale;
+                imgHeightCard *= scale;
+            }
 
-                // Adjust image width and height to fit within half the page width minus half of interImageMargin
-                var imgWidthImage = (pageWidth - interImageMargin) / 2;
-                var imgHeightImage = (canvasImage.height * imgWidthImage) / canvasImage.width;
+            // Calculate position to center the image
+            var xPosition = margin + (pageWidth - imgWidthCard) / 2;
+            var yPosition = margin + (pageHeight - imgHeightCard) / 2;
 
-                // Determine the maximum height of the images
-                var maxImgHeight = Math.max(imgHeightCard, imgHeightImage);
+            // Add the image to the PDF
+            doc.addImage(imgDataCard, 'PNG', xPosition, yPosition, imgWidthCard, imgHeightCard);
 
-                // Ensure that the images fit within the page height
-                if (maxImgHeight > pageHeight) {
-                    var scale = pageHeight / maxImgHeight;
-                    imgWidthCard *= scale;
-                    imgHeightCard *= scale;
-                    imgWidthImage *= scale;
-                    imgHeightImage *= scale;
-                }
-
-                // Update maxImgHeight after scaling
-                maxImgHeight = Math.max(imgHeightCard, imgHeightImage);
-
-                // Calculate Y position to center vertically
-                var yPosition = margin + (pageHeight - maxImgHeight) / 2;
-
-                // X positions for the images
-                var xPositionCard = margin;
-                var xPositionImage = margin + imgWidthCard + interImageMargin;
-
-                // Add the images side by side with margin between them
-                doc.addImage(imgDataCard, 'PNG', xPositionCard, yPosition, imgWidthCard, imgHeightCard);
-                doc.addImage(imgDataImage, 'PNG', xPositionImage, yPosition, imgWidthImage, imgHeightImage);
-
-                // Save the PDF
-                doc.save('card_preview.pdf');
-            });
+            // Save the PDF
+            doc.save('card_preview.pdf');
         });
     });
 </script>
