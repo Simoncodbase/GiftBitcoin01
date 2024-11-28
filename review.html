@@ -12,14 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        /* Define CSS variables for sizes */
-        :root {
-            --card-width: 30vw;
-            --card-height: 40vw;
-            --image-height: 30vw;
-            --text-area-height: 10vw;
-        }
-
+        /* Reset and basic styles */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -44,8 +37,8 @@
 
         /* Card container setup */
         #card-container {
-            width: var(--card-width);
-            height: var(--card-height);
+            width: 300px;
+            height: 400px;
             position: relative;
             border: 1px solid #000;
             background-color: white;
@@ -55,7 +48,7 @@
         /* Background image styling */
         #background {
             width: 100%;
-            height: var(--image-height);
+            height: 300px;
             position: absolute;
             top: 0;
             left: 0;
@@ -65,10 +58,10 @@
         /* Text area styling */
         #text-area {
             position: absolute;
-            top: var(--image-height);
+            top: 300px;
             left: 0;
             width: 100%;
-            height: var(--text-area-height);
+            height: 100px;
             background-color: transparent;
         }
 
@@ -128,6 +121,10 @@
         }
         button:hover {
             background: #FBBF24; /* Same as hover:bg-yellow-400 in Tailwind */
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
         }
 
         /* Responsive design */
@@ -498,12 +495,14 @@
             tempContainer.style.display = 'flex';
             tempContainer.style.flexDirection = 'row';
             tempContainer.style.justifyContent = 'space-between';
-            tempContainer.style.gap = '20px';
+            tempContainer.style.alignItems = 'flex-start';
             tempContainer.style.padding = '20px';
             tempContainer.style.boxSizing = 'border-box';
 
             // Clone the card-container
             const cardClone = document.getElementById('card-container').cloneNode(true);
+            cardClone.style.width = '300px';
+            cardClone.style.height = '400px';
             tempContainer.appendChild(cardClone);
 
             // Generate Bitcoin addresses
@@ -513,10 +512,10 @@
 
                 // Create container for keys, QR codes, and disclaimer
                 const keysContainer = document.createElement('div');
-                keysContainer.style.width = '45%'; // Adjust width as needed
+                keysContainer.style.width = '350px'; // Fixed width
                 keysContainer.style.display = 'flex';
                 keysContainer.style.flexDirection = 'column';
-                keysContainer.style.gap = '20px';
+                keysContainer.style.gap = '10px';
 
                 // Public Address
                 const publicContainer = document.createElement('div');
@@ -569,7 +568,7 @@
                 // Disclaimer
                 const disclaimerDiv = document.createElement('div');
                 disclaimerDiv.id = 'disclaimer';
-                disclaimerDiv.style.marginTop = '20px';
+                disclaimerDiv.style.marginTop = '10px';
                 disclaimerDiv.innerHTML = `<p><strong>Important:</strong> The private key is your password to access your Bitcoin. Keep it completely secret and never share it with anyone. For your security, we strongly recommend transferring the Bitcoin to a new wallet within 30 days. Be aware that the person who gifted you this Bitcoin also has access to the private key and can use it to move your Bitcoin at any time until you transfer them to a wallet that only you control.</p>`;
                 keysContainer.appendChild(disclaimerDiv);
 
@@ -600,7 +599,7 @@
 
             // Use html2canvas to capture the entire tempContainer
             html2canvas(tempContainer, {
-                scale: window.devicePixelRatio,
+                scale: 2, // Increase scale for better quality
                 useCORS: true,
                 allowTaint: true,
                 logging: true
@@ -608,18 +607,16 @@
                 var imgData = canvas.toDataURL('image/png');
 
                 // Calculate image dimensions to fit within the page
-                var imgWidth = pageWidth;
-                var imgHeight = (canvas.height * imgWidth) / canvas.width;
+                var imgWidth = canvas.width * 25.4 / 96; // Convert px to mm (assuming 96 DPI)
+                var imgHeight = canvas.height * 25.4 / 96;
 
-                // Ensure the image fits within the page height
-                if (imgHeight > pageHeight) {
-                    var scale = pageHeight / imgHeight;
-                    imgWidth *= scale;
-                    imgHeight *= scale;
-                }
+                // Ensure the image fits within the page dimensions
+                var scale = Math.min(pageWidth / imgWidth, pageHeight / imgHeight);
+                imgWidth *= scale;
+                imgHeight *= scale;
 
                 // Calculate position to center the image
-                var xPosition = margin;
+                var xPosition = margin + (pageWidth - imgWidth) / 2;
                 var yPosition = margin + (pageHeight - imgHeight) / 2;
 
                 // Add the image to the PDF
