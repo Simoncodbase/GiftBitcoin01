@@ -159,7 +159,29 @@
 
         /* Styles for the hidden bitcoin-addresses-container */
         #bitcoin-addresses-container {
-            display: none; /* Keep it hidden from the user */
+            position: absolute;
+            left: -9999px; /* Move it off-screen */
+            top: 0;
+            width: var(--card-width);
+        }
+
+        .key-container {
+            margin-bottom: 20px;
+            word-wrap: break-word;
+        }
+
+        .qr-code {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Disclaimer styling */
+        #disclaimer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: black;
+            text-align: justify;
+            max-width: 80%;
         }
     </style>
 </head>
@@ -588,78 +610,81 @@
             var cardContainer = document.getElementById('card-container');
             var keysContainer = document.getElementById('bitcoin-addresses-container');
 
-            // Use html2canvas to capture the card container
-            html2canvas(cardContainer, {
-                scale: window.devicePixelRatio,
-                useCORS: true,
-                allowTaint: true,
-                logging: true
-            }).then(function(canvasCard) {
-                var imgDataCard = canvasCard.toDataURL('image/png');
-
-                // Adjust image width and height to fit within half the page width minus half of interImageMargin
-                var imgWidthCard = (pageWidth - interImageMargin) / 2;
-                var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
-
-                // Now capture the keys container
-                html2canvas(keysContainer, {
+            // Ensure QR codes have been generated
+            setTimeout(function() {
+                // Use html2canvas to capture the card container
+                html2canvas(cardContainer, {
                     scale: window.devicePixelRatio,
                     useCORS: true,
                     allowTaint: true,
                     logging: true
-                }).then(function(canvasKeys) {
-                    var imgDataKeys = canvasKeys.toDataURL('image/png');
+                }).then(function(canvasCard) {
+                    var imgDataCard = canvasCard.toDataURL('image/png');
 
                     // Adjust image width and height to fit within half the page width minus half of interImageMargin
-                    var imgWidthKeys = (pageWidth - interImageMargin) / 2;
-                    var imgHeightKeys = (canvasKeys.height * imgWidthKeys) / canvasKeys.width;
+                    var imgWidthCard = (pageWidth - interImageMargin) / 2;
+                    var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
 
-                    // Determine the maximum height of the images
-                    var maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
+                    // Now capture the keys container
+                    html2canvas(keysContainer, {
+                        scale: window.devicePixelRatio,
+                        useCORS: true,
+                        allowTaint: true,
+                        logging: true
+                    }).then(function(canvasKeys) {
+                        var imgDataKeys = canvasKeys.toDataURL('image/png');
 
-                    // Ensure that the images fit within the page height
-                    if (maxImgHeight > pageHeight) {
-                        var scale = pageHeight / maxImgHeight;
-                        imgWidthCard *= scale;
-                        imgHeightCard *= scale;
-                        imgWidthKeys *= scale;
-                        imgHeightKeys *= scale;
-                    }
+                        // Adjust image width and height to fit within half the page width minus half of interImageMargin
+                        var imgWidthKeys = (pageWidth - interImageMargin) / 2;
+                        var imgHeightKeys = (canvasKeys.height * imgWidthKeys) / canvasKeys.width;
 
-                    // Update maxImgHeight after scaling
-                    maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
+                        // Determine the maximum height of the images
+                        var maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
 
-                    // Calculate Y position to center vertically
-                    var yPosition = margin + (pageHeight - maxImgHeight) / 2;
+                        // Ensure that the images fit within the page height
+                        if (maxImgHeight > pageHeight) {
+                            var scale = pageHeight / maxImgHeight;
+                            imgWidthCard *= scale;
+                            imgHeightCard *= scale;
+                            imgWidthKeys *= scale;
+                            imgHeightKeys *= scale;
+                        }
 
-                    // X positions for the images
-                    var xPositionCard = margin;
-                    var xPositionKeys = margin + imgWidthCard + interImageMargin;
+                        // Update maxImgHeight after scaling
+                        maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
 
-                    // Add the images side by side with margin between them
-                    doc.addImage(imgDataCard, 'PNG', xPositionCard, yPosition, imgWidthCard, imgHeightCard);
-                    doc.addImage(imgDataKeys, 'PNG', xPositionKeys, yPosition, imgWidthKeys, imgHeightKeys);
+                        // Calculate Y position to center vertically
+                        var yPosition = margin + (pageHeight - maxImgHeight) / 2;
 
-                    // Save the PDF
-                    doc.save('card_and_keys.pdf');
+                        // X positions for the images
+                        var xPositionCard = margin;
+                        var xPositionKeys = margin + imgWidthCard + interImageMargin;
 
-                    // Re-enable the button
-                    pdfButton.disabled = false;
-                    pdfButton.textContent = 'Review your Card before paying (takes 3 seconds to generate)';
+                        // Add the images side by side with margin between them
+                        doc.addImage(imgDataCard, 'PNG', xPositionCard, yPosition, imgWidthCard, imgHeightCard);
+                        doc.addImage(imgDataKeys, 'PNG', xPositionKeys, yPosition, imgWidthKeys, imgHeightKeys);
+
+                        // Save the PDF
+                        doc.save('card_and_keys.pdf');
+
+                        // Re-enable the button
+                        pdfButton.disabled = false;
+                        pdfButton.textContent = 'Review your Card before paying (takes 3 seconds to generate)';
+                    }).catch(function(error) {
+                        console.error('Error generating keys image:', error);
+                        alert('An error occurred while generating the PDF. Please try again.');
+                        // Re-enable the button
+                        pdfButton.disabled = false;
+                        pdfButton.textContent = 'Review your Card before paying (takes 3 seconds to generate)';
+                    });
                 }).catch(function(error) {
-                    console.error('Error generating keys image:', error);
+                    console.error('Error generating card image:', error);
                     alert('An error occurred while generating the PDF. Please try again.');
                     // Re-enable the button
                     pdfButton.disabled = false;
                     pdfButton.textContent = 'Review your Card before paying (takes 3 seconds to generate)';
                 });
-            }).catch(function(error) {
-                console.error('Error generating card image:', error);
-                alert('An error occurred while generating the PDF. Please try again.');
-                // Re-enable the button
-                pdfButton.disabled = false;
-                pdfButton.textContent = 'Review your Card before paying (takes 3 seconds to generate)';
-            });
+            }, 500); // Wait for QR codes to render
         });
     </script>
 </body>
