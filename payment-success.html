@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <title>Payment Successful</title>
-    <!-- Include necessary libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Include jsPDF and html2canvas libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
+<meta charset="utf-8"/>
+<title>Payment Successful</title>
+<!-- Include necessary libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- Include jsPDF and html2canvas libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
         /* Define CSS variables for sizes */
         :root {
             --card-width: 30vw;
@@ -19,72 +19,12 @@
             --text-area-height: 10vw;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            padding: 20px;
-        }
-
         /* Main container styling */
-        .main-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
+        #main-container {
             display: flex;
-            flex-direction: row;
-            gap: 20px;
-        }
-
-        /* Card container setup */
-        #card-container {
-            width: var(--card-width);
-            height: var(--card-height);
-            position: relative;
-            border: 1px solid #000;
-            background-color: white;
-            flex-shrink: 0;
-        }
-
-        /* Background image styling */
-        #background {
-            width: 100%;
-            height: var(--image-height);
-            position: absolute;
-            top: 0;
-            left: 0;
-            display: block;
-        }
-
-        /* Text area styling */
-        #text-area {
-            position: absolute;
-            top: var(--image-height);
-            left: 0;
-            width: 100%;
-            height: var(--text-area-height);
-            background-color: transparent;
-        }
-
-        /* Text field styling */
-        .text-field {
-            position: absolute;
-            padding: 5px;
-            background-color: rgba(255, 255, 255, 0.7);
-            word-wrap: break-word;
-            user-select: text;
-        }
-
-        /* Controls container */
-        .controls-container {
-            margin-left: 20px;
-            flex-grow: 1;
-            max-width: 600px;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
         }
 
         /* Payment Successful and Green Tick */
@@ -130,46 +70,62 @@
             margin-bottom: 20px;
         }
 
-        /* Button styling */
-        button {
-            background: #F59E0B; /* Same as bg-yellow-500 in Tailwind */
-            color: #000000; /* Black text */
-            font-family: Arial, sans-serif;
-            border-radius: 8px; /* Rounded corners */
-            border: 0;
-            padding: 12px 16px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            display: block;
-            transition: all 0.2s ease;
-            box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
-            width: 100%;
-            margin-bottom: 10px;
-        }
-        button:hover {
-            background: #FBBF24; /* Same as hover:bg-yellow-400 in Tailwind */
+        /* Printable content styling */
+        #printable-content {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
         }
 
-        /* Styles for the bitcoin-addresses-container */
+        /* Card container setup */
+        #card-container {
+            width: var(--card-width);
+            height: var(--card-height);
+            position: relative;
+            border: 1px solid #000;
+            background-color: white;
+            flex-shrink: 0;
+            margin: 10px; /* Original margin */
+            margin-right: 20px; /* Increased right margin from 1 cm to 2 cm */
+        }
+
+        /* Background image styling */
+        #card-image {
+            width: 100%;
+            height: var(--image-height);
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+        }
+
+        /* Text area styling */
+        #text-area {
+            position: absolute;
+            top: var(--image-height);
+            left: 0;
+            width: 100%;
+            height: var(--text-area-height);
+            background-color: transparent;
+        }
+
+        /* Style for text fields */
+        .text-field {
+            position: absolute;
+        }
+
+        /* Style for the Bitcoin addresses and QR codes */
         #bitcoin-addresses-container {
             width: var(--card-width);
-            /* margin: 10px; */
+            margin: 10px; /* Original margin */
+            margin-left: 20px; /* Increased left margin from 1 cm to 2 cm */
         }
 
         .key-container {
             margin-bottom: 20px;
             word-wrap: break-word;
-        }
-
-        .key-container h3 {
-            margin-bottom: 5px;
-            font-size: 16px;
-        }
-
-        .key-container p {
-            font-size: 14px;
-            line-height: 1.4;
         }
 
         .qr-code {
@@ -180,114 +136,198 @@
         /* Disclaimer styling */
         #disclaimer {
             margin-top: 20px;
-            font-size: 14px;
+            font-size: 14px; /* Decreased font size by 2px */
             color: black;
-            text-align: justify;
+            text-align: justify; /* Set text alignment to justify */
             max-width: 80%;
         }
 
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .main-container {
-                flex-direction: column;
-                align-items: center;
+        /* Adjust styles for print media */
+        @media print {
+            :root {
+                --card-width: 45%;
             }
 
-            #card-container {
-                width: 80vw;
-                height: calc(80vw * 4 / 3); /* Adjust height based on aspect ratio */
-                margin-bottom: 20px;
+            /* Suppress browser's default print headers and footers */
+            @page {
+                margin: 0;
+                size: auto;
             }
 
-            .controls-container {
+            /* Center the printable content */
+            body {
+                margin: 0;
+            }
+
+            #main-container, #printable-content {
                 width: 100%;
-                max-width: none;
-                margin-left: 0;
+                margin: 0 auto;
+            }
+
+            /* Ensure only the printable content is visible */
+            body * {
+                visibility: hidden;
+            }
+
+            #printable-content, #printable-content * {
+                visibility: visible;
+            }
+
+            #pdf-button, #payment-successful, #important-message {
+                display: none;
             }
         }
 
-        @media (max-width: 480px) {
-            #card-container {
-                width: 90vw;
-                height: calc(90vw * 4 / 3);
-            }
-        }
-    </style>
+button {
+    background: #F59E0B; /* Same as bg-yellow-500 in Tailwind */
+    color: #000000; /* Black text */
+    font-family: Arial, sans-serif;
+    border-radius: 8px; /* Rounded corners */
+    border: 0;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-block;
+    transition: all 0.2s ease;
+}
+button:hover {
+    background: #FBBF24; /* Same as hover:bg-yellow-400 in Tailwind */
+}
+
+/* Hidden container for PDF generation */
+#pdf-content {
+    position: absolute;
+    left: -9999px; /* Move it off-screen */
+    top: 0;
+    width: 100%;
+}
+</style>
 </head>
 <body>
+<div id="main-container">
+<!-- Payment Successful and Green Tick Box -->
+<div id="payment-successful">
+<h2>Payment Successful</h2>
+<div id="green-tick"></div>
+</div>
+<!-- Important Message -->
+<div id="important-message">
+<p>Important: Save or print your card now in a secure way! You will later not be able to retrieve your keys!</p>
+</div>
+<!-- PDF Button -->
+<button id="pdf-button">Click for PDF</button>
+<!-- Content to be printed -->
+<div id="printable-content">
+<!-- Card Container -->
+<div id="card-container">
+<!-- Background Image -->
+<img alt="Card Background" id="card-image" src=""/>
+<!-- Text Area -->
+<div id="text-area">
+<!-- Text fields will be loaded here -->
+</div>
+</div>
+<!-- Container to display the generated addresses and QR codes -->
+<div id="bitcoin-addresses-container">
+<!-- The generated addresses and QR codes will be displayed here -->
+<!-- Disclaimer will be added here -->
+</div>
+</div>
+</div>
+<!-- Hidden container for PDF generation -->
+<div id="pdf-content">
+    <!-- Printable Content for PDF -->
     <div class="main-container">
         <!-- Printable Content -->
         <div class="printable-container">
             <!-- Card Container -->
-            <div id="card-container">
+            <div id="pdf-card-container">
                 <!-- Background Image -->
-                <img alt="Card Background" id="background" src=""/>
+                <img alt="Card Background" id="pdf-card-image" src=""/>
                 <!-- Text Area -->
-                <div id="text-area">
+                <div id="pdf-text-area">
                     <!-- Text fields will be loaded here -->
                 </div>
             </div>
             <!-- Bitcoin Addresses Container -->
-            <div id="bitcoin-addresses-container">
+            <div id="pdf-bitcoin-addresses-container">
                 <!-- The generated addresses and QR codes will be displayed here -->
                 <!-- Disclaimer will be added here -->
             </div>
         </div>
-        <!-- Controls Container -->
-        <div class="controls-container">
-            <!-- Payment Successful and Green Tick Box -->
-            <div id="payment-successful">
-                <h2>Payment Successful</h2>
-                <div id="green-tick"></div>
-            </div>
-            <!-- Important Message -->
-            <div id="important-message">
-                <p>Important: Save or print your card now in a secure way! You will later not be able to retrieve your keys!</p>
-            </div>
-            <!-- PDF Button -->
-            <button id="pdf-button">Click for PDF</button>
-        </div>
     </div>
-    <script>
-        // Function to display the saved card
+</div>
+<script>
+        // Function to load the card content from localStorage and display it
         function loadCard() {
-            const cardContainer = document.getElementById('card-container');
-            const savedCardHTML = localStorage.getItem('cardHTML');
+            const cardHTML = localStorage.getItem('cardHTML');
+            if (cardHTML) {
+                const cardContainer = document.getElementById('card-container');
+                const cardImage = document.getElementById('card-image');
+                const textArea = document.getElementById('text-area');
 
-            if (savedCardHTML) {
-                // Create a temporary container to manipulate the HTML
+                // Create a temporary div to parse the cardHTML
                 const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = savedCardHTML;
+                tempDiv.innerHTML = cardHTML;
 
-                // Remove contenteditable attributes and borders
-                tempDiv.querySelectorAll('[contenteditable]').forEach(el => {
-                    el.removeAttribute('contenteditable');
-                    el.style.border = 'none';
-                });
-
-                // Extract the background image and text fields
+                // Get the background image src
                 const backgroundImage = tempDiv.querySelector('#background');
-                const textFields = tempDiv.querySelectorAll('.text-field');
-
-                // Set the background image
-                const cardImage = document.getElementById('background');
                 if (backgroundImage) {
                     cardImage.src = backgroundImage.src;
                 }
 
+                // Get text fields
+                const textFields = tempDiv.querySelectorAll('.text-field');
+
                 // Clear existing text fields
-                const textArea = document.getElementById('text-area');
                 textArea.innerHTML = '';
 
                 // Append text fields to the text area
                 textFields.forEach(function(field) {
                     // Preserve absolute positioning styles
-                    textArea.appendChild(field);
+                    textArea.appendChild(field.cloneNode(true));
                 });
 
+                // Load content into PDF hidden container
+                loadPDFContent(tempDiv);
+
             } else {
-                cardContainer.innerHTML = '<p>No card data found. Please create your card first.</p>';
+                console.error('No card data found in localStorage');
             }
+        }
+
+        // Function to load content into the hidden PDF container
+        function loadPDFContent(tempDiv) {
+            const pdfCardContainer = document.getElementById('pdf-card-container');
+            const pdfCardImage = document.getElementById('pdf-card-image');
+            const pdfTextArea = document.getElementById('pdf-text-area');
+
+            // Get the background image src
+            const backgroundImage = tempDiv.querySelector('#background');
+            if (backgroundImage) {
+                pdfCardImage.src = backgroundImage.src;
+            }
+
+            // Get text fields
+            const textFields = tempDiv.querySelectorAll('.text-field');
+
+            // Clear existing text fields
+            pdfTextArea.innerHTML = '';
+
+            // Append text fields to the text area
+            textFields.forEach(function(field) {
+                // Clone the field and remove contenteditable and border
+                const clonedField = field.cloneNode(true);
+                clonedField.removeAttribute('contenteditable');
+                clonedField.style.border = 'none';
+                pdfTextArea.appendChild(clonedField);
+            });
+
+            // Clone the bitcoin addresses container
+            const bitcoinContainer = document.getElementById('bitcoin-addresses-container');
+            const pdfBitcoinContainer = document.getElementById('pdf-bitcoin-addresses-container');
+            pdfBitcoinContainer.innerHTML = bitcoinContainer.innerHTML;
         }
 
         // Base58 encoding function
@@ -316,7 +356,7 @@
             return string;
         }
 
-        // Function to generate Bitcoin addresses and QR codes
+        // Function to generate Bitcoin addresses and QR codes without external Bitcoin libraries
         function generateBitcoinAddresses() {
             try {
                 // Check if addresses are already stored in localStorage
@@ -373,31 +413,6 @@
                 console.error('Error generating Bitcoin addresses:', error);
                 alert('Error generating Bitcoin addresses: ' + error.message);
             }
-        }
-
-        // Helper function to encode private key to WIF
-        function wifEncode(privateKeyHex) {
-            // Add network byte
-            var step1 = '80' + privateKeyHex;
-
-            // Double SHA256 hash for checksum
-            var step2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(step1));
-            var step3 = CryptoJS.SHA256(step2);
-            var checksum = step3.toString().substr(0, 8);
-
-            // Append checksum to step1
-            var step4 = step1 + checksum;
-
-            // Convert to bytes
-            var privateKeyWordArray = CryptoJS.enc.Hex.parse(step4);
-            var privateKeyUint8Array = new Uint8Array(privateKeyWordArray.sigBytes);
-            for (var i = 0; i < privateKeyWordArray.sigBytes; i++) {
-                privateKeyUint8Array[i] = (privateKeyWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)) & 0xFF;
-            }
-
-            // Encode in Base58
-            var privateKeyWIF = encodeBase58(privateKeyUint8Array);
-            return privateKeyWIF;
         }
 
         // Function to display Bitcoin addresses and QR codes
@@ -466,6 +481,35 @@
             disclaimerDiv.appendChild(disclaimerText);
 
             container.appendChild(disclaimerDiv);
+
+            // Also load into PDF container
+            var pdfContainer = document.getElementById('pdf-bitcoin-addresses-container');
+            pdfContainer.innerHTML = container.innerHTML;
+        }
+
+        // Helper function to encode private key to WIF
+        function wifEncode(privateKeyHex) {
+            // Add network byte
+            var step1 = '80' + privateKeyHex;
+
+            // Double SHA256 hash for checksum
+            var step2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(step1));
+            var step3 = CryptoJS.SHA256(step2);
+            var checksum = step3.toString().substr(0, 8);
+
+            // Append checksum to step1
+            var step4 = step1 + checksum;
+
+            // Convert to bytes
+            var privateKeyWordArray = CryptoJS.enc.Hex.parse(step4);
+            var privateKeyUint8Array = new Uint8Array(privateKeyWordArray.sigBytes);
+            for (var i = 0; i < privateKeyWordArray.sigBytes; i++) {
+                privateKeyUint8Array[i] = (privateKeyWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)) & 0xFF;
+            }
+
+            // Encode in Base58
+            var privateKeyWIF = encodeBase58(privateKeyUint8Array);
+            return privateKeyWIF;
         }
 
         // PDF generation functionality adjusted
@@ -484,15 +528,15 @@
             var pageWidth = doc.internal.pageSize.getWidth() - 2 * margin;
             var pageHeight = doc.internal.pageSize.getHeight() - 2 * margin;
 
-            // Get the elements to render
-            var cardContainer = document.getElementById('card-container');
-            var keysContainer = document.getElementById('bitcoin-addresses-container');
+            // Get the elements to render from the hidden PDF container
+            var pdfCardContainer = document.getElementById('pdf-card-container');
+            var pdfKeysContainer = document.getElementById('pdf-bitcoin-addresses-container');
 
             // Ensure QR codes have been generated
             setTimeout(function() {
                 // Use html2canvas to capture the card container
-                html2canvas(cardContainer, {
-                    scale: 2, // Use higher scale for better resolution
+                html2canvas(pdfCardContainer, {
+                    scale: window.devicePixelRatio,
                     useCORS: true,
                     allowTaint: true,
                     logging: true
@@ -504,8 +548,8 @@
                     var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
 
                     // Now capture the keys container
-                    html2canvas(keysContainer, {
-                        scale: 2, // Use higher scale for better resolution
+                    html2canvas(pdfKeysContainer, {
+                        scale: window.devicePixelRatio,
                         useCORS: true,
                         allowTaint: true,
                         logging: true
