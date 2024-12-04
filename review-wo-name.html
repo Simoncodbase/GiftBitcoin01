@@ -130,25 +130,6 @@
             background: #FBBF24; /* Same as hover:bg-yellow-400 in Tailwind */
         }
 
-        /* Input field styling */
-        input[type="text"],
-        input[type="email"],
-        input[type="tel"],
-        input[type="number"],
-        select {
-            width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-
-        label {
-            font-size: 16px;
-            font-weight: bold;
-        }
-
         /* Responsive design */
         @media (max-width: 768px) {
             .main-container {
@@ -235,19 +216,6 @@
             <button id="proceed-to-payment" type="button">Proceed to Payment</button>
             <form id="payment-form">
                 <h2>Payment Details</h2>
-
-                <label for="first-name">First Name:</label><br>
-                <input type="text" id="first-name" name="first-name" required><br><br>
-
-                <label for="last-name">Last Name:</label><br>
-                <input type="text" id="last-name" name="last-name" required><br><br>
-
-                <label for="email">Email Address:</label><br>
-                <input type="email" id="email" name="email" required><br><br>
-
-                <label for="phone-number">Phone Number:</label><br>
-                <input type="tel" id="phone-number" name="phone-number" required><br><br>
-
                 <div id="payment-element"></div>
                 <button id="submit" type="submit">
                     <span id="button-text">Pay now</span>
@@ -335,25 +303,12 @@
             submitButton.disabled = true;
             messageElement.textContent = 'Processing payment...';
 
-            // Collect customer details
-            const firstName = document.getElementById('first-name').value;
-            const lastName = document.getElementById('last-name').value;
-            const email = document.getElementById('email').value;
-            const phoneNumber = document.getElementById('phone-number').value;
-
             try {
                 const { error } = await stripe.confirmPayment({
                     elements,
                     confirmParams: {
-                        return_url: `${window.location.origin}/payment-success.html`,
-                        payment_method_data: {
-                            billing_details: {
-                                name: `${firstName} ${lastName}`,
-                                email: email,
-                                phone: phoneNumber,
-                            },
-                        },
-                    },
+                        return_url: `${window.location.origin}/payment-success.html`
+                    }
                 });
 
                 if (error) {
