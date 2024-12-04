@@ -130,23 +130,23 @@
             background: #FBBF24; /* Same as hover:bg-yellow-400 in Tailwind */
         }
 
-        /* Input field styling */
-        input[type="text"],
-        input[type="email"],
-        input[type="tel"],
-        input[type="number"],
-        select {
+        /* Input field styling for payment details */
+        .payment-input {
             width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border: 1px solid #ccc;
+            padding: 10px 12px;
+            margin-bottom: 16px;
+            border: 1px solid #cfd7df;
             border-radius: 4px;
             box-sizing: border-box;
+            font-size: 16px;
         }
 
-        label {
-            font-size: 16px;
-            font-weight: bold;
+        label.payment-label {
+            font-family: "Helvetica Neue", sans-serif;
+            font-size: 14px;
+            color: #424770;
+            margin-bottom: 4px;
+            display: block;
         }
 
         /* Responsive design */
@@ -236,17 +236,17 @@
             <form id="payment-form">
                 <h2>Payment Details</h2>
 
-                <label for="first-name">First Name:</label><br>
-                <input type="text" id="first-name" name="first-name" required><br><br>
+                <label for="first-name" class="payment-label">First Name</label>
+                <input type="text" id="first-name" name="first-name" class="payment-input" required>
 
-                <label for="last-name">Last Name:</label><br>
-                <input type="text" id="last-name" name="last-name" required><br><br>
+                <label for="last-name" class="payment-label">Last Name</label>
+                <input type="text" id="last-name" name="last-name" class="payment-input" required>
 
-                <label for="email">Email Address:</label><br>
-                <input type="email" id="email" name="email" required><br><br>
+                <label for="email" class="payment-label">Email Address</label>
+                <input type="email" id="email" name="email" class="payment-input" required>
 
-                <label for="phone-number">Phone Number:</label><br>
-                <input type="tel" id="phone-number" name="phone-number" required><br><br>
+                <label for="phone-number" class="payment-label">Phone Number</label>
+                <input type="tel" id="phone-number" name="phone-number" class="payment-input" required>
 
                 <div id="payment-element"></div>
                 <button id="submit" type="submit">
