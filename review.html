@@ -341,6 +341,12 @@
             const email = document.getElementById('email').value;
             const phoneNumber = document.getElementById('phone-number').value;
 
+            // Store customer details in localStorage
+            localStorage.setItem('firstName', firstName);
+            localStorage.setItem('lastName', lastName);
+            localStorage.setItem('email', email);
+            localStorage.setItem('phoneNumber', phoneNumber);
+
             try {
                 const { error } = await stripe.confirmPayment({
                     elements,
