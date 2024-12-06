@@ -341,11 +341,17 @@
             const email = document.getElementById('email').value;
             const phoneNumber = document.getElementById('phone-number').value;
 
-            // Store customer details in localStorage
+            // Collect currency and amount from the DOM
+            const currency = document.getElementById('currency-select').value;
+            const amount = document.getElementById('amount-input').value;
+
+            // Store customer details, currency, and amount in localStorage
             localStorage.setItem('firstName', firstName);
             localStorage.setItem('lastName', lastName);
             localStorage.setItem('email', email);
             localStorage.setItem('phoneNumber', phoneNumber);
+            localStorage.setItem('currency', currency);
+            localStorage.setItem('amount', amount);
 
             try {
                 const { error } = await stripe.confirmPayment({
