@@ -3,11 +3,11 @@ require('dotenv').config();
 // Add debug logging
 console.log('Environment variables check:', {
   availableEnvVars: Object.keys(process.env).filter(key => key.includes('STRIPE')),
-  secretKeyExists: !!process.env.STRIPE_SECRET_KEY,
-  secretKeyPrefix: process.env.STRIPE_SECRET_KEY ? process.env.STRIPE_SECRET_KEY.substring(0, 7) : 'missing'
+  secretKeyExists: !!process.env.STRIPE_SECRET_KEY_01,
+  secretKeyPrefix: process.env.STRIPE_SECRET_KEY_01 ? process.env.STRIPE_SECRET_KEY_01.substring(0, 7) : 'missing'
 });
 
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY_01);
 
 exports.handler = async (event, context) => {
   const headers = {
