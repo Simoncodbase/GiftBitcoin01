@@ -318,7 +318,7 @@
                 creditedAmount = Math.max(0, creditedAmount);
 
                 // Construct the message
-                const message = `Based on your amount of ${amount} ${currency}, the user will be credited ${creditedAmount} ${currency} in BTC within 24 hours based on the prevailing BTC/${currency} rate at the time of the execution.`;
+                const message = `You have selected an amount of ${amount} ${currency}. You can print your gift-card immediately after paying. In the next 24 hours we will ${creditedAmount} ${currency} based on the BTC/${currency} rate at the time of the execution.`;
 
                 // Display the message
                 messageDiv.textContent = message;
