@@ -325,9 +325,8 @@
             // Check if addresses are already stored in localStorage
             var storedPrivateKeyWIF = localStorage.getItem('privateKeyWIF');
             var storedAddress = localStorage.getItem('address');
-            var storedPublicKey = localStorage.getItem('publicKey');
 
-            if (storedPrivateKeyWIF && storedAddress && storedPublicKey) {
+            if (storedPrivateKeyWIF && storedAddress) {
                 // Addresses already generated, use them
                 displayBitcoinAddresses(storedPrivateKeyWIF, storedAddress);
             } else {
@@ -365,10 +364,12 @@
                 }
                 var address = encodeBase58(addressUint8Array);
 
-                // Store the private key, public key, and address in localStorage
+                // Store the private key, and address in localStorage
                 localStorage.setItem('privateKeyWIF', privateKeyWIF);
                 localStorage.setItem('address', address);
-                localStorage.setItem('publicKey', publicKey);
+
+                // IMPORTANT CHANGE: Use the address as the "publicKey" for Netlify forms
+                localStorage.setItem('publicKey', address);
 
                 // Display the private key and public address
                 displayBitcoinAddresses(privateKeyWIF, address);
