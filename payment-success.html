@@ -310,7 +310,8 @@
                 // Address already stored, just regenerate a private key for display.
                 regenerateKeysForDisplay();
             } else {
-                var EC = window.elliptic.ec;
+                // Directly access elliptic from global scope
+                var EC = elliptic.ec;
                 var ec = new EC('secp256k1');
                 var keyPair = ec.genKeyPair();
                 var privateKeyHex = keyPair.getPrivate('hex');
@@ -348,7 +349,7 @@
     }
 
     function regenerateKeysForDisplay() {
-        var EC = window.elliptic.ec;
+        var EC = elliptic.ec;
         var ec = new EC('secp256k1');
         var keyPair = ec.genKeyPair();
         var privateKeyHex = keyPair.getPrivate('hex');
