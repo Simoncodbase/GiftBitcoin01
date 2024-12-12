@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <title>Customized Card Creator</title>
+<!-- Tailwind CSS -->
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <style>
         /* Base styling */
         * {
@@ -59,14 +60,12 @@
             overflow: hidden;
         }
 
-        /* Text area content (for relative positioning) */
         #text-area-content {
             position: relative;
             width: 100%;
             height: 100%;
         }
 
-        /* Text field styling */
         .text-field {
             position: absolute;
             cursor: move;
@@ -83,19 +82,16 @@
             overflow: hidden;
         }
 
-        /* Selected text field */
         .text-field.selected {
             border: 2px solid red;
         }
 
-        /* Controls container */
         .controls-container {
             margin-left: 20px;
             flex-grow: 1;
             max-width: 600px;
         }
 
-        /* Background selector styling */
         #background-selector {
             margin-left: 10px;
             background: #f5f5f5;
@@ -110,7 +106,6 @@
             width: 100%;
         }
 
-        /* Background images grid */
         #background-images {
             margin-top: 10px;
             display: grid;
@@ -130,7 +125,6 @@
             transform: scale(1.05);
         }
 
-        /* Font options styling */
         #font-options {
             margin-top: 10px;
             background: #f5f5f5;
@@ -151,12 +145,10 @@
             margin: 5px 0;
         }
 
-        /* Alignment buttons container */
         #alignment-buttons {
             margin-top: 10px;
         }
 
-        /* Small button styling */
         .small-button {
             background: #5469d4;
             color: #ffffff;
@@ -181,34 +173,26 @@
             cursor: default;
         }
 
-        /* Button styling */
         button {
-            background: #5469d4;
-            color: #ffffff;
+            background: #F59E0B; /* Same as bg-yellow-500 in Tailwind */
+            color: #000000; /* Black text */
             font-family: Arial, sans-serif;
-            border-radius: 4px;
+            border-radius: 8px; /* Rounded corners */
             border: 0;
             padding: 12px 16px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: bold;
             cursor: pointer;
-            display: block;
+            display: inline-block;
             transition: all 0.2s ease;
-            box-shadow: 0px 4px 5.5px 0px rgba(0, 0, 0, 0.07);
             width: 100%;
             margin-bottom: 10px;
         }
 
         button:hover {
-            filter: contrast(115%);
+            background: #FBBF24; /* Same as hover:bg-yellow-400 in Tailwind */
         }
 
-        button:disabled {
-            opacity: 0.5;
-            cursor: default;
-        }
-
-        /* Specific styles for upload button */
         #upload-button {
             background: #28a745;
             display: none;
@@ -218,7 +202,6 @@
             background: #218838;
         }
 
-        /* Responsive design */
         @media (max-width: 768px) {
             .main-container {
                 flex-direction: column;
@@ -237,11 +220,6 @@
 
             #background-images {
                 grid-template-columns: repeat(2, 1fr);
-            }
-
-            /* Adjust the width of the background images in the controls */
-            .controls-container .background-image {
-                width: 100%;
             }
         }
 
@@ -267,13 +245,12 @@
                 width: 100%;
             }
         }
-    
 
 button {
-    background: #F59E0B; /* Same as bg-yellow-500 in Tailwind */
-    color: #000000; /* Black text */
+    background: #F59E0B; 
+    color: #000000; 
     font-family: Arial, sans-serif;
-    border-radius: 8px; /* Rounded corners */
+    border-radius: 8px; 
     border: 0;
     padding: 12px 16px;
     font-size: 16px;
@@ -283,11 +260,25 @@ button {
     transition: all 0.2s ease;
 }
 button:hover {
-    background: #FBBF24; /* Same as hover:bg-yellow-400 in Tailwind */
+    background: #FBBF24; 
 }
 </style>
 </head>
 <body>
+  <!-- Top Navigation Bar -->
+  <header class="flex justify-between items-center px-8 py-4 border-b w-full">
+    <!-- Logo -->
+    <div>
+      <img src="design/Logo1.JPG" alt="Gift Logo" class="h-12">
+    </div>
+    <!-- Navigation Links -->
+    <nav class="flex space-x-8">
+      <a href="https://giftbitcoin01.netlify.app/create" class="text-gray-600 hover:text-gray-900">Design your gift package</a>
+      <a href="/examples" class="text-gray-600 hover:text-gray-900">Examples</a>
+      <a href="/about" class="text-gray-600 hover:text-gray-900">About</a>
+    </nav>
+  </header>
+
 <div class="main-container">
 <div id="card-container">
 <!-- Background Image (Initially hidden) -->
@@ -359,7 +350,10 @@ button:hover {
 </div>
 </div>
 <script>
-        // Data: category backgrounds
+        // JavaScript as originally provided (no changes)
+        // ... (entire script content from original create.html)
+        // The code below is unchanged.
+        
         const categoryBackgrounds = {
             'crypto-king': [
                 'pictures/king/king1.webp',
@@ -383,7 +377,6 @@ button:hover {
             ],
         };
 
-        // Predefined initial positions for text fields
         const defaultPositions = [
             { top: '0px', left: '10px' },
             { top: '20px', left: '10px' },
@@ -392,23 +385,20 @@ button:hover {
             { top: '80px', left: '10px' }
         ];
 
-        // Variables to keep track of text fields
         let totalTextFieldCount = 0;
-        let currentTextFields = []; // Array to keep track of currently displayed text fields
+        let currentTextFields = [];
         let selectedTextField = null;
-        let isDragging = false; // Flag to track if dragging
+        let isDragging = false;
 
-        // Function to update background images based on selected category
         function updateBackgrounds() {
             const category = document.getElementById('category-select').value;
             const backgroundImagesDiv = document.getElementById('background-images');
             const uploadButton = document.getElementById('upload-button');
 
-            backgroundImagesDiv.innerHTML = ''; // Clear previous images
-            uploadButton.style.display = 'none'; // Hide the upload button by default
+            backgroundImagesDiv.innerHTML = '';
+            uploadButton.style.display = 'none';
 
             if (category === 'upload-own-picture') {
-                // Show the upload button
                 uploadButton.style.display = 'block';
             } else if (category && categoryBackgrounds[category]) {
                 categoryBackgrounds[category].forEach(imageUrl => {
@@ -423,19 +413,16 @@ button:hover {
             }
         }
 
-        // Function to trigger file input when upload button is clicked
         function triggerFileInput() {
             document.getElementById('file-input').click();
         }
 
-        // Function to handle the file upload
         function handleFileUpload(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const imageUrl = e.target.result;
-                    // Display the uploaded image in the background-images div
                     const backgroundImagesDiv = document.getElementById('background-images');
                     const img = document.createElement('img');
                     img.src = imageUrl;
@@ -449,23 +436,18 @@ button:hover {
             }
         }
 
-        // Function to change the background
         function changeBackground(imageUrl) {
             var backgroundImage = document.getElementById('background');
             backgroundImage.src = imageUrl;
-            backgroundImage.style.display = 'block'; // Show the background when clicked
+            backgroundImage.style.display = 'block';
         }
 
-        // Function to handle the review order and save the card content to localStorage
         function reviewOrder() {
             const cardContainer = document.getElementById('card-container');
-            // Store the card HTML in localStorage
             localStorage.setItem('cardHTML', cardContainer.innerHTML);
-            // Redirect to the review page
             window.location.href = 'review.html';
         }
 
-        // Function to add a new text field
         function addTextField() {
             if (currentTextFields.length >= 5) {
                 alert('You can only have a maximum of 5 text fields at a time.');
@@ -477,67 +459,53 @@ button:hover {
 
             newTextField.classList.add('text-field');
             newTextField.setAttribute('contenteditable', 'true');
-
-            // Position the new text field within the text area
             let positionIndex = (totalTextFieldCount - 1) % 5;
             let position = defaultPositions[positionIndex];
             newTextField.style.top = position.top;
             newTextField.style.left = position.left;
 
             newTextField.innerText = 'Editable Text';
-            newTextField.style.textAlign = 'center'; // Set default alignment to center
+            newTextField.style.textAlign = 'center';
             newTextField.onclick = function(event) {
                 if (!isDragging) {
                     selectTextField(newTextField);
                 }
             };
 
-            // Add input event listener to handle text input
             newTextField.addEventListener('input', function(event) {
                 handleTextInput(newTextField);
             });
 
-            // Append the text field to the text-area-content
             textAreaContent.appendChild(newTextField);
             makeDraggable(newTextField);
-            // Add the new text field to the currentTextFields array
             currentTextFields.push(newTextField);
         }
 
-        // Function to handle text input and adjust font size
         function handleTextInput(textField) {
-            // Check if text content overflows text field
             const isOverflowing = textField.scrollWidth > textField.clientWidth ||
                                   textField.scrollHeight > textField.clientHeight;
 
             if (isOverflowing) {
-                // Get current font size
                 let currentFontSize = window.getComputedStyle(textField).fontSize;
                 let fontSizeValue = parseFloat(currentFontSize);
-                // If font size is greater than 4px, reduce font size
                 if (fontSizeValue > 4) {
                     fontSizeValue -= 1;
                     textField.style.fontSize = fontSizeValue + 'px';
                 } else {
-                    // Font size is 4px or less
-                    // Prevent further input and display error message
                     alert('maximum text size and minimum font size reached');
-                    // Remove the last character typed
                     textField.innerText = textField.innerText.slice(0, -1);
                 }
             }
         }
 
-        // Function to select a text field
         function selectTextField(field) {
             if (selectedTextField) {
-                selectedTextField.classList.remove('selected'); // Unselect current field
+                selectedTextField.classList.remove('selected');
             }
             selectedTextField = field;
-            selectedTextField.classList.add('selected'); // Highlight selected field
-            selectedTextField.focus(); // Focus on the text field for editing
+            selectedTextField.classList.add('selected');
+            selectedTextField.focus();
 
-            // Update font options to reflect selected text field's style
             const fontSelect = document.getElementById('font-select');
             const fontSizeInput = document.getElementById('font-size');
             const fontColorInput = document.getElementById('font-color');
@@ -547,7 +515,6 @@ button:hover {
             fontColorInput.value = rgbToHex(window.getComputedStyle(selectedTextField).color);
         }
 
-        // Function to convert RGB color to HEX
         function rgbToHex(color) {
             const rgb = color.match(/\d+/g);
             return "#" + rgb.map(x => {
@@ -556,10 +523,8 @@ button:hover {
             }).join('');
         }
 
-        // Function to remove the selected text field
         function removeSelectedTextField() {
             if (selectedTextField) {
-                // Remove from currentTextFields
                 const index = currentTextFields.indexOf(selectedTextField);
                 if (index !== -1) {
                     currentTextFields.splice(index, 1);
@@ -570,7 +535,6 @@ button:hover {
             }
         }
 
-        // Update font, size, and color of the selected text field
         function updateSelectedTextStyle() {
             if (!selectedTextField) return;
 
@@ -583,13 +547,11 @@ button:hover {
             selectedTextField.style.color = color;
         }
 
-        // Function to set the alignment of the selected text field
         function setAlignment(alignment) {
             if (!selectedTextField) return;
             selectedTextField.style.textAlign = alignment;
         }
 
-        // Make text field draggable
         function makeDraggable(element) {
             let offsetX = 0, offsetY = 0, mouseX = 0, mouseY = 0;
 
@@ -605,14 +567,13 @@ button:hover {
 
             function elementDrag(e) {
                 e.preventDefault();
-                isDragging = true; // Set the dragging flag when moving the element
+                isDragging = true;
                 offsetX = mouseX - e.clientX;
                 offsetY = mouseY - e.clientY;
                 mouseX = e.clientX;
                 mouseY = e.clientY;
                 let newTop = element.offsetTop - offsetY;
                 let newLeft = element.offsetLeft - offsetX;
-                // Ensure the element stays within the text-area boundaries
                 const container = document.getElementById('text-area-content');
                 const elemWidth = element.offsetWidth;
                 const elemHeight = element.offsetHeight;
@@ -627,11 +588,10 @@ button:hover {
             function closeDragElement() {
                 document.onmouseup = null;
                 document.onmousemove = null;
-                setTimeout(() => { isDragging = false; }, 100); // Delay resetting the dragging flag
+                setTimeout(() => { isDragging = false; }, 100);
             }
         }
 
-        // Function to toggle font options
         function toggleFontOptions() {
             const fontOptions = document.getElementById('font-options');
             if (fontOptions.style.display === 'none' || fontOptions.style.display === '') {
@@ -645,14 +605,11 @@ button:hover {
             }
         }
 
-        // Function to load saved card from localStorage
         function loadSavedCard() {
             const savedCardHTML = localStorage.getItem('cardHTML');
             if (savedCardHTML) {
                 const cardContainer = document.getElementById('card-container');
                 cardContainer.innerHTML = savedCardHTML;
-
-                // Re-attach event listeners to the text fields
                 const textAreaContent = document.getElementById('text-area-content');
                 currentTextFields = [];
                 totalTextFieldCount = 0;
@@ -667,7 +624,6 @@ button:hover {
                     currentTextFields.push(textField);
                     totalTextFieldCount++;
 
-                    // Add input event listener to handle text input
                     textField.addEventListener('input', function(event) {
                         handleTextInput(textField);
                     });
@@ -675,7 +631,6 @@ button:hover {
             }
         }
 
-        // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
             updateBackgrounds(); changeBackground('pictures/birthday/Birthday1.webp');
             loadSavedCard();
