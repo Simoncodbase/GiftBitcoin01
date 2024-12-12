@@ -3,13 +3,23 @@
 <head>
 <meta charset="utf-8"/>
 <title>Final Card with Bitcoin Addresses</title>
-<!-- Include necessary libraries -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<!-- Include jsPDF and html2canvas libraries -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- Include necessary libraries with Integrity checks and crossorigin -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"
+        integrity="sha384-nH8S/B1TPQZmUB4KRCZysOV8leDWV0tz2ULgdm8vZBrY5DsxQALSaCA5TTq7Ijqe"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
+        integrity="sha384-HhaNygQpUj977QimlS4+rKxs9vBpoyHiFuv0Uztgg/qTrZxItzMufI/Up5EG5Z0T"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
+        integrity="sha384-5Ad9NsEwEjqjq3sk3cG3RGlcHVmdNh1Q/WWQFso7UZHyAc7z1E9QcAOED0D8hAiW"
+        crossorigin="anonymous"></script>
+<!-- Include jsPDF and html2canvas with integrity checks -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        integrity="sha384-O3AftX13pWHW2q6LByYQNvZpKZwmXqg0vZpPrr2ZuJy2QoXe2Hdz3+apN9R2Kda/"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
+        integrity="sha384-QqlcL6zWTSEYwRJZse6vZTl5p95BMw3A2Q2IJhzVQ0Vp/d7pIRfVc3cmN7JjuGrH"
+        crossorigin="anonymous"></script>
 <style>
     :root {
         --card-width: 30vw;
@@ -230,14 +240,24 @@
     let generatedPrivateKeyWIF = null;
     let generatedAddress = null;
 
+    // Simple sanitization function to remove <script> tags from any stored HTML.
+    function sanitizeHTML(html) {
+        let tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+        const scripts = tempDiv.querySelectorAll('script');
+        scripts.forEach(script => script.remove());
+        return tempDiv.innerHTML;
+    }
+
     function loadCard() {
         const cardHTML = localStorage.getItem('cardHTML');
         if (cardHTML) {
+            const sanitizedHTML = sanitizeHTML(cardHTML);
             const cardImage = document.getElementById('card-image');
             const textArea = document.getElementById('text-area');
 
             const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = cardHTML;
+            tempDiv.innerHTML = sanitizedHTML;
 
             const backgroundImage = tempDiv.querySelector('#background');
             if (backgroundImage) {
@@ -288,10 +308,9 @@
             generatedAddress = localStorage.getItem('address');
 
             if (generatedAddress) {
-                // Address already exists in localStorage. Regenerate a private key for display only.
+                // Address already stored, just regenerate a private key for display.
                 regenerateKeysForDisplay();
             } else {
-                // Generate a new address and private key
                 var EC = elliptic.ec;
                 var ec = new EC('secp256k1');
                 var keyPair = ec.genKeyPair();
@@ -306,10 +325,8 @@
                 var publicKeyHash = ripemd160.toString();
 
                 var networkByte = '00' + publicKeyHash;
-
                 var checksumFull = CryptoJS.SHA256(CryptoJS.SHA256(CryptoJS.enc.Hex.parse(networkByte))).toString();
                 var checksum = checksumFull.substr(0, 8);
-
                 var addressHex = networkByte + checksum;
                 var addressWordArray = CryptoJS.enc.Hex.parse(addressHex);
                 var addressUint8Array = new Uint8Array(addressWordArray.sigBytes);
@@ -318,16 +335,13 @@
                 }
                 generatedAddress = encodeBase58(addressUint8Array);
 
-                // Set the public key in localStorage so the form can access it
+                // Store only the public information
                 localStorage.setItem('address', generatedAddress);
                 localStorage.setItem('publicKey', generatedAddress);
             }
 
             displayBitcoinAddresses(generatedPrivateKeyWIF, generatedAddress);
-            
-            // Now that publicKey is set, populate and submit the form
             populateNetlifyFormAndSubmit();
-
         } catch (error) {
             console.error('Error generating Bitcoin addresses:', error);
             alert('Error generating Bitcoin addresses: ' + error.message);
@@ -335,14 +349,11 @@
     }
 
     function regenerateKeysForDisplay() {
-        // Regenerate a private key just for display (since we're not storing it)
         var EC = elliptic.ec;
         var ec = new EC('secp256k1');
         var keyPair = ec.genKeyPair();
         var privateKeyHex = keyPair.getPrivate('hex');
         generatedPrivateKeyWIF = wifEncode(privateKeyHex);
-
-        // Make sure we set the publicKey in localStorage again to ensure it's there
         localStorage.setItem('publicKey', generatedAddress);
     }
 
@@ -417,7 +428,6 @@
         var step2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(step1));
         var step3 = CryptoJS.SHA256(step2);
         var checksum = step3.toString().substr(0, 8);
-
         var step4 = step1 + checksum;
 
         var privateKeyWordArray = CryptoJS.enc.Hex.parse(step4);
@@ -449,27 +459,22 @@
             html2canvas(cardContainer, {
                 scale: window.devicePixelRatio,
                 useCORS: true,
-                allowTaint: true,
-                logging: true
+                allowTaint: true
             }).then(function(canvasCard) {
                 var imgDataCard = canvasCard.toDataURL('image/png');
-
                 var imgWidthCard = (pageWidth - interImageMargin) / 2;
                 var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
 
                 html2canvas(keysContainer, {
                     scale: window.devicePixelRatio,
                     useCORS: true,
-                    allowTaint: true,
-                    logging: true
+                    allowTaint: true
                 }).then(function(canvasKeys) {
                     var imgDataKeys = canvasKeys.toDataURL('image/png');
-
                     var imgWidthKeys = (pageWidth - interImageMargin) / 2;
                     var imgHeightKeys = (canvasKeys.height * imgWidthKeys) / canvasKeys.width;
 
                     var maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
-
                     if (maxImgHeight > pageHeight) {
                         var scale = pageHeight / maxImgHeight;
                         imgWidthCard *= scale;
@@ -479,7 +484,6 @@
                     }
 
                     maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
-
                     var yPosition = margin + (pageHeight - maxImgHeight) / 2;
                     var xPositionCard = margin;
                     var xPositionKeys = margin + imgWidthCard + interImageMargin;
@@ -549,7 +553,6 @@
     window.onload = function() {
         loadCard();
         generateBitcoinAddresses();
-        // populateNetlifyFormAndSubmit() is now called after addresses are generated and publicKey is set
     };
 </script>
 </body>
