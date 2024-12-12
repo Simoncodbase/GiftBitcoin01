@@ -13,7 +13,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
         integrity="sha384-5Ad9NsEwEjqjq3sk3cG3RGlcHVmdNh1Q/WWQFso7UZHyAc7z1E9QcAOED0D8hAiW"
         crossorigin="anonymous"></script>
-<!-- Include jsPDF and html2canvas with integrity checks -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
         integrity="sha384-O3AftX13pWHW2q6LByYQNvZpKZwmXqg0vZpPrr2ZuJy2QoXe2Hdz3+apN9R2Kda/"
         crossorigin="anonymous"></script>
@@ -311,7 +310,7 @@
                 // Address already stored, just regenerate a private key for display.
                 regenerateKeysForDisplay();
             } else {
-                var EC = elliptic.ec;
+                var EC = window.elliptic.ec;
                 var ec = new EC('secp256k1');
                 var keyPair = ec.genKeyPair();
                 var privateKeyHex = keyPair.getPrivate('hex');
@@ -335,7 +334,7 @@
                 }
                 generatedAddress = encodeBase58(addressUint8Array);
 
-                // Store only the public information
+                // Store only public info
                 localStorage.setItem('address', generatedAddress);
                 localStorage.setItem('publicKey', generatedAddress);
             }
@@ -349,7 +348,7 @@
     }
 
     function regenerateKeysForDisplay() {
-        var EC = elliptic.ec;
+        var EC = window.elliptic.ec;
         var ec = new EC('secp256k1');
         var keyPair = ec.genKeyPair();
         var privateKeyHex = keyPair.getPrivate('hex');
