@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8"/>
 <title>Final Card with Bitcoin Addresses</title>
-<!-- Include necessary libraries with Integrity checks and crossorigin -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"
-        integrity="sha384-nH8S/B1TPQZmUB4KRCZysOV8leDWV0tz2ULgdm8vZBrY5DsxQALSaCA5TTq7Ijqe"
-        crossorigin="anonymous"></script>
+<!-- Load elliptic first without SRI -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js" crossorigin="anonymous"></script>
+
+<!-- Include the other libraries with Integrity checks and crossorigin -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
         integrity="sha384-HhaNygQpUj977QimlS4+rKxs9vBpoyHiFuv0Uztgg/qTrZxItzMufI/Up5EG5Z0T"
         crossorigin="anonymous"></script>
@@ -307,10 +307,13 @@
             generatedAddress = localStorage.getItem('address');
 
             if (generatedAddress) {
-                // Address already stored, just regenerate a private key for display.
                 regenerateKeysForDisplay();
             } else {
-                // Directly access elliptic from global scope
+                // Use elliptic from global scope directly
+                if (typeof elliptic === 'undefined') {
+                    throw new Error('elliptic is not defined');
+                }
+
                 var EC = elliptic.ec;
                 var ec = new EC('secp256k1');
                 var keyPair = ec.genKeyPair();
@@ -349,6 +352,9 @@
     }
 
     function regenerateKeysForDisplay() {
+        if (typeof elliptic === 'undefined') {
+            throw new Error('elliptic is not defined');
+        }
         var EC = elliptic.ec;
         var ec = new EC('secp256k1');
         var keyPair = ec.genKeyPair();
