@@ -34,21 +34,34 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { amount } = JSON.parse(event.body);
-    
-    if (!amount || amount < 50) {
-      throw new Error('Invalid amount');
+    const { amount, currency } = JSON.parse(event.body);
+
+    // Validate the amount as a whole unit
+    if (!amount || amount < 1) {
+      throw new Error('Invalid amount. Must be at least 1 unit of currency.');
     }
 
+    // Convert amount to smallest currency unit (e.g., 1 USD -> 100 cents)
+    const amountInSmallestUnit = amount * 100;
+
+    // Validate and set currency
+    const validCurrencies = ['usd', 'eur', 'chf'];
+    const chosenCurrency = validCurrencies.includes((currency || '').toLowerCase()) ? currency.toLowerCase() : 'usd';
+
+    // Create the PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount,
-      currency: 'usd',
+      amount: amountInSmallestUnit,
+      currency: chosenCurrency,
       automatic_payment_methods: {
         enabled: true,
       },
     });
 
-    console.log('Payment intent created successfully');
+    console.log('Payment intent created successfully:', {
+      chosenCurrency, 
+      originalAmount: amount, 
+      convertedAmount: amountInSmallestUnit
+    });
 
     return {
       statusCode: 200,
@@ -66,7 +79,7 @@ exports.handler = async (event, context) => {
       stack: error.stack,
       type: error.type
     });
-    
+
     return {
       statusCode: 500,
       headers: {
