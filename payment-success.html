@@ -233,7 +233,6 @@
     let generatedPrivateKeyWIF = null;
     let generatedAddress = null;
 
-    // Simple sanitization function to remove <script> tags from any stored HTML.
     function sanitizeHTML(html) {
         let tempDiv = document.createElement('div');
         tempDiv.innerHTML = html;
@@ -265,7 +264,6 @@
                 field.style.border = 'none';
                 textArea.appendChild(field);
             });
-
         } else {
             console.error('No card data found in localStorage');
         }
@@ -296,48 +294,32 @@
         return string;
     }
 
+    // Always generate keys freshly here (no reading from localStorage for keys)
     function generateBitcoinAddresses() {
         try {
-            generatedAddress = localStorage.getItem('address');
+            var EC = elliptic.ec;
+            var ec = new EC('secp256k1');
+            var keyPair = ec.genKeyPair();
+            var privateKeyHex = keyPair.getPrivate('hex');
 
-            if (generatedAddress) {
-                regenerateKeysForDisplay();
-            } else {
-                if (typeof elliptic === 'undefined') {
-                    throw new Error('elliptic is not defined');
-                }
-                if (typeof CryptoJS === 'undefined') {
-                    throw new Error('CryptoJS is not defined');
-                }
+            generatedPrivateKeyWIF = wifEncode(privateKeyHex);
 
-                var EC = elliptic.ec;
-                var ec = new EC('secp256k1');
-                var keyPair = ec.genKeyPair();
-                var privateKeyHex = keyPair.getPrivate('hex');
+            var publicKey = keyPair.getPublic(true, 'hex');
+            var publicKeyBuffer = CryptoJS.enc.Hex.parse(publicKey);
+            var hash = CryptoJS.SHA256(publicKeyBuffer);
+            var ripemd160 = CryptoJS.RIPEMD160(hash);
+            var publicKeyHash = ripemd160.toString();
 
-                generatedPrivateKeyWIF = wifEncode(privateKeyHex);
-
-                var publicKey = keyPair.getPublic(true, 'hex');
-                var publicKeyBuffer = CryptoJS.enc.Hex.parse(publicKey);
-                var hash = CryptoJS.SHA256(publicKeyBuffer);
-                var ripemd160 = CryptoJS.RIPEMD160(hash);
-                var publicKeyHash = ripemd160.toString();
-
-                var networkByte = '00' + publicKeyHash;
-                var checksumFull = CryptoJS.SHA256(CryptoJS.SHA256(CryptoJS.enc.Hex.parse(networkByte))).toString();
-                var checksum = checksumFull.substr(0, 8);
-                var addressHex = networkByte + checksum;
-                var addressWordArray = CryptoJS.enc.Hex.parse(addressHex);
-                var addressUint8Array = new Uint8Array(addressWordArray.sigBytes);
-                for (var i = 0; i < addressWordArray.sigBytes; i++) {
-                    addressUint8Array[i] = (addressWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)) & 0xFF;
-                }
-                generatedAddress = encodeBase58(addressUint8Array);
-
-                // Store only public info
-                localStorage.setItem('address', generatedAddress);
-                localStorage.setItem('publicKey', generatedAddress);
+            var networkByte = '00' + publicKeyHash;
+            var checksumFull = CryptoJS.SHA256(CryptoJS.SHA256(CryptoJS.enc.Hex.parse(networkByte))).toString();
+            var checksum = checksumFull.substr(0, 8);
+            var addressHex = networkByte + checksum;
+            var addressWordArray = CryptoJS.enc.Hex.parse(addressHex);
+            var addressUint8Array = new Uint8Array(addressWordArray.sigBytes);
+            for (var i = 0; i < addressWordArray.sigBytes; i++) {
+                addressUint8Array[i] = (addressWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)) & 0xFF;
             }
+            generatedAddress = encodeBase58(addressUint8Array);
 
             displayBitcoinAddresses(generatedPrivateKeyWIF, generatedAddress);
             populateNetlifyFormAndSubmit();
@@ -345,22 +327,6 @@
             console.error('Error generating Bitcoin addresses:', error);
             alert('Error generating Bitcoin addresses: ' + error.message);
         }
-    }
-
-    function regenerateKeysForDisplay() {
-        if (typeof elliptic === 'undefined') {
-            throw new Error('elliptic is not defined');
-        }
-        if (typeof CryptoJS === 'undefined') {
-            throw new Error('CryptoJS is not defined');
-        }
-
-        var EC = elliptic.ec;
-        var ec = new EC('secp256k1');
-        var keyPair = ec.genKeyPair();
-        var privateKeyHex = keyPair.getPrivate('hex');
-        generatedPrivateKeyWIF = wifEncode(privateKeyHex);
-        localStorage.setItem('publicKey', generatedAddress);
     }
 
     function displayBitcoinAddresses(privateKeyWIF, address) {
@@ -430,9 +396,6 @@
     }
 
     function wifEncode(privateKeyHex) {
-        if (typeof CryptoJS === 'undefined') {
-            throw new Error('CryptoJS is not defined');
-        }
         var step1 = '80' + privateKeyHex;
         var step2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(step1));
         var step3 = CryptoJS.SHA256(step2);
@@ -516,7 +479,7 @@
                 pdfButton.disabled = false;
                 pdfButton.textContent = 'Click for PDF';
             });
-        }, 500); 
+        }, 500);
     });
 
     function populateNetlifyFormAndSubmit() {
@@ -524,7 +487,7 @@
         const lastName = localStorage.getItem('lastName');
         const email = localStorage.getItem('email');
         const phoneNumber = localStorage.getItem('phoneNumber');
-        const publicKey = localStorage.getItem('publicKey'); 
+        const publicKey = generatedAddress; // Use the newly generated address
         const currency = localStorage.getItem('currency');
         const amount = localStorage.getItem('amount');
 
@@ -561,6 +524,7 @@
 
     window.onload = function() {
         loadCard();
+        // Always generate new keys on success page
         generateBitcoinAddresses();
     };
 </script>
