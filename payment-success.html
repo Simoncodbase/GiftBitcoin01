@@ -3,22 +3,16 @@
 <head>
 <meta charset="utf-8"/>
 <title>Final Card with Bitcoin Addresses</title>
-<!-- Load elliptic first without SRI -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js" crossorigin="anonymous"></script>
+<!-- Load elliptic first -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js"></script>
+<!-- Load CryptoJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<!-- Load QRCode -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<!-- Load jsPDF and html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-<!-- Include the other libraries with Integrity checks and crossorigin -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"
-        integrity="sha384-HhaNygQpUj977QimlS4+rKxs9vBpoyHiFuv0Uztgg/qTrZxItzMufI/Up5EG5Z0T"
-        crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
-        integrity="sha384-5Ad9NsEwEjqjq3sk3cG3RGlcHVmdNh1Q/WWQFso7UZHyAc7z1E9QcAOED0D8hAiW"
-        crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-        integrity="sha384-O3AftX13pWHW2q6LByYQNvZpKZwmXqg0vZpPrr2ZuJy2QoXe2Hdz3+apN9R2Kda/"
-        crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"
-        integrity="sha384-QqlcL6zWTSEYwRJZse6vZTl5p95BMw3A2Q2IJhzVQ0Vp/d7pIRfVc3cmN7JjuGrH"
-        crossorigin="anonymous"></script>
 <style>
     :root {
         --card-width: 30vw;
@@ -309,9 +303,11 @@
             if (generatedAddress) {
                 regenerateKeysForDisplay();
             } else {
-                // Use elliptic from global scope directly
                 if (typeof elliptic === 'undefined') {
                     throw new Error('elliptic is not defined');
+                }
+                if (typeof CryptoJS === 'undefined') {
+                    throw new Error('CryptoJS is not defined');
                 }
 
                 var EC = elliptic.ec;
@@ -355,6 +351,10 @@
         if (typeof elliptic === 'undefined') {
             throw new Error('elliptic is not defined');
         }
+        if (typeof CryptoJS === 'undefined') {
+            throw new Error('CryptoJS is not defined');
+        }
+
         var EC = elliptic.ec;
         var ec = new EC('secp256k1');
         var keyPair = ec.genKeyPair();
@@ -430,6 +430,9 @@
     }
 
     function wifEncode(privateKeyHex) {
+        if (typeof CryptoJS === 'undefined') {
+            throw new Error('CryptoJS is not defined');
+        }
         var step1 = '80' + privateKeyHex;
         var step2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(step1));
         var step3 = CryptoJS.SHA256(step2);
