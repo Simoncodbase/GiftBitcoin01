@@ -30,7 +30,7 @@
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
-            padding: 20px;
+            /* Removed padding:20px; */
         }
 
         .main-container {
@@ -193,7 +193,7 @@
         }
     </style>
 </head>
-<body>
+<body class="flex flex-col min-h-screen bg-white">
   <!-- Top Navigation Bar -->
   <header class="flex justify-between items-center px-8 py-4 border-b w-full">
     <!-- Logo -->
@@ -256,14 +256,9 @@
     </div>
     <div id="bitcoin-addresses-container"></div>
     <script>
-        // JavaScript as originally provided (no changes)
-        // ... (entire script from original review.html)
-        // The code below is unchanged.
-
         // Stripe initialization and all related logic
         // Bitcoin address generation for review
         // PDF generation logic
-        // Everything remains unchanged.
 
         const stripe = Stripe('pk_test_51Q9TrZEAbBnxrSl5cASxdzrObnYUOgytR7iS55Fn1EtwGIguhqmqRlObWaj5n9MCVrRzKRcN1MwOQrpm49S9d5PY00Fp8qHAFt');
         let elements;
