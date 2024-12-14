@@ -391,7 +391,7 @@
             const currencySelect = document.getElementById('currency-select');
             const currency = currencySelect.value;
             let amount = parseFloat(document.getElementById('amount-input').value);
-            if (isNaN(amount) || amount < 30 || amount > 200) {
+            if (isNaN(amount) || amount < 1 || amount > 200) {
                 alert(`Please enter an amount between 30 and 200 ${currency}.`);
                 return;
             }
