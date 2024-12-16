@@ -32,7 +32,6 @@
     body {
         font-family: Arial, sans-serif;
         line-height: 1.6;
-        /* No padding was present to remove */
     }
 
     #main-container {
@@ -149,6 +148,8 @@
         color: black;
         text-align: justify;
         max-width: 80%;
+        line-height: 1.5; 
+        padding-bottom: 20px; 
     }
 
     @media print {
@@ -323,6 +324,9 @@
 
         return encodeBase58(privateKeyUint8Array);
     }
+
+    let generatedPrivateKeyWIF;
+    let generatedAddress;
 
     function generateBitcoinAddresses() {
         try {
