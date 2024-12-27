@@ -167,7 +167,7 @@
         }
 
         #bitcoin-addresses-container {
-            position: absolute;
+            position: absolute; /* hide from layout, used only for PDF generation */
             left: -9999px;
             top: 0;
             width: var(--card-width);
@@ -253,16 +253,108 @@
             </form>
         </div>
     </div>
+    <!-- Container for the newly generated addresses (hidden in layout) -->
     <div id="bitcoin-addresses-container"></div>
-    <script>
-        // Stripe initialization and all related logic
-        // Bitcoin address generation for review
-        // PDF generation logic
 
+    <script>
+        /**
+         * ---------------------------------------------------------------------
+         *                 Minimal Bech32 (P2WPKH) utility functions
+         * ---------------------------------------------------------------------
+         */
+        const BECH32_ALPHABET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
+
+        function bech32Polymod(values) {
+            let chk = 1;
+            for (let p = 0; p < values.length; p++) {
+                let top = chk >> 25;
+                chk = (chk & 0x1ffffff) << 5 ^ values[p];
+                if (top & 1)  chk ^= 0x3b6a57b2;
+                if (top & 2)  chk ^= 0x26508e6d;
+                if (top & 4)  chk ^= 0x1ea119fa;
+                if (top & 8)  chk ^= 0x3d4233dd;
+                if (top & 16) chk ^= 0x2a1462b3;
+            }
+            return chk;
+        }
+
+        function bech32HrpExpand(hrp) {
+            const ret = [];
+            for (let i = 0; i < hrp.length; i++) {
+                ret.push(hrp.charCodeAt(i) >> 5);
+            }
+            ret.push(0);
+            for (let i = 0; i < hrp.length; i++) {
+                ret.push(hrp.charCodeAt(i) & 31);
+            }
+            return ret;
+        }
+
+        function bech32CreateChecksum(hrp, data) {
+            let values = bech32HrpExpand(hrp).concat(data).concat([0, 0, 0, 0, 0, 0]);
+            let polymod = bech32Polymod(values) ^ 1;
+            const result = [];
+            for (let i = 0; i < 6; i++) {
+                result.push((polymod >> 5 * (5 - i)) & 31);
+            }
+            return result;
+        }
+
+        function bech32Encode(hrp, data) {
+            const combined = data.concat(bech32CreateChecksum(hrp, data));
+            let ret = hrp + '1';
+            for (let i = 0; i < combined.length; i++) {
+                ret += BECH32_ALPHABET.charAt(combined[i]);
+            }
+            return ret;
+        }
+
+        // Convert array of 8-bit bytes into array of 5-bit values for bech32
+        function convertBits(data, fromBits, toBits, pad) {
+            let acc = 0;
+            let bits = 0;
+            const maxV = (1 << toBits) - 1;
+            const ret = [];
+
+            for (let i = 0; i < data.length; i++) {
+                acc = (acc << fromBits) | data[i];
+                bits += fromBits;
+                while (bits >= toBits) {
+                    bits -= toBits;
+                    ret.push((acc >> bits) & maxV);
+                }
+            }
+
+            if (pad) {
+                if (bits > 0) {
+                    ret.push((acc << (toBits - bits)) & maxV);
+                }
+            } else {
+                if (bits >= fromBits) return null;
+                if (((acc << (toBits - bits)) & maxV) !== 0) return null;
+            }
+            return ret;
+        }
+
+        // Create bech32 P2WPKH address with witness version 0 and the 20-byte hash
+        function createBech32Address(pubKeyHashBytes) {
+            const hrp = 'bc';      // mainnet
+            const witnessVersion = 0;
+            const data = [witnessVersion].concat(convertBits(pubKeyHashBytes, 8, 5, true));
+            return bech32Encode(hrp, data);
+        }
+        /**
+         * ---------------------------------------------------------------------
+         *                     END Bech32 utility functions
+         * ---------------------------------------------------------------------
+         */
+
+        // Stripe initialization and all related logic
         const stripe = Stripe('pk_live_51Q9TrZEAbBnxrSl5ydyfNACupLhEcjxQzrTF2AVoMx4lOE8PCIKh6u2nxnUVPIz3qM06abvyzZSUltMDvAt3wqDO00mh4l7CXD');
         let elements;
         let paymentElement;
 
+        // Show the saved card from local storage
         function displaySavedCard() {
             const cardContainer = document.getElementById('card-container');
             const savedCardHTML = localStorage.getItem('cardHTML');
@@ -308,6 +400,7 @@
             }
         }
 
+        // Handle form submission to Stripe
         async function handleSubmit(e) {
             e.preventDefault();
             const submitButton = document.querySelector('#submit');
@@ -324,6 +417,7 @@
             const currency = document.getElementById('currency-select').value;
             const amount = document.getElementById('amount-input').value;
 
+            // Store these details in localStorage so we can reuse them
             localStorage.setItem('firstName', firstName);
             localStorage.setItem('lastName', lastName);
             localStorage.setItem('email', email);
@@ -358,6 +452,7 @@
             }
         }
 
+        // Initialize Stripe payment elements
         async function initialize(amount, currency) {
             try {
                 const response = await fetch('/.netlify/functions/create-payment-intent', {
@@ -400,14 +495,19 @@
             let amountInCents = Math.round(amount * 100);
             initialize(amountInCents, currency);
 
+            // Disable payment option fields after proceeding
             document.getElementById('payment-options').querySelectorAll('input, select').forEach(function(elem) {
                 elem.disabled = true;
             });
         });
 
+        /**
+         * Encode a Uint8Array in Base58 (for the WIF).
+         */
         function encodeBase58(buffer) {
             const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-            let carry, digits = [0];
+            let carry;
+            let digits = [0];
             for (let i = 0; i < buffer.length; i++) {
                 carry = buffer[i];
                 for (let j = 0; j < digits.length; ++j) {
@@ -421,81 +521,98 @@
                 }
             }
             let string = '';
+            // leading zeros
             for (let k = 0; buffer[k] === 0 && k < buffer.length - 1; k++) {
                 string += ALPHABET[0];
             }
+            // Convert digits
             for (let q = digits.length - 1; q >= 0; q--) {
                 string += ALPHABET[digits[q]];
             }
             return string;
         }
 
+        /**
+         * Convert a 32-byte private key (hex) into WIF (for easy import).
+         */
         function wifEncode(privateKeyHex) {
-            var step1 = '80' + privateKeyHex;
-            var step2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(step1));
-            var step3 = CryptoJS.SHA256(step2);
-            var checksum = step3.toString().substr(0, 8);
-            var step4 = step1 + checksum;
+            // 0x80 + private key
+            const step1 = '80' + privateKeyHex;
+            // Double SHA-256
+            const step2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(step1));
+            const step3 = CryptoJS.SHA256(step2);
+            const checksum = step3.toString().substr(0, 8);
+            // Append checksum
+            const step4 = step1 + checksum;
 
-            var privateKeyWordArray = CryptoJS.enc.Hex.parse(step4);
-            var privateKeyUint8Array = new Uint8Array(privateKeyWordArray.sigBytes);
-            for (var i = 0; i < privateKeyWordArray.sigBytes; i++) {
-                privateKeyUint8Array[i] = (privateKeyWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)) & 0xFF;
+            // Convert hex to Uint8Array
+            const privateKeyWordArray = CryptoJS.enc.Hex.parse(step4);
+            const privateKeyUint8Array = new Uint8Array(privateKeyWordArray.sigBytes);
+            for (let i = 0; i < privateKeyWordArray.sigBytes; i++) {
+                privateKeyUint8Array[i] = (
+                  privateKeyWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)
+                ) & 0xff;
             }
-
             return encodeBase58(privateKeyUint8Array);
         }
 
+        /**
+         * Generate a Bech32 (P2WPKH) address + private key for review.
+         */
         function generateBitcoinAddressesForReview() {
             try {
-                var EC = elliptic.ec;
-                var ec = new EC('secp256k1');
-                var keyPair = ec.genKeyPair();
-                var privateKeyHex = keyPair.getPrivate('hex');
-                var privateKeyWIF = wifEncode(privateKeyHex);
-                var publicKey = keyPair.getPublic(true, 'hex');
+                const EC = elliptic.ec;
+                const ec = new EC('secp256k1');
+                const keyPair = ec.genKeyPair();
 
-                var publicKeyBuffer = CryptoJS.enc.Hex.parse(publicKey);
-                var hash = CryptoJS.SHA256(publicKeyBuffer);
-                var ripemd160 = CryptoJS.RIPEMD160(hash);
-                var publicKeyHash = ripemd160.toString();
+                // 1) Private key in WIF
+                const privateKeyHex = keyPair.getPrivate('hex');
+                const privateKeyWIF = wifEncode(privateKeyHex);
 
-                var networkByte = '00' + publicKeyHash;
-                var checksumFull = CryptoJS.SHA256(CryptoJS.SHA256(CryptoJS.enc.Hex.parse(networkByte))).toString();
-                var checksum = checksumFull.substr(0, 8);
-                var addressHex = networkByte + checksum;
-                var addressWordArray = CryptoJS.enc.Hex.parse(addressHex);
-                var addressUint8Array = new Uint8Array(addressWordArray.sigBytes);
-                for (var i = 0; i < addressWordArray.sigBytes; i++) {
-                    addressUint8Array[i] = (addressWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)) & 0xFF;
+                // 2) Compressed public key
+                const publicKeyCompressedHex = keyPair.getPublic(true, 'hex');
+                const publicKeyBuffer = CryptoJS.enc.Hex.parse(publicKeyCompressedHex);
+
+                // 3) HASH160 (RIPEMD160 of SHA256(pubkey))
+                const sha256 = CryptoJS.SHA256(publicKeyBuffer);
+                const pubKeyHashWordArray = CryptoJS.RIPEMD160(sha256);
+                const pubKeyHashHex = pubKeyHashWordArray.toString();
+
+                // Convert hex -> array of bytes
+                const pubKeyHashBytes = [];
+                for (let i = 0; i < pubKeyHashHex.length; i += 2) {
+                    pubKeyHashBytes.push(parseInt(pubKeyHashHex.substr(i, 2), 16));
                 }
-                var address = encodeBase58(addressUint8Array);
 
-                var modifiedAddress = "example" + address.substring(7);
+                // 4) Create bech32 P2WPKH address
+                const bech32Address = createBech32Address(pubKeyHashBytes);
 
-                displayBitcoinAddresses(privateKeyWIF, modifiedAddress);
+                displayBitcoinAddresses(privateKeyWIF, bech32Address);
             } catch (error) {
                 console.error('Error generating Bitcoin addresses:', error);
                 alert('Error generating Bitcoin addresses: ' + error.message);
             }
         }
 
+        /**
+         * Display the bech32 address and private key with corresponding QR codes.
+         */
         function displayBitcoinAddresses(privateKeyWIF, address) {
-            var container = document.getElementById('bitcoin-addresses-container');
+            const container = document.getElementById('bitcoin-addresses-container');
             container.innerHTML = '';
 
-            var publicContainer = document.createElement('div');
+            const publicContainer = document.createElement('div');
             publicContainer.classList.add('key-container');
 
-            var publicKeyLabel = document.createElement('h3');
-            publicKeyLabel.textContent = 'Public Address:';
+            const publicKeyLabel = document.createElement('h3');
+            publicKeyLabel.textContent = 'Bech32 (P2WPKH) Address:';
             publicContainer.appendChild(publicKeyLabel);
 
-            var publicKeyText = document.createElement('p');
+            const publicKeyText = document.createElement('p');
             publicKeyText.textContent = address;
             publicContainer.appendChild(publicKeyText);
 
-            var publicKeyQRContainer = document.createElement('div');
+            const publicKeyQRContainer = document.createElement('div');
             publicKeyQRContainer.classList.add('qr-code');
             publicContainer.appendChild(publicKeyQRContainer);
             new QRCode(publicKeyQRContainer, {
@@ -506,18 +623,18 @@
 
             container.appendChild(publicContainer);
 
-            var privateContainer = document.createElement('div');
+            const privateContainer = document.createElement('div');
             privateContainer.classList.add('key-container');
 
-            var privateKeyLabel = document.createElement('h3');
+            const privateKeyLabel = document.createElement('h3');
             privateKeyLabel.textContent = 'Private Key (WIF):';
             privateContainer.appendChild(privateKeyLabel);
 
-            var privateKeyText = document.createElement('p');
+            const privateKeyText = document.createElement('p');
             privateKeyText.textContent = privateKeyWIF;
             privateContainer.appendChild(privateKeyText);
 
-            var privateKeyQRContainer = document.createElement('div');
+            const privateKeyQRContainer = document.createElement('div');
             privateKeyQRContainer.classList.add('qr-code');
             privateContainer.appendChild(privateKeyQRContainer);
             new QRCode(privateKeyQRContainer, {
@@ -528,31 +645,32 @@
 
             container.appendChild(privateContainer);
 
-            var disclaimerDiv = document.createElement('div');
+            const disclaimerDiv = document.createElement('div');
             disclaimerDiv.id = 'disclaimer';
 
-            var disclaimerText = document.createElement('p');
+            const disclaimerText = document.createElement('p');
             disclaimerText.innerHTML = '<strong>Important:</strong> The private key is your password to access your Bitcoin. Keep it completely secret and never share it with anyone. For your security, we strongly recommend transferring the Bitcoin to a new wallet within 30 days. Be aware that the person who gifted you this Bitcoin also has access to the private key and can use it to move your Bitcoin at any time until you transfer them to a wallet that only you control.';
             disclaimerDiv.appendChild(disclaimerText);
 
             container.appendChild(disclaimerDiv);
         }
 
+        // Generate a PDF combining the card and the hidden keys container
         document.getElementById('pdf-button').addEventListener('click', function() {
             const pdfButton = document.getElementById('pdf-button');
             pdfButton.disabled = true;
             pdfButton.textContent = 'Generating PDF... Please wait...';
 
             const { jsPDF } = window.jspdf;
-            var doc = new jsPDF('l', 'mm', 'a4');
+            const doc = new jsPDF('l', 'mm', 'a4');
 
-            var margin = 10;
-            var interImageMargin = 20;
-            var pageWidth = doc.internal.pageSize.getWidth() - 2 * margin;
-            var pageHeight = doc.internal.pageSize.getHeight() - 2 * margin;
+            const margin = 10;
+            const interImageMargin = 20;
+            const pageWidth = doc.internal.pageSize.getWidth() - 2 * margin;
+            const pageHeight = doc.internal.pageSize.getHeight() - 2 * margin;
 
-            var cardContainer = document.getElementById('card-container');
-            var keysContainer = document.getElementById('bitcoin-addresses-container');
+            const cardContainer = document.getElementById('card-container');
+            const keysContainer = document.getElementById('bitcoin-addresses-container');
 
             setTimeout(function() {
                 html2canvas(cardContainer, {
@@ -560,22 +678,22 @@
                     useCORS: true,
                     allowTaint: true
                 }).then(function(canvasCard) {
-                    var imgDataCard = canvasCard.toDataURL('image/png');
-                    var imgWidthCard = (pageWidth - interImageMargin) / 2;
-                    var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
+                    const imgDataCard = canvasCard.toDataURL('image/png');
+                    let imgWidthCard = (pageWidth - interImageMargin) / 2;
+                    let imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
 
                     html2canvas(keysContainer, {
                         scale: window.devicePixelRatio,
                         useCORS: true,
                         allowTaint: true
                     }).then(function(canvasKeys) {
-                        var imgDataKeys = canvasKeys.toDataURL('image/png');
-                        var imgWidthKeys = (pageWidth - interImageMargin) / 2;
-                        var imgHeightKeys = (canvasKeys.height * imgWidthKeys) / canvasKeys.width;
+                        const imgDataKeys = canvasKeys.toDataURL('image/png');
+                        let imgWidthKeys = (pageWidth - interImageMargin) / 2;
+                        let imgHeightKeys = (canvasKeys.height * imgWidthKeys) / canvasKeys.width;
 
-                        var maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
+                        let maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
                         if (maxImgHeight > pageHeight) {
-                            var scale = pageHeight / maxImgHeight;
+                            const scale = pageHeight / maxImgHeight;
                             imgWidthCard *= scale;
                             imgHeightCard *= scale;
                             imgWidthKeys *= scale;
@@ -583,9 +701,9 @@
                         }
 
                         maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
-                        var yPosition = margin + (pageHeight - maxImgHeight) / 2;
-                        var xPositionCard = margin;
-                        var xPositionKeys = margin + imgWidthCard + interImageMargin;
+                        const yPosition = margin + (pageHeight - maxImgHeight) / 2;
+                        const xPositionCard = margin;
+                        const xPositionKeys = margin + imgWidthCard + interImageMargin;
 
                         doc.addImage(imgDataCard, 'PNG', xPositionCard, yPosition, imgWidthCard, imgHeightCard);
                         doc.addImage(imgDataKeys, 'PNG', xPositionKeys, yPosition, imgWidthKeys, imgHeightKeys);
@@ -609,6 +727,7 @@
             }, 500);
         });
 
+        // When the page loads, show saved card, update message, and generate new addresses for review
         document.addEventListener('DOMContentLoaded', () => {
             displaySavedCard();
             updateAmountMessage();
