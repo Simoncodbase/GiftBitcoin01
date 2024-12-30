@@ -113,9 +113,11 @@
             gap: 10px;
         }
 
+        /* CHANGE: Added max-width: 150px to keep images consistent in size */
         .background-image {
             cursor: pointer;
             width: 100%;
+            max-width: 150px;
             height: auto;
             border-radius: 4px;
             transition: transform 0.2s;
@@ -193,7 +195,7 @@
             background: #FBBF24; /* Same as hover:bg-yellow-400 in Tailwind */
         }
 
-        /* CHANGE #1: Updated the upload-button to match the color/style of the other buttons */
+        /* Upload button (changed to match other buttons' style) */
         #upload-button {
             background: #F59E0B;
             color: #000000;
@@ -428,11 +430,6 @@
                 const backgroundImagesDiv = document.getElementById('background-images');
                 const img = document.createElement('img');
                 img.src = imageUrl;
-                /* 
-                   CHANGE #2: We are already assigning .background-image,
-                   which sets width: 100% and height: auto, just like the
-                   other categories' images.
-                */
                 img.classList.add('background-image');
                 img.onclick = function() {
                     changeBackground(imageUrl);
