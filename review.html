@@ -166,15 +166,25 @@
             }
         }
 
+        /* 
+           Changed from absolute off-screen to a flex container 
+           that matches the card's height for better alignment in the PDF 
+        */
         #bitcoin-addresses-container {
-            position: absolute; /* hide from layout, used only for PDF generation */
+            width: var(--card-width);
+            height: var(--card-height);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            /* Hidden in normal layout, but used for PDF generation. */
+            position: absolute;
             left: -9999px;
             top: 0;
-            width: var(--card-width);
+            background-color: white;
         }
 
         .key-container {
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             word-wrap: break-word;
         }
 
@@ -183,15 +193,19 @@
             margin-top: 10px;
         }
 
-        /* Make text smaller if necessary and ensure enough space for extended disclaimer */
+        /* Decreased overall font size on the right side, including addresses/disclaimer. */
+        .key-container h3,
+        .key-container p {
+            font-size: 12px; 
+        }
+
         #disclaimer {
-            margin-top: 20px;
-            font-size: 12px; /* decreased font size to help fit on one page */
+            margin-top: 10px;
+            font-size: 11px; /* slightly smaller to ensure alignment with bottom of card */
             color: black;
             text-align: justify;
-            max-width: 80%;
-            line-height: 1.4; 
-            padding-bottom: 20px; 
+            line-height: 1.4;
+            margin-bottom: 10px; 
         }
     </style>
 </head>
@@ -254,7 +268,7 @@
             </form>
         </div>
     </div>
-    <!-- Container for the newly generated addresses (hidden in layout) -->
+    <!-- Container for the newly generated addresses (hidden in layout for the PDF) -->
     <div id="bitcoin-addresses-container"></div>
 
     <script>
@@ -607,8 +621,9 @@
             const publicContainer = document.createElement('div');
             publicContainer.classList.add('key-container');
 
+            /* 2) Changed label text */
             const publicKeyLabel = document.createElement('h3');
-            publicKeyLabel.textContent = 'Bech32 (P2WPKH) Address:';
+            publicKeyLabel.textContent = 'Public Address (P2WPKH):';
             publicContainer.appendChild(publicKeyLabel);
 
             const publicKeyText = document.createElement('p');
@@ -656,9 +671,10 @@
             disclaimerText.innerHTML = '<strong>Important:</strong> The private key is your password to access your Bitcoin. Keep it completely secret and never share it with anyone. For your security, we strongly recommend transferring the Bitcoin to a new wallet within 30 days. Be aware that the person who gifted you this Bitcoin also has access to the private key and can use it to move your Bitcoin at any time until you transfer them to a wallet that only you control.';
             disclaimerDiv.appendChild(disclaimerText);
 
-            // New text inserted below the original disclaimer
+            // New text with added full stop at the end
             const transferText = document.createElement('p');
             transferText.innerHTML = '<br /><strong>To send Bitcoin</strong> from this paper wallet use a provider of your choice such as BlueWallet. Instructions for BlueWallet: 1. download the app from the app store, 2. Add a wallet, 3. Select «import wallet», 4. scan the QR code or type in the Private Key (WIF), 5. if asked, choose wallet type «P2WPKH». GiftBitcoin is not affiliated with any wallet provider and does not provide support nor any assurances.';
+            transferText.innerHTML += '.'; // appended period
             disclaimerDiv.appendChild(transferText);
 
             container.appendChild(disclaimerDiv);
