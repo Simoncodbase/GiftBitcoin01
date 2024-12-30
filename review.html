@@ -183,13 +183,14 @@
             margin-top: 10px;
         }
 
+        /* Make text smaller if necessary and ensure enough space for extended disclaimer */
         #disclaimer {
             margin-top: 20px;
-            font-size: 14px;
+            font-size: 12px; /* decreased font size to help fit on one page */
             color: black;
             text-align: justify;
             max-width: 80%;
-            line-height: 1.5; 
+            line-height: 1.4; 
             padding-bottom: 20px; 
         }
     </style>
@@ -650,9 +651,15 @@
             const disclaimerDiv = document.createElement('div');
             disclaimerDiv.id = 'disclaimer';
 
+            // Original disclaimer text
             const disclaimerText = document.createElement('p');
             disclaimerText.innerHTML = '<strong>Important:</strong> The private key is your password to access your Bitcoin. Keep it completely secret and never share it with anyone. For your security, we strongly recommend transferring the Bitcoin to a new wallet within 30 days. Be aware that the person who gifted you this Bitcoin also has access to the private key and can use it to move your Bitcoin at any time until you transfer them to a wallet that only you control.';
             disclaimerDiv.appendChild(disclaimerText);
+
+            // New text inserted below the original disclaimer
+            const transferText = document.createElement('p');
+            transferText.innerHTML = '<br /><strong>To send Bitcoin</strong> from this paper wallet use a provider of your choice such as BlueWallet. Instructions for BlueWallet: 1. download the app from the app store, 2. Add a wallet, 3. Select «import wallet», 4. scan the QR code or type in the Private Key (WIF), 5. if asked, choose wallet type «P2WPKH». GiftBitcoin is not affiliated with any wallet provider and does not provide support nor any assurances.';
+            disclaimerDiv.appendChild(transferText);
 
             container.appendChild(disclaimerDiv);
         }
