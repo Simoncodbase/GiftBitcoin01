@@ -193,13 +193,23 @@
             background: #FBBF24; /* Same as hover:bg-yellow-400 in Tailwind */
         }
 
+        /* CHANGE #1: Updated the upload-button to match the color/style of the other buttons */
         #upload-button {
-            background: #28a745;
+            background: #F59E0B;
+            color: #000000;
+            font-family: Arial, sans-serif;
+            border-radius: 8px;
+            border: 0;
+            padding: 12px 16px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
             display: none;
+            transition: all 0.2s ease;
         }
 
         #upload-button:hover {
-            background: #218838;
+            background: #FBBF24;
         }
 
         @media (max-width: 768px) {
@@ -242,22 +252,23 @@
             }
         }
 
-button {
-    background: #F59E0B; 
-    color: #000000; 
-    font-family: Arial, sans-serif;
-    border-radius: 8px; 
-    border: 0;
-    padding: 12px 16px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    display: inline-block;
-    transition: all 0.2s ease;
-}
-button:hover {
-    background: #FBBF24; 
-}
+        /* Repeated button style to ensure override consistency */
+        button {
+            background: #F59E0B; 
+            color: #000000; 
+            font-family: Arial, sans-serif;
+            border-radius: 8px; 
+            border: 0;
+            padding: 12px 16px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+        button:hover {
+            background: #FBBF24; 
+        }
 </style>
 </head>
 <body class="flex flex-col min-h-screen bg-white">
@@ -417,6 +428,11 @@ button:hover {
                 const backgroundImagesDiv = document.getElementById('background-images');
                 const img = document.createElement('img');
                 img.src = imageUrl;
+                /* 
+                   CHANGE #2: We are already assigning .background-image,
+                   which sets width: 100% and height: auto, just like the
+                   other categories' images.
+                */
                 img.classList.add('background-image');
                 img.onclick = function() {
                     changeBackground(imageUrl);
@@ -623,7 +639,8 @@ button:hover {
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        updateBackgrounds(); changeBackground('pictures/birthday/Birthday1.webp');
+        updateBackgrounds(); 
+        changeBackground('pictures/birthday/Birthday1.webp');
         loadSavedCard();
     });
   </script>
