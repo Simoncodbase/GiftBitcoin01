@@ -414,27 +414,32 @@
     }
 
     /**
-     * Encode a 32-byte private key (hex) into Wallet Import Format (WIF)
-     * for easier import into wallets. This remains the same as for P2PKH.
+     * Encode a 32-byte private key (hex) into Compressed Wallet Import Format (WIF).
+     * This will produce a 52-character string starting with 'K' or 'L'.
      */
     function wifEncode(privateKeyHex) {
-        // 1) 0x80 + private key
-        var step1 = '80' + privateKeyHex;
-        // 2) SHA-256 twice
+        // 1) Add version byte 0x80 + private key + '01' to indicate compressed
+        var step1 = '80' + privateKeyHex + '01';
+
+        // 2) Double SHA-256
         var step2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(step1));
         var step3 = CryptoJS.SHA256(step2);
+
+        // 3) Take first 4 bytes as checksum
         var checksum = step3.toString().substr(0, 8);
-        // 3) Append first 4 bytes of step3 to step1
+
+        // 4) Append checksum
         var step4 = step1 + checksum;
 
-        // Convert hex to Uint8Array
+        // 5) Convert the final hex string to a Uint8Array
         var privateKeyWordArray = CryptoJS.enc.Hex.parse(step4);
         var privateKeyUint8Array = new Uint8Array(privateKeyWordArray.sigBytes);
         for (var i = 0; i < privateKeyWordArray.sigBytes; i++) {
-            privateKeyUint8Array[i] = (privateKeyWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)) & 0xFF;
+            privateKeyUint8Array[i] = (privateKeyWordArray.words[Math.floor(i / 4)] 
+                >>> (24 - (i % 4) * 8)) & 0xFF;
         }
 
-        // 4) Base58Check
+        // 6) Base58Check encode
         return encodeBase58(privateKeyUint8Array);
     }
 
@@ -442,7 +447,7 @@
     let generatedAddress;
 
     /**
-     * Generate a new P2WPKH (Bech32) address + Private key in WIF
+     * Generate a new P2WPKH (Bech32) address + Private key in compressed WIF
      */
     function generateBitcoinAddresses() {
         try {
@@ -450,7 +455,7 @@
             const ec = new EC('secp256k1');
             const keyPair = ec.genKeyPair();
 
-            // 1) Get private key in hex, encode in WIF
+            // 1) Get private key in hex, encode in compressed WIF
             const privateKeyHex = keyPair.getPrivate('hex');
             generatedPrivateKeyWIF = wifEncode(privateKeyHex);
 
@@ -458,13 +463,12 @@
             const publicKeyCompressedHex = keyPair.getPublic(true, 'hex');
             const publicKeyBuffer = CryptoJS.enc.Hex.parse(publicKeyCompressedHex);
 
-            // 3) Double hashing for the 20-byte public key hash (as in P2PKH)
-            //    but for P2WPKH, we only *encode it in bech32*, the HASH160 is the same.
+            // 3) Double-hash the public key for the 20-byte public key hash
             const sha256 = CryptoJS.SHA256(publicKeyBuffer);
             const pubKeyHashWordArray = CryptoJS.RIPEMD160(sha256); 
             const pubKeyHashHex = pubKeyHashWordArray.toString(); // 20 bytes in hex
 
-            // 4) Convert hex to a regular JS array of bytes:
+            // 4) Convert that hex to a JS array of bytes:
             const pubKeyHashBytes = [];
             for (let i = 0; i < pubKeyHashHex.length; i += 2) {
                 pubKeyHashBytes.push(parseInt(pubKeyHashHex.substr(i, 2), 16));

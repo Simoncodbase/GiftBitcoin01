@@ -533,19 +533,20 @@
         }
 
         /**
-         * Convert a 32-byte private key (hex) into WIF (for easy import).
+         * Convert a 32-byte private key (hex) into **compressed** WIF.
          */
         function wifEncode(privateKeyHex) {
-            // 0x80 + private key
-            const step1 = '80' + privateKeyHex;
-            // Double SHA-256
+            // 1) Add version byte 0x80, then private key, then '01' for compressed
+            const step1 = '80' + privateKeyHex + '01';
+            // 2) Double SHA-256
             const step2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(step1));
             const step3 = CryptoJS.SHA256(step2);
+            // 3) First 4 bytes are the checksum
             const checksum = step3.toString().substr(0, 8);
-            // Append checksum
+            // 4) Append checksum
             const step4 = step1 + checksum;
 
-            // Convert hex to Uint8Array
+            // 5) Convert hex to Uint8Array
             const privateKeyWordArray = CryptoJS.enc.Hex.parse(step4);
             const privateKeyUint8Array = new Uint8Array(privateKeyWordArray.sigBytes);
             for (let i = 0; i < privateKeyWordArray.sigBytes; i++) {
@@ -553,6 +554,7 @@
                   privateKeyWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)
                 ) & 0xff;
             }
+            // 6) Base58Check
             return encodeBase58(privateKeyUint8Array);
         }
 
@@ -565,7 +567,7 @@
                 const ec = new EC('secp256k1');
                 const keyPair = ec.genKeyPair();
 
-                // 1) Private key in WIF
+                // 1) Private key in compressed WIF
                 const privateKeyHex = keyPair.getPrivate('hex');
                 const privateKeyWIF = wifEncode(privateKeyHex);
 
