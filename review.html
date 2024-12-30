@@ -167,8 +167,8 @@
         }
 
         /* 
-           Changed from absolute off-screen to a flex container 
-           that matches the card's height for better alignment in the PDF 
+           Matches the card's height for the PDF and ensures
+           consistent spacing of text (letter-spacing, word-spacing).
         */
         #bitcoin-addresses-container {
             width: var(--card-width);
@@ -176,7 +176,6 @@
             display: flex;
             flex-direction: column;
             justify-content: space-around;
-            /* Hidden in normal layout, but used for PDF generation. */
             position: absolute;
             left: -9999px;
             top: 0;
@@ -186,26 +185,29 @@
         .key-container {
             margin-bottom: 10px;
             word-wrap: break-word;
+            /* Normalized spacing below */
+            letter-spacing: normal;
+            word-spacing: normal;
         }
 
-        .qr-code {
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        /* Decreased overall font size on the right side, including addresses/disclaimer. */
+        /* Decreased overall font size on the right side but normalized letter/word spacing. */
         .key-container h3,
         .key-container p {
             font-size: 12px; 
+            line-height: 1.3;
+            letter-spacing: normal;
+            word-spacing: normal;
         }
 
         #disclaimer {
             margin-top: 10px;
-            font-size: 11px; /* slightly smaller to ensure alignment with bottom of card */
+            font-size: 11px; 
+            line-height: 1.3; 
+            letter-spacing: normal;
+            word-spacing: normal;
             color: black;
             text-align: justify;
-            line-height: 1.4;
-            margin-bottom: 10px; 
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -621,7 +623,6 @@
             const publicContainer = document.createElement('div');
             publicContainer.classList.add('key-container');
 
-            /* 2) Changed label text */
             const publicKeyLabel = document.createElement('h3');
             publicKeyLabel.textContent = 'Public Address (P2WPKH):';
             publicContainer.appendChild(publicKeyLabel);
