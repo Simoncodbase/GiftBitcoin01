@@ -27,12 +27,6 @@
             padding: 0;
         }
 
-        /* Ensures more consistent text rendering across browsers/PDFs */
-        body, h1, h2, h3, p, span, label, a {
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
@@ -172,59 +166,31 @@
             }
         }
 
-        /* 
-           Container to match the card height in the PDF.
-           Hidden in normal view, used for PDF capture.
-        */
         #bitcoin-addresses-container {
-            width: var(--card-width);
-            height: var(--card-height);
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start; /* Start at the top, grow downward */
-            position: absolute;
+            position: absolute; /* hide from layout, used only for PDF generation */
             left: -9999px;
             top: 0;
-            background-color: white;
-            /* Normal letter/word spacing to avoid weird gaps */
-            letter-spacing: 0;
-            word-spacing: 0;
+            width: var(--card-width);
         }
 
-        /* Each key section is a vertical column of label, text, and QR code. */
         .key-container {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            margin: 10px;
+            margin-bottom: 20px;
             word-wrap: break-word;
         }
 
-        /* Decreased overall font size and forced normal spacing. */
-        .key-container h3,
-        .key-container p {
-            font-size: 12px;
-            line-height: 1.3;
-            letter-spacing: 0;
-            word-spacing: 0;
-            margin-bottom: 5px;
-        }
-
         .qr-code {
-            margin-top: 5px;
-            /* Ensure QR codes have some space below as well. */
-            margin-bottom: 10px;
-            align-self: flex-start; 
+            text-align: center;
+            margin-top: 10px;
         }
 
         #disclaimer {
-            font-size: 11px;
-            line-height: 1.3;
-            letter-spacing: 0;
-            word-spacing: 0;
+            margin-top: 20px;
+            font-size: 14px;
             color: black;
             text-align: justify;
-            margin: 0 10px 10px 10px;
+            max-width: 80%;
+            line-height: 1.5; 
+            padding-bottom: 20px; 
         }
     </style>
 </head>
@@ -287,7 +253,7 @@
             </form>
         </div>
     </div>
-    <!-- Container for the newly generated addresses (hidden in layout for the PDF) -->
+    <!-- Container for the newly generated addresses (hidden in layout) -->
     <div id="bitcoin-addresses-container"></div>
 
     <script>
@@ -425,11 +391,11 @@
             }
 
             if (amount < 1 || amount > 200) {
-                messageDiv.textContent = `The minimum amount is 30 ${currency}, the maximum amount is 200 ${currency}.`;
+                messageDiv.textContent = The minimum amount is 30 ${currency}, the maximum amount is 200 ${currency}.;
             } else {
                 let creditedAmount = amount - 10;
                 creditedAmount = Math.max(0, creditedAmount);
-                const message = `You have selected an amount of ${amount} ${currency}. You can print your gift-card immediately after paying. In the next 24 hours we will ${creditedAmount} ${currency} based on the BTC/${currency} rate at the time of the execution.`;
+                const message = You have selected an amount of ${amount} ${currency}. You can print your gift-card immediately after paying. In the next 24 hours we will ${creditedAmount} ${currency} based on the BTC/${currency} rate at the time of the execution.;
                 messageDiv.textContent = message;
             }
         }
@@ -463,10 +429,10 @@
                 const { error } = await stripe.confirmPayment({
                     elements,
                     confirmParams: {
-                        return_url: `${window.location.origin}/payment-success.html`,
+                        return_url: ${window.location.origin}/payment-success.html,
                         payment_method_data: {
                             billing_details: {
-                                name: `${firstName} ${lastName}`,
+                                name: ${firstName} ${lastName},
                                 email: email,
                                 phone: phoneNumber,
                             },
@@ -496,7 +462,7 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Payment initialization failed: ${response.status}`);
+                    throw new Error(Payment initialization failed: ${response.status});
                 }
 
                 const { clientSecret } = await response.json();
@@ -522,7 +488,7 @@
             const currency = currencySelect.value;
             let amount = parseFloat(document.getElementById('amount-input').value);
             if (isNaN(amount) || amount < 1 || amount > 200) {
-                alert(`Please enter an amount between 31 and 200 ${currency}.`);
+                alert(Please enter an amount between 31 and 200 ${currency}.);
                 return;
             }
 
@@ -641,7 +607,7 @@
             publicContainer.classList.add('key-container');
 
             const publicKeyLabel = document.createElement('h3');
-            publicKeyLabel.textContent = 'Public Address (P2WPKH):';
+            publicKeyLabel.textContent = 'Bech32 (P2WPKH) Address:';
             publicContainer.appendChild(publicKeyLabel);
 
             const publicKeyText = document.createElement('p');
@@ -684,16 +650,9 @@
             const disclaimerDiv = document.createElement('div');
             disclaimerDiv.id = 'disclaimer';
 
-            // Original disclaimer text
             const disclaimerText = document.createElement('p');
-            disclaimerText.innerHTML = '<strong>Important:</strong> The private key is your password to access your Bitcoin. Keep it completely secret and never share it with anyone. For your security, we strongly recommend transferring the Bitcoin to a new wallet within 30 days. Be aware that the person who gifted you this Bitcoin also has access to the private key and can use it to move your Bitcoin at any time until you transfer them to a wallet that only you control.';
+            disclaimerText.innerHTML = '<strong>Important:</strong> The private key is your password to access your Bitcoin. Keep it completely secret and never share it with anyone. For your security, we strongly recommend transferring the Bitcoin to a new wallet within 30 days. Be aware that the person who gifted you this Bitcoin also has access to the private key and can use it to move your Bitcoin at any time until you transfer them to a wallet that only you control. To send bitcoin from this paper wallet use a provider of your choice such as BlueWallet. Instructions for  BlueWallet: 1. download the app from the app store, 2. Add a wallet, 3. Select «import wallet», 4. scan the QR code or type in the Private Key (WIF), 5. if asked, choose wallet type «P2WPKH». GiftBitcoin is not affiliated with any wallet provider and does not provide support nor any assurances.' ;
             disclaimerDiv.appendChild(disclaimerText);
-
-            // New text with added full stop at the end
-            const transferText = document.createElement('p');
-            transferText.innerHTML = '<br /><strong>To send Bitcoin</strong> from this paper wallet use a provider of your choice such as BlueWallet. Instructions for BlueWallet: 1. download the app from the app store, 2. Add a wallet, 3. Select «import wallet», 4. scan the QR code or type in the Private Key (WIF), 5. if asked, choose wallet type «P2WPKH». GiftBitcoin is not affiliated with any wallet provider and does not provide support nor any assurances.';
-            transferText.innerHTML += '.'; // appended period
-            disclaimerDiv.appendChild(transferText);
 
             container.appendChild(disclaimerDiv);
         }
