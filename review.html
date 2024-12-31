@@ -183,7 +183,12 @@
             margin-top: 10px;
         }
 
-        /* Reduced font size (from 14px to 12px) and removed max-width for tighter right spacing */
+        /* Decrease the font size of both keys by 1 */
+        .key-container h3, .key-container p {
+            font-size: 13px; /* Adjust as needed; if previously 14px, this is one less */
+        }
+
+        /* Disclaimer adjustments: remove extra horizontal margin, align with keys above */
         #disclaimer {
             margin-top: 20px;
             font-size: 12px;
@@ -191,7 +196,7 @@
             text-align: justify;
             line-height: 1.5;
             padding-bottom: 20px;
-            margin: 0 10px; /* Balanced horizontal margins */
+            margin: 0; /* Align text left with keys */
         }
     </style>
 </head>
@@ -694,6 +699,7 @@
                         let imgWidthKeys = (pageWidth - interImageMargin) / 2;
                         let imgHeightKeys = (canvasKeys.height * imgWidthKeys) / canvasKeys.width;
 
+                        // Adjust scaling if images are taller than the page
                         let maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
                         if (maxImgHeight > pageHeight) {
                             const scale = pageHeight / maxImgHeight;
@@ -703,8 +709,8 @@
                             imgHeightKeys *= scale;
                         }
 
-                        maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
-                        const yPosition = margin + (pageHeight - maxImgHeight) / 2;
+                        // Place both images at the same top margin
+                        const yPosition = margin;
                         const xPositionCard = margin;
                         const xPositionKeys = margin + imgWidthCard + interImageMargin;
 
