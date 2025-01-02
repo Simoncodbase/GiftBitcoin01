@@ -126,15 +126,15 @@
         user-select: text;
     }
 
-    #bitcoin-addresses-container {
-        width: var(--card-width);
-        margin: 10px; 
-        margin-left: 20px; 
-    }
-
+    /* Match the font size and text position for key containers and disclaimer as in review.html */
     .key-container {
         margin-bottom: 20px;
         word-wrap: break-word;
+    }
+
+    .key-container h3,
+    .key-container p {
+        font-size: 14px;
     }
 
     .qr-code {
@@ -144,12 +144,12 @@
 
     #disclaimer {
         margin-top: 20px;
-        font-size: 14px;
+        font-size: 13px;
         color: black;
         text-align: justify;
-        max-width: 80%;
-        line-height: 1.5; 
-        padding-bottom: 20px; 
+        line-height: 1.5;
+        padding-bottom: 20px;
+        margin: 0; /* Align text left with keys */
     }
 
     @media print {
@@ -487,6 +487,7 @@
 
     /**
      * Display the bech32 address and private key WIF with QR codes
+     * (Matching the style and text from review.html)
      */
     function displayBitcoinAddresses(privateKeyWIF, address) {
         var container = document.getElementById('bitcoin-addresses-container');
@@ -496,7 +497,7 @@
         publicContainer.classList.add('key-container');
 
         var publicKeyLabel = document.createElement('h3');
-        publicKeyLabel.textContent = 'Bech32 (P2WPKH) Address:';
+        publicKeyLabel.textContent = 'Public Address (P2WPKH):';
         publicContainer.appendChild(publicKeyLabel);
 
         var publicKeyText = document.createElement('p');
@@ -544,11 +545,21 @@
 
         container.appendChild(privateContainer);
 
+        // Match the disclaimer text from review.html
         var disclaimerDiv = document.createElement('div');
         disclaimerDiv.id = 'disclaimer';
 
         var disclaimerText = document.createElement('p');
-        disclaimerText.innerHTML = '<strong>Important:</strong> The private key is your password to access your Bitcoin. Keep it completely secret and never share it with anyone. For your security, we strongly recommend transferring the Bitcoin to a new wallet within 30 days. Be aware that the person who gifted you this Bitcoin also has access to the private key and can use it to move your Bitcoin at any time until you transfer them to a wallet that only you control.';
+        disclaimerText.innerHTML = 
+            '<strong>Important:</strong> The private key is your password to access your Bitcoin. ' +
+            'Keep it completely secret and never share it with anyone. For your security, we strongly recommend ' +
+            'transferring the Bitcoin to a new wallet within 30 days. Be aware that the person who gifted you ' +
+            'this Bitcoin also has access to the private key and can use it to move your Bitcoin at any time ' +
+            'until you transfer them to a wallet that only you control. To send bitcoin from this paper wallet ' +
+            'use a provider of your choice such as BlueWallet. Instructions for BlueWallet: 1. download the app ' +
+            'from the app store, 2. Add a wallet, 3. Select «import wallet», 4. scan the QR code or type in the ' +
+            'Private Key (WIF), 5. if asked, choose wallet type «P2WPKH». GiftBitcoin is not affiliated with ' +
+            'any wallet provider and does not provide support nor any assurances.';
         disclaimerDiv.appendChild(disclaimerText);
 
         container.appendChild(disclaimerDiv);
