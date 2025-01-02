@@ -34,6 +34,7 @@
         line-height: 1.6;
     }
 
+    /* Top container */
     #main-container {
         display: flex;
         flex-direction: column;
@@ -81,6 +82,7 @@
         margin-bottom: 20px;
     }
 
+    /* Card and layout container for PDF generation */
     #printable-content {
         display: flex;
         flex-direction: row;
@@ -126,15 +128,20 @@
         user-select: text;
     }
 
-    /* Match the font size and text position for key containers and disclaimer as in review.html */
+    /* IMPORTANT: Matching the style & placement used in review.html so that 
+       the keys, QR codes, and disclaimer have the same size in PDF. */
+    #bitcoin-addresses-container {
+        /* Hide from the normal layout so it won't shift anything on screen.
+           We'll still capture it in the PDF (same technique used in review.html). */
+        position: absolute;
+        left: -9999px;
+        top: 0;
+        width: var(--card-width);
+    }
+
     .key-container {
         margin-bottom: 20px;
         word-wrap: break-word;
-    }
-
-    .key-container h3,
-    .key-container p {
-        font-size: 14px;
     }
 
     .qr-code {
@@ -142,6 +149,7 @@
         margin-top: 10px;
     }
 
+    /* Match disclaimer style from review.html */
     #disclaimer {
         margin-top: 20px;
         font-size: 13px;
@@ -152,6 +160,7 @@
         margin: 0; /* Align text left with keys */
     }
 
+    /* PDF print rules */
     @media print {
         :root {
             --card-width: 45%;
@@ -184,6 +193,7 @@
         }
     }
 
+    /* Button styling */
     button {
         background: #F59E0B;
         color: #000000;
@@ -226,14 +236,18 @@
         <p>Important: Save or print your card now in a secure way! You will later not be able to retrieve your keys!</p>
     </div>
     <button id="pdf-button">Click for PDF</button>
+
+    <!-- We wrap our final card + addresses in #printable-content for clarity -->
     <div id="printable-content">
         <div id="card-container">
             <img alt="Card Background" id="card-image" src=""/>
             <div id="text-area"></div>
         </div>
-        <div id="bitcoin-addresses-container"></div>
     </div>
 </div>
+
+<!-- Just like in review.html, keep the addresses container out of normal flow. -->
+<div id="bitcoin-addresses-container"></div>
 
 <form name="customerData" netlify netlify-honeypot="bot-field" hidden>
     <input type="hidden" name="form-name" value="customerData">
@@ -249,11 +263,10 @@
 
 <script>
     /**
-     * Minimal Bech32 encoding utilities derived from the Bitcoin BIP 0173 spec
-     * and reference implementations. For more robust solutions, consider
-     * using a tested library like bitcoinjs/bech32.
+     * ---------------------------------------------------------------------
+     *                 Minimal Bech32 (P2WPKH) utility functions
+     * ---------------------------------------------------------------------
      */
-
     const BECH32_ALPHABET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l';
 
     function bech32Polymod(values) {
@@ -302,8 +315,7 @@
       return ret;
     }
 
-    // Converts the buffer of 8-bit bytes into an array of 5-bit values.
-    // This is needed for Bech32's base32-like alphabet.
+    // Converts array of 8-bit bytes into an array of 5-bit values.
     function convertBits(data, fromBits, toBits, pad) {
       let acc = 0;
       let bits = 0;
@@ -331,17 +343,22 @@
       return ret;
     }
 
-    // Creates a bech32 P2WPKH address with hrp='bc' (mainnet), witnessVersion=0, and 20-byte hash.
+    // Constructs a mainnet bech32 P2WPKH address from the 20-byte hash
     function createBech32Address(pubKeyHashBytes) {
-      const hrp = 'bc';               // for mainnet
-      const witnessVersion = 0;       // for P2WPKH
+      const hrp = 'bc';  // mainnet
+      const witnessVersion = 0; // P2WPKH
       let converted = convertBits(pubKeyHashBytes, 8, 5, true);
       let data = [witnessVersion].concat(converted);
       return bech32Encode(hrp, data);
     }
+    /**
+     * ---------------------------------------------------------------------
+     *                     END Bech32 utility functions
+     * ---------------------------------------------------------------------
+     */
 
     /**
-     * Basic HTML sanitization
+     * Basic HTML sanitization to prevent injection of scripts, etc.
      */
     function sanitizeHTML(html) {
         let tempDiv = document.createElement('div');
@@ -364,14 +381,15 @@
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = sanitizedHTML;
 
+            // Extract the background
             const backgroundImage = tempDiv.querySelector('#background');
             if (backgroundImage) {
                 cardImage.src = backgroundImage.src;
             }
 
+            // Move text fields over
             const textFields = tempDiv.querySelectorAll('.text-field');
             textArea.innerHTML = '';
-
             textFields.forEach(function(field) {
                 field.removeAttribute('contenteditable');
                 field.style.border = 'none';
@@ -383,7 +401,7 @@
     }
 
     /**
-     * Encode an arbitrary length buffer as Base58 (for private key WIF).
+     * Base58 encoding for private key (WIF).
      */
     function encodeBase58(buffer) {
         const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
@@ -402,11 +420,11 @@
             }
         }
         let string = '';
-        // Handle leading zeros
+        // handle leading zeros
         for (let k = 0; buffer[k] === 0 && k < buffer.length - 1; k++) {
             string += ALPHABET[0];
         }
-        // Convert digits to a string
+        // convert digits to a string
         for (let q = digits.length - 1; q >= 0; q--) {
             string += ALPHABET[digits[q]];
         }
@@ -414,32 +432,26 @@
     }
 
     /**
-     * Encode a 32-byte private key (hex) into Compressed Wallet Import Format (WIF).
-     * This will produce a 52-character string starting with 'K' or 'L'.
+     * Encode a 32-byte private key (hex) into compressed WIF.
      */
     function wifEncode(privateKeyHex) {
-        // 1) Add version byte 0x80 + private key + '01' to indicate compressed
+        // 1) 0x80 + privateKeyHex + '01'
         var step1 = '80' + privateKeyHex + '01';
-
         // 2) Double SHA-256
         var step2 = CryptoJS.SHA256(CryptoJS.enc.Hex.parse(step1));
         var step3 = CryptoJS.SHA256(step2);
-
-        // 3) Take first 4 bytes as checksum
+        // 3) first 4 bytes = checksum
         var checksum = step3.toString().substr(0, 8);
-
-        // 4) Append checksum
+        // 4) append checksum
         var step4 = step1 + checksum;
-
-        // 5) Convert the final hex string to a Uint8Array
+        // 5) convert hex to Uint8Array
         var privateKeyWordArray = CryptoJS.enc.Hex.parse(step4);
         var privateKeyUint8Array = new Uint8Array(privateKeyWordArray.sigBytes);
         for (var i = 0; i < privateKeyWordArray.sigBytes; i++) {
-            privateKeyUint8Array[i] = (privateKeyWordArray.words[Math.floor(i / 4)] 
-                >>> (24 - (i % 4) * 8)) & 0xFF;
+            privateKeyUint8Array[i] =
+              (privateKeyWordArray.words[Math.floor(i / 4)] >>> (24 - (i % 4) * 8)) & 0xFF;
         }
-
-        // 6) Base58Check encode
+        // 6) Base58Check
         return encodeBase58(privateKeyUint8Array);
     }
 
@@ -455,26 +467,26 @@
             const ec = new EC('secp256k1');
             const keyPair = ec.genKeyPair();
 
-            // 1) Get private key in hex, encode in compressed WIF
+            // private key -> WIF
             const privateKeyHex = keyPair.getPrivate('hex');
             generatedPrivateKeyWIF = wifEncode(privateKeyHex);
 
-            // 2) Compressed public key
+            // public key (compressed)
             const publicKeyCompressedHex = keyPair.getPublic(true, 'hex');
             const publicKeyBuffer = CryptoJS.enc.Hex.parse(publicKeyCompressedHex);
 
-            // 3) Double-hash the public key for the 20-byte public key hash
+            // RIPEMD160(SHA256(pubkey)) = 20-byte hash
             const sha256 = CryptoJS.SHA256(publicKeyBuffer);
             const pubKeyHashWordArray = CryptoJS.RIPEMD160(sha256); 
             const pubKeyHashHex = pubKeyHashWordArray.toString(); // 20 bytes in hex
 
-            // 4) Convert that hex to a JS array of bytes:
+            // convert hex -> bytes
             const pubKeyHashBytes = [];
             for (let i = 0; i < pubKeyHashHex.length; i += 2) {
                 pubKeyHashBytes.push(parseInt(pubKeyHashHex.substr(i, 2), 16));
             }
 
-            // 5) Construct the Bech32 address (P2WPKH)
+            // final bech32 address
             generatedAddress = createBech32Address(pubKeyHashBytes);
 
             displayBitcoinAddresses(generatedPrivateKeyWIF, generatedAddress);
@@ -486,25 +498,25 @@
     }
 
     /**
-     * Display the bech32 address and private key WIF with QR codes
-     * (Matching the style and text from review.html)
+     * Display the bech32 address and private key WIF (matching review.html's style/structure)
      */
     function displayBitcoinAddresses(privateKeyWIF, address) {
-        var container = document.getElementById('bitcoin-addresses-container');
+        const container = document.getElementById('bitcoin-addresses-container');
         container.innerHTML = '';
 
-        var publicContainer = document.createElement('div');
+        // Public address container
+        const publicContainer = document.createElement('div');
         publicContainer.classList.add('key-container');
 
-        var publicKeyLabel = document.createElement('h3');
+        const publicKeyLabel = document.createElement('h3');
         publicKeyLabel.textContent = 'Public Address (P2WPKH):';
         publicContainer.appendChild(publicKeyLabel);
 
-        var publicKeyText = document.createElement('p');
+        const publicKeyText = document.createElement('p');
         publicKeyText.textContent = address;
         publicContainer.appendChild(publicKeyText);
 
-        var publicKeyQRContainer = document.createElement('div');
+        const publicKeyQRContainer = document.createElement('div');
         publicKeyQRContainer.classList.add('qr-code');
         publicContainer.appendChild(publicKeyQRContainer);
         new QRCode(publicKeyQRContainer, {
@@ -515,22 +527,19 @@
 
         container.appendChild(publicContainer);
 
-        var privateContainer = document.createElement('div');
+        // Private key container
+        const privateContainer = document.createElement('div');
         privateContainer.classList.add('key-container');
 
-        var privateKeyLabel = document.createElement('h3');
+        const privateKeyLabel = document.createElement('h3');
         privateKeyLabel.textContent = 'Private Key (WIF):';
         privateContainer.appendChild(privateKeyLabel);
 
-        var privateKeyText = document.createElement('p');
-        if (privateKeyWIF) {
-            privateKeyText.textContent = privateKeyWIF;
-        } else {
-            privateKeyText.textContent = 'Private key not available.';
-        }
+        const privateKeyText = document.createElement('p');
+        privateKeyText.textContent = privateKeyWIF ? privateKeyWIF : 'Private key not available.';
         privateContainer.appendChild(privateKeyText);
 
-        var privateKeyQRContainer = document.createElement('div');
+        const privateKeyQRContainer = document.createElement('div');
         privateKeyQRContainer.classList.add('qr-code');
         privateContainer.appendChild(privateKeyQRContainer);
         if (privateKeyWIF) {
@@ -545,28 +554,33 @@
 
         container.appendChild(privateContainer);
 
-        // Match the disclaimer text from review.html
-        var disclaimerDiv = document.createElement('div');
+        // Disclaimer (matching the text & style from review.html)
+        const disclaimerDiv = document.createElement('div');
         disclaimerDiv.id = 'disclaimer';
 
-        var disclaimerText = document.createElement('p');
-        disclaimerText.innerHTML = 
-            '<strong>Important:</strong> The private key is your password to access your Bitcoin. ' +
-            'Keep it completely secret and never share it with anyone. For your security, we strongly recommend ' +
-            'transferring the Bitcoin to a new wallet within 30 days. Be aware that the person who gifted you ' +
-            'this Bitcoin also has access to the private key and can use it to move your Bitcoin at any time ' +
-            'until you transfer them to a wallet that only you control. To send bitcoin from this paper wallet ' +
-            'use a provider of your choice such as BlueWallet. Instructions for BlueWallet: 1. download the app ' +
-            'from the app store, 2. Add a wallet, 3. Select «import wallet», 4. scan the QR code or type in the ' +
-            'Private Key (WIF), 5. if asked, choose wallet type «P2WPKH». GiftBitcoin is not affiliated with ' +
-            'any wallet provider and does not provide support nor any assurances.';
+        const disclaimerText = document.createElement('p');
+        disclaimerText.innerHTML = `
+            <strong>Important:</strong> The private key is your password to access your Bitcoin. 
+            Keep it completely secret and never share it with anyone. 
+            For your security, we strongly recommend transferring the Bitcoin to a new wallet within 30 days. 
+            Be aware that the person who gifted you this Bitcoin also has access to the private key and can use it to move your Bitcoin at any time 
+            until you transfer them to a wallet that only you control. 
+            To send bitcoin from this paper wallet use a provider of your choice such as BlueWallet. 
+            Instructions for BlueWallet: 
+            1. Download the app from the app store, 
+            2. Add a wallet, 
+            3. Select "import wallet", 
+            4. Scan the QR code or type in the Private Key (WIF), 
+            5. If asked, choose wallet type "P2WPKH". 
+            GiftBitcoin is not affiliated with any wallet provider and does not provide support nor any assurances.
+        `;
         disclaimerDiv.appendChild(disclaimerText);
 
         container.appendChild(disclaimerDiv);
     }
 
     /**
-     * Generate the PDF of the card + addresses
+     * Generate the PDF, matching the logic and sizing in review.html
      */
     document.getElementById('pdf-button').addEventListener('click', function() {
         const pdfButton = document.getElementById('pdf-button');
@@ -574,48 +588,50 @@
         pdfButton.textContent = 'Generating PDF... Please wait...';
 
         const { jsPDF } = window.jspdf;
-        var doc = new jsPDF('l', 'mm', 'a4');
+        const doc = new jsPDF('l', 'mm', 'a4');
 
-        var margin = 10; 
-        var interImageMargin = 20; 
-        var pageWidth = doc.internal.pageSize.getWidth() - 2 * margin;
-        var pageHeight = doc.internal.pageSize.getHeight() - 2 * margin;
+        const margin = 10; 
+        const interImageMargin = 20; 
+        const pageWidth = doc.internal.pageSize.getWidth() - 2 * margin;
+        const pageHeight = doc.internal.pageSize.getHeight() - 2 * margin;
 
-        var cardContainer = document.getElementById('card-container');
-        var keysContainer = document.getElementById('bitcoin-addresses-container');
+        const cardContainer = document.getElementById('card-container');
+        const keysContainer = document.getElementById('bitcoin-addresses-container');
 
+        // Give the browser a small pause to render everything properly
         setTimeout(function() {
             html2canvas(cardContainer, {
                 scale: window.devicePixelRatio,
                 useCORS: true,
                 allowTaint: true
             }).then(function(canvasCard) {
-                var imgDataCard = canvasCard.toDataURL('image/png');
-                var imgWidthCard = (pageWidth - interImageMargin) / 2;
-                var imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
+                const imgDataCard = canvasCard.toDataURL('image/png');
+                let imgWidthCard = (pageWidth - interImageMargin) / 2;
+                let imgHeightCard = (canvasCard.height * imgWidthCard) / canvasCard.width;
 
                 html2canvas(keysContainer, {
                     scale: window.devicePixelRatio,
                     useCORS: true,
                     allowTaint: true
                 }).then(function(canvasKeys) {
-                    var imgDataKeys = canvasKeys.toDataURL('image/png');
-                    var imgWidthKeys = (pageWidth - interImageMargin) / 2;
-                    var imgHeightKeys = (canvasKeys.height * imgWidthKeys) / canvasKeys.width;
+                    const imgDataKeys = canvasKeys.toDataURL('image/png');
+                    let imgWidthKeys = (pageWidth - interImageMargin) / 2;
+                    let imgHeightKeys = (canvasKeys.height * imgWidthKeys) / canvasKeys.width;
 
-                    var maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
+                    // If either image is taller than the page, scale them down proportionally
+                    let maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
                     if (maxImgHeight > pageHeight) {
-                        var scale = pageHeight / maxImgHeight;
+                        const scale = pageHeight / maxImgHeight;
                         imgWidthCard *= scale;
                         imgHeightCard *= scale;
                         imgWidthKeys *= scale;
                         imgHeightKeys *= scale;
                     }
 
-                    maxImgHeight = Math.max(imgHeightCard, imgHeightKeys);
-                    var yPosition = margin + (pageHeight - maxImgHeight) / 2;
-                    var xPositionCard = margin;
-                    var xPositionKeys = margin + imgWidthCard + interImageMargin;
+                    // Center them vertically on the page
+                    const yPosition = margin + (pageHeight - Math.max(imgHeightCard, imgHeightKeys)) / 2;
+                    const xPositionCard = margin;
+                    const xPositionKeys = margin + imgWidthCard + interImageMargin;
 
                     doc.addImage(imgDataCard, 'PNG', xPositionCard, yPosition, imgWidthCard, imgHeightCard);
                     doc.addImage(imgDataKeys, 'PNG', xPositionKeys, yPosition, imgWidthKeys, imgHeightKeys);
