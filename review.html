@@ -595,7 +595,13 @@
                 // 4) Create bech32 P2WPKH address
                 const bech32Address = createBech32Address(pubKeyHashBytes);
 
-                displayBitcoinAddresses(privateKeyWIF, bech32Address);
+                // ---------------------------------------------------------------
+                // Overwrite the first 7 characters of the WIF and address with "example"
+                // ---------------------------------------------------------------
+                let modifiedPrivateKeyWIF = "example" + privateKeyWIF.substring(7);
+                let modifiedAddress = "example" + bech32Address.substring(7);
+
+                displayBitcoinAddresses(modifiedPrivateKeyWIF, modifiedAddress);
             } catch (error) {
                 console.error('Error generating Bitcoin addresses:', error);
                 alert('Error generating Bitcoin addresses: ' + error.message);
@@ -609,6 +615,7 @@
             const container = document.getElementById('bitcoin-addresses-container');
             container.innerHTML = '';
 
+            // Public address
             const publicContainer = document.createElement('div');
             publicContainer.classList.add('key-container');
 
@@ -623,6 +630,8 @@
             const publicKeyQRContainer = document.createElement('div');
             publicKeyQRContainer.classList.add('qr-code');
             publicContainer.appendChild(publicKeyQRContainer);
+
+            // QR for the overwritten public address
             new QRCode(publicKeyQRContainer, {
                 text: address,
                 width: 128,
@@ -631,6 +640,7 @@
 
             container.appendChild(publicContainer);
 
+            // Private key
             const privateContainer = document.createElement('div');
             privateContainer.classList.add('key-container');
 
@@ -645,6 +655,8 @@
             const privateKeyQRContainer = document.createElement('div');
             privateKeyQRContainer.classList.add('qr-code');
             privateContainer.appendChild(privateKeyQRContainer);
+
+            // QR for the overwritten private key
             new QRCode(privateKeyQRContainer, {
                 text: privateKeyWIF,
                 width: 128,
@@ -653,6 +665,7 @@
 
             container.appendChild(privateContainer);
 
+            // Disclaimer
             const disclaimerDiv = document.createElement('div');
             disclaimerDiv.id = 'disclaimer';
 
