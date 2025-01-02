@@ -580,7 +580,7 @@
     }
 
     /**
-     * Generate the PDF, matching the logic and sizing in review.html
+     * Generate the PDF, matching the top margin from review.html
      */
     document.getElementById('pdf-button').addEventListener('click', function() {
         const pdfButton = document.getElementById('pdf-button');
@@ -628,8 +628,8 @@
                         imgHeightKeys *= scale;
                     }
 
-                    // Center them vertically on the page
-                    const yPosition = margin + (pageHeight - Math.max(imgHeightCard, imgHeightKeys)) / 2;
+                    // Match review.html: put both images at y = margin (no vertical centering)
+                    const yPosition = margin;
                     const xPositionCard = margin;
                     const xPositionKeys = margin + imgWidthCard + interImageMargin;
 
