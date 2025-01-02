@@ -80,6 +80,7 @@
 
     #pdf-button {
         margin-bottom: 20px;
+        margin-right: 10px; /* Add spacing between the buttons */
     }
 
     /* Card and layout container for PDF generation */
@@ -188,7 +189,7 @@
             visibility: visible;
         }
 
-        #pdf-button, #payment-successful, #important-message {
+        #pdf-button, #feedback-button, #payment-successful, #important-message {
             display: none;
         }
     }
@@ -235,7 +236,11 @@
     <div id="important-message">
         <p>Important: Save or print your card now in a secure way! You will later not be able to retrieve your keys!</p>
     </div>
+    <!-- Existing PDF button + new feedback button -->
     <button id="pdf-button">Click for PDF</button>
+    <button id="feedback-button" onclick="window.location.href='mailto:giftbitcoin.ch@gmail.com'">
+      Your feedback is very important to us
+    </button>
 
     <!-- We wrap our final card + addresses in #printable-content for clarity -->
     <div id="printable-content">
