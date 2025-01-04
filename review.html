@@ -229,7 +229,7 @@
                 </select>
                 <br><br>
                 <label for="amount-input">Amount:</label><br>
-                <input type="number" id="amount-input" name="amount-input" min="1" max="200" step="1">
+                <input type="number" id="amount-input" name="amount-input" min="30" max="200" step="1">
                 <br><br>
                 <div id="amount-message"></div>
                 <br>
@@ -397,7 +397,7 @@
                 return;
             }
 
-            if (amount < 1 || amount > 200) {
+            if (amount < 30 || amount > 200) {
                 messageDiv.textContent = `The minimum amount is 30 ${currency}, the maximum amount is 200 ${currency}.`;
             } else {
                 let creditedAmount = amount - 10;
@@ -494,8 +494,8 @@
             const currencySelect = document.getElementById('currency-select');
             const currency = currencySelect.value;
             let amount = parseFloat(document.getElementById('amount-input').value);
-            if (isNaN(amount) || amount < 1 || amount > 200) {
-                alert(`Please enter an amount between 31 and 200 ${currency}.`);
+            if (isNaN(amount) || amount < 30 || amount > 200) {
+                alert(`Please enter an amount between 30 and 200 ${currency}.`);
                 return;
             }
 
