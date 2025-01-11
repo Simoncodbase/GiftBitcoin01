@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bitcoin Gift Animation</title>
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    .animation-container {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 104%; /* Adjusted to match giftbox size */
+      max-width: 520px; /* Matches the giftbox max width */
+      height: auto;
+      overflow: hidden;
+    }
+
+    .animated-images-container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .animated-images {
+      display: flex;
+      position: relative;
+      width: 300%;
+      height: 100%;
+      animation: swipe-animation 9s infinite;
+    }
+
+    .animated-images img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    @keyframes swipe-animation {
+      0% {
+        transform: translateX(0%);
+      }
+      33% {
+        transform: translateX(0%);
+      }
+      36% {
+        transform: translateX(-100%);
+      }
+      69% {
+        transform: translateX(-100%);
+      }
+      72% {
+        transform: translateX(-200%);
+      }
+      100% {
+        transform: translateX(-200%);
+      }
+    }
+  </style>
+</head>
+<body class="flex flex-col min-h-screen bg-white">
+  <!-- Top Navigation Bar -->
+  <header class="flex justify-between items-center px-8 py-4 border-b w-full">
+    <!-- Logo -->
+    <div>
+      <img src="design/Logo1.JPG" alt="Gift Logo" class="h-12">
+    </div>
+    <!-- Navigation Links -->
+    <nav class="flex space-x-8">
+      <a href="https://giftbitcoin01.netlify.app/create" class="text-gray-600 hover:text-gray-900">Design your gift package</a>
+      <a href="/about" class="text-gray-600 hover:text-gray-900">About</a>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex flex-1">
+    <!-- Left Frame -->
+    <div class="w-1/2 flex flex-col items-center justify-center p-8">
+      <h1 class="text-4xl md:text-5xl font-bold text-center mb-8">
+        Gift Bitcoin with a personalized card—simple, secure, and fun.
+      </h1>
+
+      <a class='bg-yellow-500 hover:bg-yellow-400 text-black px-8 py-3 rounded-lg font-semibold inline-flex items-center gap-2 mb-8 transition-colors duration-300' href='/create'>
+        Create it now
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path d="M9 18l6-6-6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+
+      <div class="text-center">
+        <h2 class="text-2xl font-semibold mb-6">
+          Three simple steps
+        </h2>
+        <ol class="space-y-4">
+          <li class="flex items-center gap-4 justify-center">
+            <span class="bg-yellow-500 w-8 h-8 rounded-full flex items-center justify-center font-bold shadow">
+              1
+            </span>
+            <span>Create card</span>
+          </li>
+          <li class="flex items-center gap-4 justify-center">
+            <span class="bg-yellow-500 w-8 h-8 rounded-full flex items-center justify-center font-bold shadow">
+              2
+            </span>
+            <span>Choose amount & pay</span>
+          </li>
+          <li class="flex items-center gap-4 justify-center">
+            <span class="bg-yellow-500 w-8 h-8 rounded-full flex items-center justify-center font-bold shadow">
+              3
+            </span>
+            <span>Download & gift</span>
+          </li>
+        </ol>
+      </div>
+      <div class="bg-yellow-100 border border-yellow-300 rounded p-4 mt-6">
+        <p class="text-center font-semibold">
+          “Bitcoin as a gift... because Bitcoin <em>is</em> a gift.”
+        </p>
+      </div>
+    </div>
+
+    <!-- Right Frame -->
+    <div class="w-1/2 flex items-center justify-center p-8 animation-container">
+      <!-- Foreground animated images -->
+      <div class="animated-images-container">
+        <div class="animated-images">
+          <img src="design/birthday2.jpg" alt="Birthday Image">
+          <img src="design/christmas2.jpg" alt="Christmas Image">
+          <img src="design/queen2.jpg" alt="Queen Image">
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
