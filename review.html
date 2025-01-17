@@ -402,7 +402,7 @@
             } else {
                 let creditedAmount = amount - 10;
                 creditedAmount = Math.max(0, creditedAmount);
-                const message = `You have selected an amount of ${amount} ${currency}. You can print your gift-card immediately after paying. In the next 24 hours we will ${creditedAmount} ${currency} based on the BTC/${currency} rate at the time of the execution.`;
+                const message = `You have selected an amount of ${amount} ${currency}. You can print your gift-card immediately after paying. In the next 24 hours we will credit ${creditedAmount} ${currency} based on the BTC/${currency} rate at the time of the execution.`;
                 messageDiv.textContent = message;
             }
         }
